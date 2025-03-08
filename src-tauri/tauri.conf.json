@@ -1,0 +1,63 @@
+{
+	"$schema": "https://schema.tauri.app/config/2",
+	"productName": "TW Mod Organizer",
+	"version": "0.1.0",
+	"identifier": "com.tw-mod-organizer",
+	"build": {
+		"beforeDevCommand": "bun run dev",
+		"devUrl": "http://localhost:1420",
+		"beforeBuildCommand": "bun run build",
+		"frontendDist": "../dist"
+	},
+	"app": {
+		"windows": [
+			{
+				"title": "TW Mod Organizer",
+				"width": 1100,
+				"height": 610,
+				"minWidth": 900,
+				"minHeight": 610,
+				"resizable": true,
+				"contentProtected": false,
+				"useHttpsScheme": true,
+				"decorations": false,
+				"shadow": false,
+				"transparent": true
+			}
+		],
+		"security": {
+			"csp": "default-src 'self' ipc: https://ipc.localhost asset: asset.localhost; img-src 'self' https: asset: asset.localhost; media-src 'self' https:; style-src 'self' 'unsafe-inline';",
+			"assetProtocol": {
+				"enable": true,
+				"scope": [
+					"**"
+				]
+			}
+		}
+	},
+	"bundle": {
+		"active": true,
+		"targets": "nsis",
+		"icon": [
+			"icons/32x32.png",
+			"icons/128x128.png",
+			"icons/128x128@2x.png",
+			"icons/icon.icns",
+			"icons/icon.ico"
+		],
+		"resources": [
+			"./steam_api64.dll",
+			"./steam_api64.lib"
+		]
+	},
+	"plugins": {
+		"deep-link": {
+			"schema": "nxm",
+			"desktop": {
+				"schemes": [
+					"nxm"
+				]
+			}
+		}
+	}
+}
