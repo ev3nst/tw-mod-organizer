@@ -1,4 +1,7 @@
-use std::process::{Command, Stdio};
+use std::{
+    os::windows::process::CommandExt,
+    process::{Command, Stdio},
+};
 
 use crate::supported_games::SUPPORTED_GAMES;
 
@@ -10,6 +13,7 @@ pub async fn is_game_running(app_id: u64) -> Result<bool, String> {
         .ok_or_else(|| format!("Given app_id {} is not supported", app_id))?;
 
     let output = Command::new("tasklist")
+        .creation_flags(0x08000000)
         .arg("/FI")
         .arg(format!("IMAGENAME eq {}.exe", game.exe_name))
         .stdout(Stdio::piped())
