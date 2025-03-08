@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/button';
 import { Separator } from '@/components/separator';
 
+import api from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 
 export function Settings() {
@@ -87,7 +88,9 @@ export function Settings() {
 			<DialogTrigger asChild>
 				<Button
 					variant="ghost"
-					className={`clickable-content group/toggle h-8 w-8 px-0 ${isGameRunning ? 'disabled' : ''}`}
+					className={`clickable-content group/toggle h-8 w-8 px-0 ${
+						isGameRunning ? 'disabled' : ''
+					}`}
 					disabled={isGameRunning}
 				>
 					<SettingsIcon />
@@ -143,7 +146,13 @@ export function Settings() {
 							<FolderIcon />
 							Choose which path for mods to be installed
 						</Button>
-						<Button size="sm" variant="outline">
+						<Button
+							size="sm"
+							variant="outline"
+							onClick={() =>
+								api.highlight_path(mod_installation_path)
+							}
+						>
 							<EyeIcon />
 							View
 						</Button>
@@ -182,7 +191,13 @@ export function Settings() {
 							<FolderIcon />
 							Choose which path for archives to be downloaded
 						</Button>
-						<Button size="sm" variant="outline">
+						<Button
+							size="sm"
+							variant="outline"
+							onClick={() =>
+								api.highlight_path(mod_download_path)
+							}
+						>
 							<EyeIcon />
 							View
 						</Button>

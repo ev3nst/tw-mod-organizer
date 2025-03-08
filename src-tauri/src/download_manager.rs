@@ -2,6 +2,7 @@ use reqwest::{
     header::{HeaderValue, RANGE},
     Client,
 };
+use std::path::Path;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc, Mutex,
@@ -10,10 +11,10 @@ use std::{
     fs,
     io::{self, Seek, SeekFrom, Write},
 };
-use std::{fs::create_dir_all, path::Path};
-use tauri::{path::BaseDirectory, Emitter, Manager};
+use tauri::Emitter;
 use trash::delete;
 
+use crate::create_app_default_paths::create_app_default_paths;
 use crate::AppState;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -124,12 +125,7 @@ pub async fn start_download(
     state: tauri::State<'_, AppState>,
     task: DownloadTask,
 ) -> Result<(), String> {
-    let default_downloads_path = handle
-        .path()
-        .resolve("downloads".to_string(), BaseDirectory::AppConfig)
-        .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?;
-    create_dir_all(default_downloads_path)
-        .map_err(|e| format!("Failed to create default downloads directory: {}", e))?;
+    let _ = create_app_default_paths(handle.clone());
 
     let download_manager = state.download_manager.lock().await;
     download_manager.is_paused.store(false, Ordering::SeqCst);

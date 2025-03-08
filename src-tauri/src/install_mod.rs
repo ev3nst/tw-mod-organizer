@@ -4,9 +4,9 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
-use tauri::path::BaseDirectory;
-use tauri::{AppHandle, Manager};
+use tauri::AppHandle;
 
+use crate::create_app_default_paths::create_app_default_paths;
 use crate::{get_zip_contents::find_7zip_path, protected_paths::PROTECTED_PATHS};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -44,13 +44,7 @@ pub async fn install_mod(
     mod_details: InstallModDetails,
     mod_installation_path: String,
 ) -> Result<(), String> {
-    let default_mods_path = handle
-        .path()
-        .resolve("mods".to_string(), BaseDirectory::AppConfig)
-        .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?;
-    create_dir_all(default_mods_path)
-        .map_err(|e| format!("Failed to create default mods directory: {}", e))?;
-
+    let _ = create_app_default_paths(handle.clone());
     if mod_details.zip_file_path.trim().is_empty() {
         return Err("Archive path cannot be empty".to_string());
     }

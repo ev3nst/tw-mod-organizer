@@ -2,6 +2,7 @@ use std::sync::Arc;
 use tauri::{Emitter, Manager};
 use tokio::sync::Mutex;
 
+mod create_app_default_paths;
 mod delete_mod;
 mod delete_save_file;
 mod download_manager;
@@ -9,7 +10,7 @@ mod get_pack_conflicts;
 mod get_pack_files;
 mod get_save_files;
 mod get_zip_contents;
-mod highlight_file;
+mod highlight_path;
 mod install_mod;
 mod is_game_running;
 mod local_mods;
@@ -82,7 +83,7 @@ pub fn run() {
             download_manager::pause_download,
             download_manager::remove_download,
             download_manager::sync_downloads,
-            highlight_file::highlight_file,
+            highlight_path::highlight_path,
             get_save_files::get_save_files,
             delete_save_file::delete_save_file,
             get_zip_contents::get_zip_contents,

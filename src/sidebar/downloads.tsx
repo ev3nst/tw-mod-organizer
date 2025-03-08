@@ -333,7 +333,7 @@ export const Downloads = () => {
 						onClick={async () => {
 							const setting = await SettingModel.retrieve();
 							const downloadFilePath = `${setting.mod_download_path}\\${dItem.filename}`;
-							api.highlight_file(downloadFilePath);
+							api.highlight_path(downloadFilePath);
 						}}
 					>
 						<ArchiveIcon />

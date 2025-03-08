@@ -192,8 +192,8 @@ class API {
 		});
 	}
 
-	async highlight_file(file_path: string): Promise<string[]> {
-		return invoke('highlight_file', {
+	async highlight_path(file_path: string): Promise<string[]> {
+		return invoke('highlight_path', {
 			file_path,
 		});
 	}

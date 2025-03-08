@@ -8,6 +8,7 @@ Requires Windows 10, Steam, 7z (for local mod installation).
 
 ## Features
 
+-	Lightweight and small bundle size
 -   Mod profiles
 -   Re-ordering mods with a simple drag and drop
 -   Viewing mod conflicts

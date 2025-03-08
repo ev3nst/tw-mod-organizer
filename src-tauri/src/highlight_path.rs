@@ -1,19 +1,28 @@
 use std::path::Path;
 use std::process::Command;
 
+use crate::create_app_default_paths::create_app_default_paths;
+
 #[tauri::command(rename_all = "snake_case")]
-pub fn highlight_file(file_path: String) -> Result<(), String> {
+pub fn highlight_path(handle: tauri::AppHandle, file_path: String) -> Result<(), String> {
+    let _ = create_app_default_paths(handle);
+
     let sanitized_path = sanitize_path(&file_path)?;
+    let path = Path::new(&sanitized_path);
 
-    if !Path::new(&sanitized_path).is_file() {
-        return Err("The provided path is not a valid file.".to_string());
-    }
+    let mut command = if path.is_file() {
+        let mut cmd = Command::new("explorer");
+        cmd.arg("/select,").arg(sanitized_path);
+        cmd
+    } else if path.is_dir() {
+        let mut cmd = Command::new("explorer");
+        cmd.arg(sanitized_path);
+        cmd
+    } else {
+        return Err("The provided path is not valid.".to_string());
+    };
 
-    Command::new("explorer")
-        .arg("/select,")
-        .arg(sanitized_path)
-        .spawn()
-        .map_err(|e| e.to_string())?;
+    command.spawn().map_err(|e| e.to_string())?;
 
     Ok(())
 }
