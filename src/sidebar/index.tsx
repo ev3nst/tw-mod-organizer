@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { Sidebar, SidebarContent } from '@/components/sidebar';
 import {
 	Accordion,
@@ -5,11 +7,13 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from '@/components/accordion';
+
 import { Downloads } from './downloads';
 import { Saves } from './saves';
 import { Play } from './play';
 
 export function AppSidebar() {
+	const [tab, setActiveTab] = useState<string>('saves');
 	return (
 		<Sidebar
 			side="right"
@@ -21,6 +25,8 @@ export function AppSidebar() {
 						type="single"
 						collapsible
 						defaultValue="saves"
+						value={tab}
+						onValueChange={setActiveTab}
 						className="flex flex-col"
 					>
 						<AccordionItem value="saves">
@@ -35,7 +41,11 @@ export function AppSidebar() {
 							<AccordionTrigger className="text-base font-medium text-foreground px-3 py-2 sticky top-0 bg-background z-10">
 								Downloads
 							</AccordionTrigger>
-							<AccordionContent className="overflow-auto max-h-[calc(100vh-12rem)]">
+							<AccordionContent
+								className="overflow-auto max-h-[calc(100vh-12rem)]"
+								forceMount
+								hidden={'downloads' !== tab}
+							>
 								<Downloads />
 							</AccordionContent>
 						</AccordionItem>
