@@ -6,8 +6,6 @@ import {
 	useSensor,
 	useSensors,
 	DragEndEvent,
-	Active,
-	Over,
 } from '@dnd-kit/core';
 import {
 	SortableContext,
@@ -18,8 +16,6 @@ import { SearchIcon } from 'lucide-react';
 import { Table, TableBody } from '@/components/table';
 import { Input } from '@/components/input';
 
-import type { ModItemSeparatorUnion } from '@/lib/api';
-
 import { modsStore } from '@/lib/store/mods';
 import { modOrderStore } from '@/lib/store/mod_order';
 import { modSeparatorStore, isCollapsed } from '@/lib/store/mod_separator';
@@ -28,37 +24,41 @@ import { Header } from './header';
 import { Row } from './row';
 import { Footer } from './footer';
 import { Lock } from './lock';
+import { sortMods, sortCollapsedSection } from './utils';
 
 export const ModListTable = () => {
 	const [searchModText, setSearchModText] = useState<string>('');
 
 	const mods = modsStore(state => state.mods);
-
 	const separators = modSeparatorStore(state => state.data);
-
 	const setMods = modsStore(state => state.setMods);
 	const setModOrder = modOrderStore(state => state.setData);
 
-	const lowerSearchText = useMemo(
-		() => searchModText.toLowerCase(),
-		[searchModText],
-	);
-
-	const modsResolved = useMemo(() => {
-		if (lowerSearchText !== '') {
+	const filteredMods = useMemo(() => {
+		if (searchModText !== '') {
 			return mods.filter(m =>
-				m.title.toLowerCase().includes(lowerSearchText),
+				m.title
+					.toLowerCase()
+					.includes(searchModText.toLocaleLowerCase()),
 			);
 		}
+		return mods;
+	}, [mods, searchModText]);
 
-		const separatorPositions: { id: string; index: number }[] = [];
+	const separatorPositions = useMemo(() => {
+		const positions: { id: string; index: number }[] = [];
 		mods.forEach((mod, index) => {
 			if (!('item_type' in mod)) {
-				separatorPositions.push({ id: mod.identifier, index });
+				positions.push({ id: mod.identifier, index });
 			}
 		});
+		return positions;
+	}, [mods]);
 
-		const hiddenItems = new Set<string>();
+	const hiddenItems = useMemo(() => {
+		if (searchModText !== '') return new Set<string>();
+
+		const hidden = new Set<string>();
 		for (let i = 0; i < separatorPositions.length; i++) {
 			const currentSeparator = separatorPositions[i];
 			if (isCollapsed(separators, currentSeparator.id)) {
@@ -72,15 +72,19 @@ export const ModListTable = () => {
 					j < nextSeparatorIndex;
 					j++
 				) {
-					hiddenItems.add(mods[j].identifier);
+					hidden.add(mods[j].identifier);
 				}
 			}
 		}
+		return hidden;
+	}, [mods, separatorPositions, separators, searchModText]);
 
-		return mods.filter(mod => !hiddenItems.has(mod.identifier));
-	}, [mods, separators, lowerSearchText]);
+	const modsResolved = useMemo(() => {
+		return filteredMods.filter(mod => !hiddenItems.has(mod.identifier));
+	}, [filteredMods, hiddenItems]);
 
 	const sensors = useSensors(useSensor(PointerSensor));
+
 	const handleDragEnd = useCallback(
 		(event: DragEndEvent) => {
 			const { active, over } = event;
@@ -89,29 +93,34 @@ export const ModListTable = () => {
 				const isSeparator =
 					draggedItem && !('item_type' in draggedItem);
 
+				let result;
 				if (
 					isSeparator &&
 					isCollapsed(separators, active.id as string)
 				) {
-					const result = sortCollapsedSection(mods, active, over);
-					setModOrder(result.modOrder);
-					setMods(result.mods);
+					result = sortCollapsedSection(mods, active, over);
 				} else {
-					const result = sortMods(mods, active, over);
-					setModOrder(result.modOrder);
-					setMods(result.mods);
+					result = sortMods(mods, active, over);
 				}
+
+				setModOrder(result.modOrder);
+				setMods(result.mods);
 			}
 		},
-		[mods, separators],
+		[mods, separators, setModOrder, setMods],
 	);
 
-	const handleSearchChange = useCallback(
-		(event: ChangeEvent<HTMLInputElement>) => {
-			setSearchModText(event.currentTarget.value);
-		},
-		[],
-	);
+	const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) =>
+		setSearchModText(event.currentTarget.value);
+
+	const itemIds = useMemo(() => mods.map(mod => mod.identifier), [mods]);
+	const modIndices = useMemo(() => {
+		const indices = new Map<string, number>();
+		mods.forEach((mod, index) => {
+			indices.set(mod.identifier, index);
+		});
+		return indices;
+	}, [mods]);
 
 	return (
 		<DndContext
@@ -124,16 +133,14 @@ export const ModListTable = () => {
 				<TableBody className="text-sm">
 					<SortableContext
 						disabled={searchModText !== ''}
-						items={mods.map(mod => mod.identifier)}
+						items={itemIds}
 						strategy={verticalListSortingStrategy}
 					>
 						{modsResolved.map(mod => (
 							<Row
 								key={mod.identifier}
 								mod={mod}
-								modIndex={mods.findIndex(
-									mf => mf.identifier === mod.identifier,
-								)}
+								modIndex={modIndices.get(mod.identifier) ?? -1}
 								id={mod.identifier}
 							/>
 						))}
@@ -154,72 +161,3 @@ export const ModListTable = () => {
 		</DndContext>
 	);
 };
-
-function sortCollapsedSection(
-	items: ModItemSeparatorUnion[],
-	active: Active,
-	over: Over | null,
-) {
-	const oldIndex = items.findIndex(item => item.identifier === active.id);
-	const newIndex = items.findIndex(item => item.identifier === over?.id);
-
-	const separatorPositions: { id: string; index: number }[] = [];
-	items.forEach((item, index) => {
-		if (!('item_type' in item)) {
-			separatorPositions.push({ id: item.identifier, index });
-		}
-	});
-
-	const activeSepIdx = separatorPositions.findIndex(
-		sep => sep.id === active.id,
-	);
-	const nextSepIdx =
-		activeSepIdx < separatorPositions.length - 1
-			? separatorPositions[activeSepIdx + 1].index
-			: items.length;
-
-	const sectionSize = nextSepIdx - oldIndex;
-	const newArray = [...items];
-	const movedSection = newArray.splice(oldIndex, sectionSize);
-
-	let insertAt = newIndex;
-	if (newIndex > oldIndex) {
-		insertAt -= sectionSize;
-	}
-
-	newArray.splice(insertAt, 0, ...movedSection);
-	return {
-		modOrder: newArray.map((na, ni) => ({
-			mod_id: na.identifier,
-			order: ni + 1,
-			title: na.title,
-			pack_file_path:
-				'pack_file_path' in na ? na.pack_file_path : undefined,
-		})),
-		mods: newArray,
-	};
-}
-
-function sortMods(
-	items: ModItemSeparatorUnion[],
-	active: Active,
-	over: Over | null,
-) {
-	const oldIndex = items.findIndex(item => item.identifier === active.id);
-	const newIndex = items.findIndex(item => item.identifier === over?.id);
-
-	const newArray = [...items];
-	const [movedItem] = newArray.splice(oldIndex, 1);
-	newArray.splice(newIndex, 0, movedItem);
-
-	return {
-		modOrder: newArray.map((na, ni) => ({
-			mod_id: na.identifier,
-			order: ni + 1,
-			title: na.title,
-			pack_file_path:
-				'pack_file_path' in na ? na.pack_file_path : undefined,
-		})),
-		mods: newArray,
-	};
-}

@@ -15,55 +15,58 @@ import { Version } from './cells/version';
 import { Actions } from './cells/actions';
 import { Order } from './cells/order';
 
-export const Row = memo(
-	({
-		mod,
-		modIndex,
-		id,
-	}: {
-		mod: ModItemSeparatorUnion;
-		modIndex: number;
-		id: string;
-	}) => {
-		const {
-			attributes,
-			listeners,
-			setNodeRef,
-			transform,
-			transition,
-			isDragging,
-		} = useSortable({ id });
+type RowProps = {
+	mod: ModItemSeparatorUnion;
+	modIndex: number;
+	id: string;
+};
 
-		const style = {
-			transform: CSS.Transform.toString(transform),
-			transition,
-			opacity: isDragging ? 0.5 : 1,
-		};
+const RowComponent = ({ mod, modIndex, id }: RowProps) => {
+	const {
+		attributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({ id });
 
-		const cellStyle = {
-			backgroundColor: mod.background_color,
-			color: mod.text_color,
-		};
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+		opacity: isDragging ? 0.5 : 1,
+	};
 
-		return (
-			<TableRow ref={setNodeRef} style={style} key={mod.identifier}>
-				<TableCell style={cellStyle}>
-					<div
-						className="cursor-move flex items-center justify-center h-full"
-						{...attributes}
-						{...listeners}
-					>
-						<GripVerticalIcon className="h-4 w-4 text-muted-foreground" />
-					</div>
-				</TableCell>
-				<Order mod={mod} modIndex={modIndex} />
-				<Selection mod={mod} />
-				<Title mod={mod} />
-				<Category mod={mod} />
-				<Conflict mod={mod} />
-				<Version mod={mod} />
-				<Actions mod={mod as ModItem} />
-			</TableRow>
-		);
-	},
-);
+	const cellStyle = {
+		backgroundColor: mod.background_color,
+		color: mod.text_color,
+	};
+
+	return (
+		<TableRow ref={setNodeRef} style={style} key={mod.identifier}>
+			<TableCell style={cellStyle}>
+				<div
+					className="cursor-move flex items-center justify-center h-full"
+					{...attributes}
+					{...listeners}
+				>
+					<GripVerticalIcon className="h-4 w-4 text-muted-foreground" />
+				</div>
+			</TableCell>
+			<Order mod={mod} modIndex={modIndex} />
+			<Selection mod={mod} />
+			<Title mod={mod} />
+			<Category mod={mod} />
+			<Conflict mod={mod} />
+			<Version mod={mod} />
+			<Actions mod={mod as ModItem} />
+		</TableRow>
+	);
+};
+
+export const Row = memo(RowComponent, (prevProps, nextProps) => {
+	return (
+		prevProps.mod.identifier === nextProps.mod.identifier &&
+		prevProps.modIndex === nextProps.modIndex
+	);
+});
