@@ -46,7 +46,7 @@ const RowComponent = ({ mod, modIndex, id }: RowProps) => {
 		<TableRow ref={setNodeRef} style={style} key={mod.identifier}>
 			<TableCell style={cellStyle}>
 				<div
-					className="cursor-move flex items-center justify-center h-full"
+					className="cursor-move select-none flex items-center justify-center h-full"
 					{...attributes}
 					{...listeners}
 				>

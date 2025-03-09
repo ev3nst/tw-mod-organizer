@@ -41,7 +41,7 @@ export const Order = ({
 	} else {
 		return (
 			<TableCell>
-				<div className="flex items-center justify-center">
+				<div className="flex items-center justify-center select-none">
 					<em className="text-muted-foreground">{modIndex + 1}</em>
 				</div>
 			</TableCell>

@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, ChangeEvent } from 'react';
 import {
 	DndContext,
 	closestCenter,
-	PointerSensor,
+	MouseSensor,
 	useSensor,
 	useSensors,
 	DragEndEvent,
@@ -83,7 +83,13 @@ export const ModListTable = () => {
 		return filteredMods.filter(mod => !hiddenItems.has(mod.identifier));
 	}, [filteredMods, hiddenItems]);
 
-	const sensors = useSensors(useSensor(PointerSensor));
+	const sensors = useSensors(
+		useSensor(MouseSensor, {
+			activationConstraint: {
+				distance: 0.01, // double click bugfix
+			},
+		}),
+	);
 
 	const handleDragEnd = useCallback(
 		(event: DragEndEvent) => {
