@@ -8,6 +8,7 @@ import { Input } from '@/components/input';
 import { Label } from '@/components/label';
 import { Button } from '@/components/button';
 import { Separator } from '@/components/separator';
+import { Loading } from '@/components/loading';
 
 import api from '@/lib/api';
 import { modsStore } from '@/lib/store/mods';
@@ -16,14 +17,15 @@ import { toastError } from '@/lib/utils';
 import { settingStore } from '@/lib/store/setting';
 
 export const InstallMod = () => {
-	const [name, setName] = useState<string>('');
-	const [nameAutoFilled, setNameAutoFilled] = useState<boolean>(false);
-	const [url, setURL] = useState<string>('');
-	const [previewURL, setPreviewURL] = useState<string>('');
-	const [version, setVersion] = useState<string>('');
-	const [categories, setCategories] = useState<string>('');
+	const [loading, setLoading] = useState(false);
+	const [name, setName] = useState('');
+	const [nameAutoFilled, setNameAutoFilled] = useState(false);
+	const [url, setURL] = useState('');
+	const [previewURL, setPreviewURL] = useState('');
+	const [version, setVersion] = useState('');
+	const [categories, setCategories] = useState('');
 	const [packFiles, setPackFiles] = useState<string[]>([]);
-	const [selectedPackFile, setSelectedPackFile] = useState<string>('');
+	const [selectedPackFile, setSelectedPackFile] = useState('');
 
 	const selectedGame = settingStore(state => state.selectedGame);
 	const mod_installation_path = settingStore(
@@ -119,6 +121,7 @@ export const InstallMod = () => {
 	}, [nameAutoFilled, modFilePath, name]);
 
 	const handleSubmit = async () => {
+		setLoading(true);
 		try {
 			await api.install_mod(
 				selectedGame!.steam_id,
@@ -140,6 +143,8 @@ export const InstallMod = () => {
 			}, 250);
 		} catch (error) {
 			toastError(error);
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -247,12 +252,15 @@ export const InstallMod = () => {
 			)}
 
 			<Button
-				className={`mt-4 ${isFormNotValid ? 'disabled' : ''}`}
-				disabled={isFormNotValid}
 				variant="info"
+				className={`mt-4 ${
+					isFormNotValid || loading ? 'disabled' : ''
+				}`}
+				disabled={isFormNotValid || loading}
 				onClick={handleSubmit}
 			>
 				Create
+				{loading && <Loading />}
 			</Button>
 		</div>
 	);
