@@ -1,3 +1,4 @@
+use std::os::windows::process::CommandExt;
 use std::{fs, path::Path, process::Command};
 
 use crate::steamworks::client;
@@ -51,12 +52,15 @@ pub async fn start_game(
     args.push(exe_path);
     if let Some(save) = save_game {
         if !save.is_empty() {
-            args.push(format!("game_startup_mode campaign_load {}", save));
+			args.push("game_startup_mode".to_string());
+			args.push("campaign_load".to_string());
+			args.push(save);
         }
     }
 
     args.push("used_mods.txt".to_string());
     Command::new("cmd")
+		.creation_flags(0x08000000)
         .args(args)
         .spawn()
         .map_err(|e| format!("Failed to start game: {}", e))?;
