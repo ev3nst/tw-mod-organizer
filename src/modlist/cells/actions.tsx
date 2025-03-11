@@ -15,12 +15,17 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/dropdown-menu';
 
-import api, { ModItem } from '@/lib/api';
+import api, { ModItem, ModItemSeparatorUnion } from '@/lib/api';
 import { modsStore } from '@/lib/store/mods';
 import { modOrderStore } from '@/lib/store/mod_order';
 import { toastError } from '@/lib/utils';
+import { modSeparatorStore } from '@/lib/store/mod_separator';
+import { settingStore } from '@/lib/store/setting';
 
-function determineModUrl(mod: ModItem, inSteamClient: boolean = false) {
+function determineModUrl(
+	mod: ModItemSeparatorUnion,
+	inSteamClient: boolean = false,
+) {
 	let modUrl = 'url' in mod ? mod.url : undefined;
 	const itemType = 'item_type' in mod ? mod.item_type : 'separator';
 	if (!modUrl && itemType === 'steam_mod') {
@@ -34,9 +39,14 @@ function determineModUrl(mod: ModItem, inSteamClient: boolean = false) {
 	return modUrl;
 }
 
-export const Actions = ({ mod }: { mod: ModItem }) => {
+export const Actions = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 	const item_type = 'item_type' in mod ? mod.item_type : 'separator';
-	if (item_type === 'separator') return null;
+
+	const init_reload = settingStore(state => state.init_reload);
+	const setInitReload = settingStore(state => state.setInitReload);
+
+	const separators = modSeparatorStore(state => state.data);
+	const setSeparators = modSeparatorStore(state => state.setData);
 
 	const setSelectedPriorityMod = modOrderStore(state => state.setSelectedMod);
 	const toggleSetPriority = modOrderStore(state => state.toggleSetPriority);
@@ -57,6 +67,45 @@ export const Actions = ({ mod }: { mod: ModItem }) => {
 		[mod.identifier],
 	);
 
+	if (item_type === 'separator') {
+		const { background_color, text_color } = mod;
+		const cellStyle = {
+			backgroundColor: background_color,
+			color: text_color,
+		};
+		return (
+			<TableCell style={cellStyle}>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<div className="w-full flex items-center justify-center p-0">
+							<EllipsisVerticalIcon className="w-4 h-4" />
+						</div>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent className="w-56">
+						<DropdownMenuGroup>
+							<DropdownMenuItem
+								className="text-xs py-2 my-0"
+								onClick={() => {
+									setSeparators(
+										[...separators].filter(
+											fi =>
+												fi.identifier !==
+												mod.identifier,
+										),
+									);
+									setInitReload(!init_reload);
+								}}
+							>
+								<TrashIcon className="w-3 h-3 text-red-500" />
+								Delete
+							</DropdownMenuItem>
+						</DropdownMenuGroup>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</TableCell>
+		);
+	}
+
 	return (
 		<TableCell>
 			<DropdownMenu>
@@ -67,15 +116,17 @@ export const Actions = ({ mod }: { mod: ModItem }) => {
 				</DropdownMenuTrigger>
 				<DropdownMenuContent className="w-56">
 					<DropdownMenuGroup>
-						{mod && mod.url !== null && mod.url !== '' && (
-							<DropdownMenuItem
-								className="text-xs py-2 my-0"
-								onClick={() => handleOpenUrl(false)}
-							>
-								<EyeIcon className="w-3 h-3" />
-								Open Mod Page in Browser
-							</DropdownMenuItem>
-						)}
+						{mod &&
+							(mod as ModItem).url !== null &&
+							(mod as ModItem).url !== '' && (
+								<DropdownMenuItem
+									className="text-xs py-2 my-0"
+									onClick={() => handleOpenUrl(false)}
+								>
+									<EyeIcon className="w-3 h-3" />
+									Open Mod Page in Browser
+								</DropdownMenuItem>
+							)}
 						{item_type === 'steam_mod' && (
 							<DropdownMenuItem
 								className="text-xs py-2 my-0"
@@ -88,7 +139,7 @@ export const Actions = ({ mod }: { mod: ModItem }) => {
 						<DropdownMenuItem
 							className="text-xs py-2 my-0"
 							onClick={() => {
-								setSelectedPriorityMod(mod);
+								setSelectedPriorityMod(mod as ModItem);
 								toggleSetPriority();
 							}}
 						>
@@ -98,7 +149,7 @@ export const Actions = ({ mod }: { mod: ModItem }) => {
 						<DropdownMenuItem
 							className="text-xs py-2 my-0"
 							onClick={() => {
-								setSelectedRemoveMod(mod);
+								setSelectedRemoveMod(mod as ModItem);
 								toggleModRemove();
 							}}
 						>

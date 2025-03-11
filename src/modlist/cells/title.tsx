@@ -49,7 +49,7 @@ const calculateSeparatorColSpan = () => {
 	const toggle_category = settingStore(state => state.toggle_category);
 	const toggle_conflict = settingStore(state => state.toggle_conflict);
 	const toggle_version = settingStore(state => state.toggle_version);
-	let separatorColSpan = 5;
+	let separatorColSpan = 4;
 	if (!toggle_category) {
 		separatorColSpan--;
 	}

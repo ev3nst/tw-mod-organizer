@@ -41,5 +41,7 @@ export const modSeparatorStore = createStore<
 
 export function isCollapsed(data: ModSeparatorItem[], separatorId: string) {
 	const findIndex = data.findIndex(f => f.identifier === separatorId);
-	return data[findIndex].collapsed;
+	return typeof data[findIndex] !== 'undefined'
+		? data[findIndex].collapsed
+		: false;
 }
