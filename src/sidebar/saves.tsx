@@ -91,6 +91,9 @@ export const Saves = () => {
 					onChange={handleSearchChange}
 				/>
 			</div>
+			<p className="px-3 text-sm text-muted-foreground mb-2">
+				You can select a save file to continue.
+			</p>
 
 			{paginatedFiles.length > 0 ? (
 				paginatedFiles.map((sf, sfi) => (
