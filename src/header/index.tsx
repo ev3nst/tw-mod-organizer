@@ -22,7 +22,7 @@ export function Header() {
 				<Create />
 				<Nexus />
 				<Refresh />
-				<div className="text-xs">v0.1.3</div>
+				<div className="text-xs text-muted-foreground ms-2">v0.1.4</div>
 			</div>
 			<div className="flex gap-2 items-center">
 				<Button

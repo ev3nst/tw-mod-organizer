@@ -30,22 +30,29 @@ export const Conflict = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 		const currentModOrder = mod_order.find(
 			m => m.mod_id === mod.identifier,
 		);
-		const modPackFilePaths = Object.keys(conflicts[pack_file_path]);
-		for (let mpi = 0; mpi < modPackFilePaths.length; mpi++) {
-			const modPackFilePath = modPackFilePaths[mpi];
-			const findMod = mod_order.find(
-				mr => mr.pack_file_path === modPackFilePath,
-			);
-			if (findMod!.order < currentModOrder!.order) {
-				win.total +=
-					conflicts[pack_file_path][modPackFilePath as any].length;
-				win.cases[findMod!.title] =
-					conflicts[pack_file_path][modPackFilePath as any];
-			} else {
-				lose.total +=
-					conflicts[pack_file_path][modPackFilePath as any].length;
-				lose.cases[findMod!.title] =
-					conflicts[pack_file_path][modPackFilePath as any];
+		if (currentModOrder) {
+			const modPackFilePaths = Object.keys(conflicts[pack_file_path]);
+			for (let mpi = 0; mpi < modPackFilePaths.length; mpi++) {
+				const modPackFilePath = modPackFilePaths[mpi];
+				const findMod = mod_order.find(
+					mr => mr.pack_file_path === modPackFilePath,
+				);
+				if (!findMod) continue;
+				if (findMod!.order < currentModOrder!.order) {
+					win.total +=
+						conflicts[pack_file_path][
+							modPackFilePath as any
+						].length;
+					win.cases[findMod!.title] =
+						conflicts[pack_file_path][modPackFilePath as any];
+				} else {
+					lose.total +=
+						conflicts[pack_file_path][
+							modPackFilePath as any
+						].length;
+					lose.cases[findMod!.title] =
+						conflicts[pack_file_path][modPackFilePath as any];
+				}
 			}
 		}
 	}
