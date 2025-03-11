@@ -1,33 +1,42 @@
 import React from 'react';
-
 import { Button } from '@/components/button';
 import { WindowActions } from '@/header/window-actions';
 
-// Define the props type
 interface ErrorBoundaryProps {
 	children: React.ReactNode;
 }
 
 interface ErrorBoundaryState {
 	hasError: boolean;
+	errorMessage: string;
+	errorStack: string;
 }
 
-// Error Boundary Component
 export class ErrorBoundary extends React.Component<
 	ErrorBoundaryProps,
 	ErrorBoundaryState
 > {
 	constructor(props: ErrorBoundaryProps) {
 		super(props);
-		this.state = { hasError: false };
+		this.state = { hasError: false, errorMessage: '', errorStack: '' };
 	}
 
-	static getDerivedStateFromError(): ErrorBoundaryState {
-		return { hasError: true };
-	}
-
-	componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+	componentDidCatch(error: unknown, errorInfo: React.ErrorInfo): void {
 		console.error('Error in component:', error, errorInfo);
+
+		let errorMessage = 'An unknown error occurred';
+		let errorStack = '';
+
+		if (error instanceof Error) {
+			errorMessage = error.message;
+			errorStack = error.stack || 'No stack trace available';
+		} else if (typeof error === 'string') {
+			errorMessage = error;
+		} else if (error && typeof error === 'object') {
+			errorMessage = JSON.stringify(error);
+		}
+
+		this.setState({ hasError: true, errorMessage, errorStack });
 	}
 
 	render(): React.ReactNode {
@@ -43,25 +52,37 @@ export class ErrorBoundary extends React.Component<
 						</div>
 						<WindowActions className="px-1" />
 					</div>
+
 					<div className="flex items-center justify-center h-screen w-screen app-drag-region">
-						<div className="relative text-center ">
-							<h1 className="text-balance text-5xl font-semibold tracking-tight text-primary sm:text-7xl">
+						<div className="relative text-left max-w-3xl p-6  text-white rounded-md">
+							<h1 className="text-4xl font-semibold text-red-500">
 								Error
 							</h1>
-							<p className="mt-6 text-pretty text-lg font-medium text-muted-foreground sm:text-xl/8">
-								Unexpected error has occured.
+							<p className="mt-4 text-lg">
+								{this.state.errorMessage}
 							</p>
 
-							<p className="mt-2 text-pretty text-md font-medium text-muted-foreground">
-								You may check console for further details.
-							</p>
-							<div className="mt-10 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-y-3 gap-x-6 clickable-content">
+							<h2 className="mt-6 text-2xl font-medium">
+								Stack Trace
+							</h2>
+							<pre className="mt-2 p-4 bg-black text-sm overflow-auto max-h-[400px] rounded-md border border-gray-700">
+								{this.state.errorStack}
+							</pre>
+
+							<div className="mt-6 flex gap-4">
 								<Button
-									onClick={() => {
-										window.location.reload();
-									}}
+									onClick={() => window.location.reload()}
 								>
 									Reload
+								</Button>
+								<Button
+									onClick={() => {
+										navigator.clipboard.writeText(
+											`${this.state.errorMessage}\n\n${this.state.errorStack}`,
+										);
+									}}
+								>
+									Copy Error
 								</Button>
 							</div>
 						</div>
