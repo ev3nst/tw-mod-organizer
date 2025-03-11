@@ -36,11 +36,36 @@ export const ModListTable = () => {
 
 	const filteredMods = useMemo(() => {
 		if (searchModText !== '') {
-			return mods.filter(m =>
-				m.title
-					.toLowerCase()
-					.includes(searchModText.toLocaleLowerCase()),
-			);
+			let searchModTextLower = searchModText.toLocaleLowerCase();
+			if (searchModTextLower.startsWith('c:')) {
+				searchModTextLower = searchModTextLower
+					.replace('c:', '')
+					.trim();
+				return mods.filter(m => {
+					if (!('item_type' in m)) {
+						return false;
+					}
+
+					return (
+						m.categories !== null &&
+						m.categories.toLowerCase().includes(searchModTextLower)
+					);
+				});
+			} else {
+				return mods.filter(m => {
+					if (!('item_type' in m)) {
+						return false;
+					}
+
+					return (
+						m.title.toLowerCase().includes(searchModTextLower) ||
+						(m.categories !== null &&
+							m.categories
+								.toLowerCase()
+								.includes(searchModTextLower))
+					);
+				});
+			}
 		}
 		return mods;
 	}, [mods, searchModText]);
