@@ -8,7 +8,7 @@ import type { ModItemSeparatorUnion } from '@/lib/api';
 export const Conflict = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 	const pack_file_path =
 		'pack_file_path' in mod ? mod.pack_file_path : undefined;
-	if (!pack_file_path) return;
+	if (!pack_file_path) return <TableCell>&nbsp;</TableCell>;
 
 	const toggle_conflict = settingStore(state => state.toggle_conflict);
 	const conflicts = conflictsStore(state => state.conflicts);

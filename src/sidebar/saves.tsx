@@ -33,10 +33,9 @@ export const Saves = () => {
 			}
 		};
 
-		if (selectedGame) {
-			initializeSaveFiles();
-		}
-	}, [selectedGame]);
+		setSaveFilePath('');
+		initializeSaveFiles();
+	}, [selectedGame!.steam_id]);
 
 	useEffect(() => {
 		const filtered = saveFiles.filter(file =>

@@ -7,7 +7,7 @@ const host = process.env.TAURI_DEV_HOST;
 export default defineConfig({
 	build: {
 		minify: 'terser',
-		sourcemap: false,
+		sourcemap: true,
 		rollupOptions: {
 			input: 'index.html',
 		},

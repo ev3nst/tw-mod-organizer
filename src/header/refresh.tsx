@@ -9,15 +9,13 @@ import { toastError } from '@/lib/utils';
 
 export const Refresh = () => {
 	const loading = settingStore(state => state.loading);
-	const selectedGame = settingStore(state => state.selectedGame);
-	const setSelectedGame = settingStore(state => state.setSelectedGame);
 	const isGameRunning = settingStore(state => state.isGameRunning);
+	const init_reload = settingStore(state => state.init_reload);
+	const setInitReload = settingStore(state => state.setInitReload);
 
 	const handleRefresh = useCallback(() => {
 		try {
-			const sg = { ...selectedGame };
-			setSelectedGame(undefined);
-			setTimeout(() => setSelectedGame(sg as any), 100);
+			setInitReload(!init_reload);
 		} catch (error) {
 			toastError(error);
 		} finally {

@@ -6,9 +6,9 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/sonner';
 import { Loading } from '@/components/loading';
 
+import api from '@/lib/api';
 import { dbWrapper } from '@/lib/db';
 import { SettingModel, settingStore } from '@/lib/store/setting';
-import api from '@/lib/api';
 
 import GameSelector from './game-selector';
 import App from './app';

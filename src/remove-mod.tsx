@@ -13,6 +13,12 @@ import { Button } from '@/components/button';
 import api from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 import { modsStore } from '@/lib/store/mods';
+import {
+	ModActivationModel,
+	modActivationStore,
+} from '@/lib/store/mod_activation';
+import { ModOrderModel, modOrderStore } from '@/lib/store/mod_order';
+import { ProfileModel } from '@/lib/store/profile';
 import { toastError } from '@/lib/utils';
 
 export function RemoveModDialog() {
@@ -23,6 +29,9 @@ export function RemoveModDialog() {
 	const removeModOpen = modsStore(state => state.removeModOpen);
 	const selectedMod = modsStore(state => state.selectedMod);
 	const toggleModRemove = modsStore(state => state.toggleModRemove);
+
+	const modOrderData = modOrderStore(state => state.data);
+	const modActivationData = modActivationStore(state => state.data);
 
 	const handleUnsubscribe = useCallback(async () => {
 		await api.unsubscribe(
@@ -46,9 +55,25 @@ export function RemoveModDialog() {
 				await handleDeleteMod();
 			}
 
+			const profile = await ProfileModel.currentProfile(
+				selectedGame!.steam_id,
+			);
+
+			const modOrder = await ModOrderModel.retrieve(profile.id);
+			modOrder!.data = [...modOrderData].filter(
+				mr => mr.mod_id !== selectedMod.identifier,
+			);
+			await modOrder!.save();
+
+			const modActivation = await ModActivationModel.retrieve(profile.id);
+			modActivation!.data = [...modActivationData].filter(
+				mr => mr.mod_id !== selectedMod.identifier,
+			);
+			await modActivation!.save();
+
 			setTimeout(() => {
 				window.location.reload();
-			}, 250);
+			}, 150);
 		} catch (error) {
 			toastError(error);
 		} finally {

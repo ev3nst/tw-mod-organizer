@@ -1,8 +1,8 @@
 {
 	"name": "tw-mod-organizer",
 	"private": true,
-	"version": "0.1.2",
-	"description": "Tool kit for various necessities.",
+	"version": "0.1.3",
+	"description": "Mod manager tool for Total War: Warhammer 2 & 3 & Total War: Three Kingdom",
 	"author": {
 		"name": "Burak KARTAL",
 		"email": "futuregnr@gmail.com"
