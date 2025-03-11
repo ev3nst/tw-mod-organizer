@@ -155,10 +155,10 @@ export const ModListTable = () => {
 				<Footer length={mods.length} />
 				<Lock />
 			</Table>
-			<div className="fixed bottom-0 left-0 right-0 bg-background w-full">
+			<div className="fixed bottom-0 left-0 right-0 bg-zinc-900 w-full">
 				<SearchIcon className="absolute left-3 bottom-[12px] w-3.5 h-3.5 text-muted-foreground" />
 				<Input
-					className="rounded-none ps-9 h-10 border-l-0 border-r-0"
+					className="rounded-none ps-9 h-10 border-0"
 					placeholder="Search ..."
 					defaultValue={searchModText}
 					onChange={handleSearchChange}
