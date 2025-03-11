@@ -52,15 +52,15 @@ pub async fn start_game(
     args.push(exe_path);
     if let Some(save) = save_game {
         if !save.is_empty() {
-			args.push("game_startup_mode".to_string());
-			args.push("campaign_load".to_string());
-			args.push(save);
+            args.push("game_startup_mode".to_string());
+            args.push("campaign_load".to_string());
+            args.push(save);
         }
     }
 
     args.push("used_mods.txt".to_string());
     Command::new("cmd")
-		.creation_flags(0x08000000)
+        .creation_flags(0x08000000)
         .args(args)
         .spawn()
         .map_err(|e| format!("Failed to start game: {}", e))?;
