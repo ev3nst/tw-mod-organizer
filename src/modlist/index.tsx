@@ -31,6 +31,7 @@ export const ModList = () => {
 	const setConflicts = conflictsStore(state => state.setConflicts);
 	const profile = profileStore(state => state.profile);
 
+	const init_reload = settingStore(state => state.init_reload);
 	const setLoading = settingStore(state => state.setLoading);
 	const selectedGame = settingStore(state => state.selectedGame);
 	const steam_library_paths = settingStore(
@@ -232,7 +233,7 @@ export const ModList = () => {
 			setFetchModsLoading(false);
 			setLoading(false);
 		}
-	}, [selectedGame!.steam_id]);
+	}, [selectedGame!.steam_id, init_reload]);
 
 	useEffect(() => {
 		init();

@@ -9,11 +9,15 @@ import { Button } from '@/components/button';
 
 import { modSeparatorStore } from '@/lib/store/mod_separator';
 import { modOrderStore } from '@/lib/store/mod_order';
+import { settingStore } from '@/lib/store/setting';
 
 export const CreateSeparator = () => {
 	const [name, setName] = useState<string>('');
 	const [bgColor, setBgColor] = useState<string>('#262626');
 	const [textColor, setTextColor] = useState<string>('#fefefe');
+
+	const init_reload = settingStore(state => state.init_reload);
+	const setInitReload = settingStore(state => state.setInitReload);
 
 	const separators = modSeparatorStore(state => state.data);
 	const setSeparators = modSeparatorStore(state => state.setData);
@@ -39,6 +43,7 @@ export const CreateSeparator = () => {
 		setSeparators(newArr);
 		toast.success('Separator added.');
 		setName('');
+		setInitReload(!init_reload);
 	};
 
 	return (

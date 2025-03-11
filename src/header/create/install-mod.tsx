@@ -27,6 +27,8 @@ export const InstallMod = () => {
 	const [packFiles, setPackFiles] = useState<string[]>([]);
 	const [selectedPackFile, setSelectedPackFile] = useState('');
 
+	const init_reload = settingStore(state => state.init_reload);
+	const setInitReload = settingStore(state => state.setInitReload);
 	const selectedGame = settingStore(state => state.selectedGame);
 	const mod_installation_path = settingStore(
 		state => state.mod_installation_path,
@@ -138,9 +140,7 @@ export const InstallMod = () => {
 				mod_installation_path,
 			);
 			toast.success('Mod installed.');
-			setTimeout(() => {
-				window.location.reload();
-			}, 250);
+			setInitReload(!init_reload);
 		} catch (error) {
 			toastError(error);
 		} finally {

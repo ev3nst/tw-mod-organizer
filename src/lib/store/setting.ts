@@ -181,75 +181,77 @@ export class SettingModel {
 
 type SettingStore = {
 	loading: boolean;
-	steam_library_paths: SteamLibraryPaths;
-	mod_download_path: string;
-	mod_installation_path: string;
-	selectedGame?: IGameMeta;
-	games: IGameMeta[];
-	nexus_api_key: string | null;
-	nexus_auth_params: NexusAuthParams;
-	toggle_category: boolean;
-	toggle_conflict: boolean;
-	toggle_version: boolean;
-	isGameRunning: boolean;
-	setIsGameRunning: (isGameRunning: boolean) => void;
 	setLoading: (loading: boolean) => void;
+
+	steam_library_paths: SteamLibraryPaths;
 	setSteamLibraryPaths: (steam_library_paths: SteamLibraryPaths) => void;
+
+	mod_download_path: string;
 	setModDownloadPath: (mod_download_path: string) => void;
+
+	mod_installation_path: string;
 	setModInstallationPath: (mod_installation_path: string) => void;
+
+	selectedGame?: IGameMeta;
 	setSelectedGame: (selectedGame?: IGameMeta) => void;
+
+	games: IGameMeta[];
 	setGames: (
 		games: IGameMeta[],
 		steam_library_paths: SteamLibraryPaths,
 	) => void;
+
+	nexus_api_key: string | null;
 	setNexusAuthApi: (nexus_api_key: string | null) => void;
+
+	nexus_auth_params: NexusAuthParams;
 	setNexusAuthParams: (nexus_auth_params: NexusAuthParams) => void;
+
+	toggle_category: boolean;
 	setCategory: (toggle_category: boolean) => void;
+
+	toggle_conflict: boolean;
 	setConflict: (toggle_conflict: boolean) => void;
+
+	toggle_version: boolean;
 	setVersion: (toggle_version: boolean) => void;
+
+	isGameRunning: boolean;
+	setIsGameRunning: (isGameRunning: boolean) => void;
+
+	init_reload: boolean;
+	setInitReload: (init_reload: boolean) => void;
 };
 
 export const settingStore = create<SettingStore>(set => ({
 	loading: false,
+	setLoading: loading => {
+		set({ loading });
+	},
 	steam_library_paths: {
 		library_folder_paths: [],
 		game_install_paths: {},
 		game_workshop_paths: {},
 	},
-	mod_download_path: '',
-	mod_installation_path: '',
-	selectedGame: undefined,
-	games: [],
-	nexus_api_key: '',
-	nexus_auth_params: {
-		id: null,
-		token: null,
-	},
-	toggle_category: true,
-	toggle_conflict: true,
-	toggle_version: true,
-	isGameRunning: false,
-	setIsGameRunning: isGameRunning => {
-		set({ isGameRunning });
-	},
-	setLoading: loading => {
-		set({ loading });
-	},
 	setSteamLibraryPaths: steam_library_paths => {
 		set({ steam_library_paths });
 	},
+	mod_download_path: '',
 	setModDownloadPath: mod_download_path => {
 		set({ mod_download_path });
 		debounceCallback(syncSetting);
 	},
+	mod_installation_path: '',
 	setModInstallationPath: mod_installation_path => {
 		set({ mod_installation_path });
 		debounceCallback(syncSetting);
 	},
+	selectedGame: undefined,
 	setSelectedGame: selectedGame => {
 		set({ selectedGame });
 		debounceCallback(syncSetting);
 	},
+	games: [],
 	setGames: (games, steam_library_paths) => {
 		games = games.map(game => {
 			const gamePathExists =
@@ -265,26 +267,40 @@ export const settingStore = create<SettingStore>(set => ({
 
 		set({ games });
 	},
+	nexus_api_key: '',
 	setNexusAuthApi: nexus_api_key => {
 		set({ nexus_api_key });
 		debounceCallback(syncSetting);
+	},
+	nexus_auth_params: {
+		id: null,
+		token: null,
 	},
 	setNexusAuthParams: nexus_auth_params => {
 		set({ nexus_auth_params });
 		debounceCallback(syncSetting);
 	},
+	toggle_category: true,
 	setCategory: toggle_category => {
 		set({ toggle_category });
 		debounceCallback(syncSetting);
 	},
+	toggle_conflict: true,
 	setConflict: toggle_conflict => {
 		set({ toggle_conflict });
 		debounceCallback(syncSetting);
 	},
+	toggle_version: true,
 	setVersion: toggle_version => {
 		set({ toggle_version });
 		debounceCallback(syncSetting);
 	},
+	isGameRunning: false,
+	setIsGameRunning: isGameRunning => {
+		set({ isGameRunning });
+	},
+	init_reload: false,
+	setInitReload: init_reload => set({ init_reload }),
 }));
 
 const syncSetting = async () => {
