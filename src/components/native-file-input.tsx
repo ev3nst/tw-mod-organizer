@@ -67,7 +67,7 @@ const NativeFileInput = ({
 						<span>{formatFileSize(currentFile.size)}</span>
 					</div>
 				) : (
-					'Select File'
+					(dialogTitle ?? 'Select File')
 				)}
 			</Button>
 		</div>

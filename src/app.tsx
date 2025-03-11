@@ -13,6 +13,7 @@ import { ModList } from './modlist';
 import { AppSidebar } from './sidebar';
 import { ConflictDetails } from './conflict-details';
 import { SetPriorityDialog } from './set-priority';
+import { MetaInformationDialog } from './meta-information';
 import { RemoveModDialog } from './remove-mod';
 
 function App() {
@@ -67,6 +68,7 @@ function App() {
 						<ModList />
 						<ConflictDetails />
 						<SetPriorityDialog />
+						<MetaInformationDialog />
 						<RemoveModDialog />
 					</SidebarInset>
 					<AppSidebar />

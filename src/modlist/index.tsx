@@ -14,9 +14,10 @@ import {
 	ModSeparatorModel,
 	modSeparatorStore,
 } from '@/lib/store/mod_separator';
+import { ModMetaModel, modMetaStore } from '@/lib/store/mod_meta';
 import { conflictsStore } from '@/lib/store/conflict';
 
-import api, { ModItemSeparatorUnion } from '@/lib/api';
+import api, { ModItem, ModItemSeparatorUnion } from '@/lib/api';
 import { normalizeOrder, toastError } from '@/lib/utils';
 
 import { ModListTable } from './table';
@@ -28,6 +29,7 @@ export const ModList = () => {
 	const setModOrder = modOrderStore(state => state.setData);
 	const setModActivation = modActivationStore(state => state.setData);
 	const setSeparators = modSeparatorStore(state => state.setData);
+	const setMetas = modMetaStore(state => state.setData);
 	const setConflicts = conflictsStore(state => state.setConflicts);
 	const profile = profileStore(state => state.profile);
 
@@ -46,50 +48,46 @@ export const ModList = () => {
 		const resolveOrder = async (mods: ModItemSeparatorUnion[]) => {
 			const modOrder = await ModOrderModel.retrieve(profile.id);
 			if (typeof modOrder !== 'undefined' && modOrder.data !== null) {
-				if (modOrder.data.length === mods.length) {
-					return modOrder.data;
-				} else {
-					let updatedOrder = [];
-					const toAdd = [];
-					for (let mi = 0; mi < mods.length; mi++) {
-						const mod = mods[mi];
-						const currentOrder = modOrder.data.find(
-							f => f.mod_id === mod.identifier,
-						);
+				let updatedOrder = [];
+				const toAdd = [];
+				for (let mi = 0; mi < mods.length; mi++) {
+					const mod = mods[mi];
+					const currentOrder = modOrder.data.find(
+						f => f.mod_id === mod.identifier,
+					);
 
-						if (currentOrder) {
-							updatedOrder.push({
-								mod_id: mod.identifier,
-								order: currentOrder.order,
-								pack_file_path:
-									'pack_file_path' in mod
-										? mod.pack_file_path
-										: undefined,
-								title: mod.title,
-							});
-						} else {
-							toAdd.push({
-								mod_id: mod.identifier,
-								order: 0,
-								pack_file_path:
-									'pack_file_path' in mod
-										? mod.pack_file_path
-										: undefined,
-								title: mod.title,
-							});
-						}
+					if (currentOrder) {
+						updatedOrder.push({
+							mod_id: mod.identifier,
+							order: currentOrder.order,
+							pack_file_path:
+								'pack_file_path' in mod
+									? mod.pack_file_path
+									: undefined,
+							title: mod.title,
+						});
+					} else {
+						toAdd.push({
+							mod_id: mod.identifier,
+							order: 0,
+							pack_file_path:
+								'pack_file_path' in mod
+									? mod.pack_file_path
+									: undefined,
+							title: mod.title,
+						});
 					}
-
-					updatedOrder = normalizeOrder(updatedOrder);
-					let updatedOrderLength = updatedOrder.length;
-					for (let tai = 0; tai < toAdd.length; tai++) {
-						updatedOrderLength++;
-						toAdd[tai].order = updatedOrderLength;
-					}
-
-					updatedOrder = normalizeOrder([...updatedOrder, ...toAdd]);
-					return updatedOrder;
 				}
+
+				updatedOrder = normalizeOrder(updatedOrder);
+				let updatedOrderLength = updatedOrder.length;
+				for (let tai = 0; tai < toAdd.length; tai++) {
+					updatedOrderLength++;
+					toAdd[tai].order = updatedOrderLength;
+				}
+
+				updatedOrder = normalizeOrder([...updatedOrder, ...toAdd]);
+				return updatedOrder;
 			} else {
 				const newOrder = [];
 				for (let mi = 0; mi < mods.length; mi++) {
@@ -121,38 +119,34 @@ export const ModList = () => {
 				typeof modActivation !== 'undefined' &&
 				modActivation.data !== null
 			) {
-				if (modActivation.data.length === mods.length) {
-					return modActivation.data;
-				} else {
-					let updatedActivation = [];
-					const toAdd = [];
-					for (let mi = 0; mi < mods.length; mi++) {
-						const mod = mods[mi];
-						const currentActivation = modActivation.data.find(
-							f => f.mod_id === mod.identifier,
-						);
-						if (currentActivation) {
-							updatedActivation.push({
-								mod_id: mod.identifier,
-								is_active: currentActivation.is_active,
-								title: mod.title,
-							});
-						} else {
-							toAdd.push({
-								mod_id: mod.identifier,
-								is_active: false,
-								title: mod.title,
-							});
-						}
+				let updatedActivation = [];
+				const toAdd = [];
+				for (let mi = 0; mi < mods.length; mi++) {
+					const mod = mods[mi];
+					const currentActivation = modActivation.data.find(
+						f => f.mod_id === mod.identifier,
+					);
+					if (currentActivation) {
+						updatedActivation.push({
+							mod_id: mod.identifier,
+							is_active: currentActivation.is_active,
+							title: mod.title,
+						});
+					} else {
+						toAdd.push({
+							mod_id: mod.identifier,
+							is_active: false,
+							title: mod.title,
+						});
 					}
-
-					for (let tai = 0; tai < toAdd.length; tai++) {
-						toAdd[tai].is_active = false;
-					}
-
-					updatedActivation = [...updatedActivation, ...toAdd];
-					return updatedActivation;
 				}
+
+				for (let tai = 0; tai < toAdd.length; tai++) {
+					toAdd[tai].is_active = false;
+				}
+
+				updatedActivation = [...updatedActivation, ...toAdd];
+				return updatedActivation;
 			} else {
 				const newActivation = [];
 				for (let mi = 0; mi < mods.length; mi++) {
@@ -193,6 +187,62 @@ export const ModList = () => {
 			}
 		};
 
+		const resolveMeta = async (mods: ModItemSeparatorUnion[]) => {
+			const modMeta = await ModMetaModel.retrieve(
+				undefined,
+				selectedGame!.steam_id,
+			);
+			if (typeof modMeta !== 'undefined' && modMeta.data !== null) {
+				let updatedMeta = [];
+				for (let mi = 0; mi < mods.length; mi++) {
+					const mod = mods[mi] as ModItem;
+					const itemType =
+						'item_type' in mod ? mod.item_type : 'separator';
+					if (itemType === 'separator') continue;
+
+					const currentMeta = modMeta.data.find(
+						f => f.mod_id === mod.identifier,
+					);
+					if (currentMeta) {
+						updatedMeta.push({
+							mod_id: mod.identifier,
+							categories: currentMeta.categories,
+							version: currentMeta.version,
+						});
+					} else {
+						updatedMeta.push({
+							mod_id: mod.identifier,
+							categories: '',
+							version: '',
+						});
+					}
+				}
+
+				return updatedMeta;
+			} else {
+				const newMeta = [];
+				for (let mi = 0; mi < mods.length; mi++) {
+					const mod = mods[mi] as ModItem;
+					const itemType =
+						'item_type' in mod ? mod.item_type : 'separator';
+					if (itemType === 'separator') continue;
+
+					newMeta.push({
+						mod_id: mod.identifier,
+						categories: '',
+						version: '',
+					});
+				}
+				const newModMeta = new ModMetaModel({
+					id: null as any,
+					app_id: selectedGame!.steam_id,
+					data: newMeta,
+				});
+				await newModMeta.save();
+				return newMeta;
+			}
+		};
+
 		try {
 			setFetchModsLoading(true);
 			setLoading(true);
@@ -227,6 +277,9 @@ export const ModList = () => {
 			setMods(sortedMods);
 			const modActivations = await resolveActivation(sortedMods);
 			setModActivation(modActivations);
+
+			const modMetaData = await resolveMeta(sortedMods);
+			setMetas(modMetaData);
 		} catch (error) {
 			toastError(error);
 		} finally {

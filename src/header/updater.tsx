@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import {
 	ArrowDownIcon,
-	RefreshCwIcon,
 	RocketIcon,
 	XCircleIcon,
 	CheckCircleIcon,
+	CircleDotDashedIcon,
 } from 'lucide-react';
 
 import { check } from '@tauri-apps/plugin-updater';
@@ -31,7 +31,6 @@ type UpdateState = {
 	body?: string;
 };
 
-
 const formatBytes = (bytes: number, decimals = 2) => {
 	if (bytes === 0) return '0 Bytes';
 
@@ -41,9 +40,7 @@ const formatBytes = (bytes: number, decimals = 2) => {
 
 	const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-	return (
-		parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
-	);
+	return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 };
 
 export const Updater = () => {
@@ -154,6 +151,7 @@ export const Updater = () => {
 		<Dialog open={updateDialogOpen} onOpenChange={setUpdateDialogOpen}>
 			<DialogTrigger asChild>
 				<Button
+					size="sm"
 					variant="ghost"
 					className="relative flex items-center justify-center"
 					onClick={() => checkForUpdates(false)}
@@ -164,7 +162,7 @@ export const Updater = () => {
 							<ArrowDownIcon className="h-4 w-4" />
 						</>
 					) : (
-						<RefreshCwIcon
+						<CircleDotDashedIcon
 							className={`h-4 w-4 ${
 								checkingForUpdate ? 'animate-spin' : ''
 							}`}
@@ -175,7 +173,7 @@ export const Updater = () => {
 							? 'Update Available'
 							: 'Check for Updates'}
 					</span>
-					<div className="text-xs text-muted-foreground">v0.1.5</div>
+					<div className="text-sm text-muted-foreground">v0.2.0</div>
 				</Button>
 			</DialogTrigger>
 			<DialogContent

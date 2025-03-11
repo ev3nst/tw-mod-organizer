@@ -3,6 +3,7 @@ import {
 	ArrowRightIcon,
 	EllipsisVerticalIcon,
 	EyeIcon,
+	InfoIcon,
 	TrashIcon,
 } from 'lucide-react';
 
@@ -15,12 +16,14 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/dropdown-menu';
 
-import api, { ModItem, ModItemSeparatorUnion } from '@/lib/api';
+import { settingStore } from '@/lib/store/setting';
 import { modsStore } from '@/lib/store/mods';
 import { modOrderStore } from '@/lib/store/mod_order';
-import { toastError } from '@/lib/utils';
 import { modSeparatorStore } from '@/lib/store/mod_separator';
-import { settingStore } from '@/lib/store/setting';
+import { modMetaStore } from '@/lib/store/mod_meta';
+
+import api, { ModItem, ModItemSeparatorUnion } from '@/lib/api';
+import { toastError } from '@/lib/utils';
 
 function determineModUrl(
 	mod: ModItemSeparatorUnion,
@@ -50,6 +53,9 @@ export const Actions = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 
 	const setSelectedPriorityMod = modOrderStore(state => state.setSelectedMod);
 	const toggleSetPriority = modOrderStore(state => state.toggleSetPriority);
+
+	const setSelectedMetaMod = modMetaStore(state => state.setSelectedMod);
+	const toggleMetaInfo = modMetaStore(state => state.toggleMetaInfo);
 
 	const setSelectedRemoveMod = modsStore(state => state.setSelectedMod);
 	const toggleModRemove = modsStore(state => state.toggleModRemove);
@@ -116,6 +122,16 @@ export const Actions = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 				</DropdownMenuTrigger>
 				<DropdownMenuContent className="w-56">
 					<DropdownMenuGroup>
+						<DropdownMenuItem
+							className="text-xs py-2 my-0"
+							onClick={() => {
+								setSelectedMetaMod(mod as ModItem);
+								toggleMetaInfo();
+							}}
+						>
+							<InfoIcon className="w-3 h-3" />
+							Meta Information
+						</DropdownMenuItem>
 						{mod &&
 							(mod as ModItem).url !== null &&
 							(mod as ModItem).url !== '' && (

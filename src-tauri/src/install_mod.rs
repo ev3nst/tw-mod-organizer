@@ -25,16 +25,16 @@ pub struct InstallModDetails {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ModMeta {
-    identifier: String,
-    title: String,
-    pack_file: String,
-    downloaded_url: Option<String>,
-    description: Option<String>,
-    categories: Option<String>,
-    url: Option<String>,
-    preview_url: Option<String>,
-    version: Option<String>,
-    created_at: u64,
+    pub identifier: String,
+    pub title: String,
+    pub pack_file: String,
+    pub downloaded_url: Option<String>,
+    pub description: Option<String>,
+    pub categories: Option<String>,
+    pub url: Option<String>,
+    pub preview_url: Option<String>,
+    pub version: Option<String>,
+    pub created_at: u64,
 }
 
 #[tauri::command(rename_all = "snake_case")]

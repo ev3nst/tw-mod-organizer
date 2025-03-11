@@ -4,7 +4,7 @@ import { useSidebar } from '@/components/sidebar';
 import { Separator } from '@/components/separator';
 import { Button } from '@/components/button';
 
-import { Settings } from './settings';
+import { Preferences } from './preferences';
 import { WindowActions } from './window-actions';
 import { GameSwitcher } from './game-switcher';
 import { Create } from './create';
@@ -34,7 +34,7 @@ export function Header() {
 				>
 					<SidebarIcon />
 				</Button>
-				<Settings />
+				<Preferences />
 				<Separator orientation="vertical" className="mr-2 h-4" />
 				<WindowActions />
 			</div>

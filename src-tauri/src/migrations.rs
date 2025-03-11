@@ -123,5 +123,29 @@ pub fn get_migrations() -> Vec<Migration> {
             "#,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 7,
+            description: "create_mod_metas_table",
+            sql: r#"
+            CREATE TABLE IF NOT EXISTS mod_metas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                app_id INTEGER NOT NULL,
+                data TEXT
+            );
+
+            -- Indexes for performance on commonly queried fields
+            CREATE INDEX idx_mod_metas_app_id ON mod_metas (app_id);
+            "#,
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 8,
+            description: "add_unique_composite_key_to_profiles",
+            sql: r#"
+			-- Add a UNIQUE constraint for the combination of app_id and name
+			CREATE UNIQUE INDEX idx_profile_app_id_name ON profiles (app_id, name);
+			"#,
+            kind: MigrationKind::Up,
+        },
     ]
 }

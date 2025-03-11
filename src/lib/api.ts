@@ -80,6 +80,25 @@ export type NexusDownloadResponse = {
 	mod_url: string;
 };
 
+type ModMigrationResponse = {
+	mod_meta_information: Record<
+		string,
+		{ identifier: string; categories: string }[]
+	>;
+	mod_profiles: Record<
+		string,
+		{
+			profile_name: string;
+			mods: {
+				identifier: string;
+				title: string;
+				pack_file_path: string;
+				is_active: boolean;
+			}[];
+		}[]
+	>;
+};
+
 class API {
 	async supported_games(): Promise<IGameMeta[]> {
 		return invoke('supported_games');
@@ -237,6 +256,14 @@ class API {
 			app_id,
 			mod_details,
 			mod_installation_path,
+		});
+	}
+
+	async import_data(json_file_path: string): Promise<ModMigrationResponse> {
+		const setting = await SettingModel.retrieve();
+		return invoke('import_data', {
+			json_file_path,
+			mod_installation_path: setting.mod_installation_path,
 		});
 	}
 

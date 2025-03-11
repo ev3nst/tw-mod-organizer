@@ -11,9 +11,11 @@ mod get_pack_files;
 mod get_save_files;
 mod get_zip_contents;
 mod highlight_path;
+mod import_data;
 mod install_mod;
 mod is_game_running;
 mod local_mods;
+mod migrate_local_mod;
 mod migrations;
 mod nexus_auth_init;
 mod nexus_download_link;
@@ -88,6 +90,7 @@ pub fn run() {
             get_save_files::get_save_files,
             delete_save_file::delete_save_file,
             get_zip_contents::get_zip_contents,
+            import_data::import_data,
             install_mod::install_mod,
             start_game::start_game,
             is_game_running::is_game_running

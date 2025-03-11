@@ -30,13 +30,28 @@ export abstract class ModGenericModel<T extends ModGenericProps<D>, D> {
 		T extends ModGenericProps<D>,
 		M extends ModGenericModel<T, D>,
 		D,
-	>(this: new (props: T) => M, profile_id: number): Promise<M | undefined> {
+	>(
+		this: new (props: T) => M,
+		profile_id?: number,
+		app_id?: number,
+	): Promise<M | undefined> {
 		const tempInstance = new this({} as T);
 		const tableName = tempInstance.getTableName();
-		const result: any = await dbWrapper.db.select(
-			`SELECT * FROM ${tableName} WHERE profile_id = ?`,
-			[profile_id],
-		);
+
+		let result: any;
+		if (typeof profile_id === 'number') {
+			const query = `SELECT * FROM ${tableName} WHERE profile_id = ?`;
+			result = await dbWrapper.db.select(query, [profile_id]);
+		} else {
+			if (typeof app_id !== 'number') {
+				throw new Error(
+					'app_id is required when profile_id is left undefined',
+				);
+			}
+
+			const query = `SELECT * FROM ${tableName} WHERE app_id = ?`;
+			result = await dbWrapper.db.select(query, [app_id]);
+		}
 
 		if (result && result[0]) {
 			const row = result[0];
@@ -50,26 +65,30 @@ export abstract class ModGenericModel<T extends ModGenericProps<D>, D> {
 	}
 
 	public async save(): Promise<boolean> {
-		if (!this.props.profile_id) {
-			throw new Error('Profile id is required');
-		}
-
 		if (!this.props.app_id) {
 			throw new Error('App ID is required');
 		}
 
 		const tableName = this.getTableName();
 		let result: any = {};
+
 		if (this.props.id) {
 			result = await dbWrapper.db.execute(
 				`UPDATE ${tableName} SET data = ? WHERE id = ?`,
 				[this.props.data, this.props.id],
 			);
 		} else {
-			result = await dbWrapper.db.execute(
-				`INSERT INTO ${tableName} (profile_id, app_id, data) VALUES (?, ?, ?)`,
-				[this.props.profile_id, this.props.app_id, this.props.data],
-			);
+			if (this.props.profile_id) {
+				result = await dbWrapper.db.execute(
+					`INSERT INTO ${tableName} (profile_id, app_id, data) VALUES (?, ?, ?)`,
+					[this.props.profile_id, this.props.app_id, this.props.data],
+				);
+			} else {
+				result = await dbWrapper.db.execute(
+					`INSERT INTO ${tableName} (app_id, data) VALUES (?, ?)`,
+					[this.props.app_id, this.props.data],
+				);
+			}
 		}
 
 		if (result.rowsAffected > 0) {
@@ -103,7 +122,7 @@ export abstract class ModGenericModel<T extends ModGenericProps<D>, D> {
 		return this.props.id;
 	}
 
-	get profile_id(): number {
+	get profile_id(): number | undefined {
 		return this.props.profile_id;
 	}
 
@@ -126,7 +145,7 @@ export type ModelConstructor<
 	D,
 > = {
 	new (props: T): M;
-	retrieve(profile_id: number): Promise<M | undefined>;
+	retrieve(profile_id?: number): Promise<M | undefined>;
 };
 
 type StoreGeneratorOptions<

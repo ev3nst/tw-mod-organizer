@@ -12,13 +12,15 @@ import { Button } from '@/components/button';
 
 import api from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
+import { ProfileModel } from '@/lib/store/profile';
 import { modsStore } from '@/lib/store/mods';
 import {
 	ModActivationModel,
 	modActivationStore,
 } from '@/lib/store/mod_activation';
 import { ModOrderModel, modOrderStore } from '@/lib/store/mod_order';
-import { ProfileModel } from '@/lib/store/profile';
+import { ModMetaModel, modMetaStore } from '@/lib/store/mod_meta';
+
 import { toastError } from '@/lib/utils';
 
 export function RemoveModDialog() {
@@ -32,6 +34,7 @@ export function RemoveModDialog() {
 
 	const modOrderData = modOrderStore(state => state.data);
 	const modActivationData = modActivationStore(state => state.data);
+	const modMetaData = modMetaStore(state => state.data);
 
 	const handleUnsubscribe = useCallback(async () => {
 		await api.unsubscribe(
@@ -70,6 +73,15 @@ export function RemoveModDialog() {
 				mr => mr.mod_id !== selectedMod.identifier,
 			);
 			await modActivation!.save();
+
+			const modMeta = await ModMetaModel.retrieve(
+				undefined,
+				selectedGame!.steam_id,
+			);
+			modMeta!.data = [...modMetaData].filter(
+				mr => mr.mod_id !== selectedMod.identifier,
+			);
+			await modMeta!.save();
 
 			setTimeout(() => {
 				window.location.reload();
