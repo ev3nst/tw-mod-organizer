@@ -20,7 +20,7 @@ export const ProfileSwitcher = () => {
 
 	return (
 		<TableHead>
-			<div className="flex justify-between gap-2">
+			<div className="flex justify-between gap-2 text-white">
 				<Select
 					defaultValue={profile.name}
 					onValueChange={async value => {
@@ -34,12 +34,12 @@ export const ProfileSwitcher = () => {
 					}}
 				>
 					<SelectTrigger
-						className="clickable-content border-0 w-[240px]"
+						className="clickable-content border-0 flex-grow"
 						aria-label="Select Game"
 					>
 						<SelectValue placeholder="Select a game">
 							<span className="ml-2 font-bold">
-								{profile.name}
+								Profile: {profile.name}
 							</span>
 						</SelectValue>
 					</SelectTrigger>
