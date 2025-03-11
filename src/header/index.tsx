@@ -10,6 +10,7 @@ import { GameSwitcher } from './game-switcher';
 import { Create } from './create';
 import { Refresh } from './refresh';
 import { Nexus } from './nexus';
+import { Updater } from './updater';
 
 export function Header() {
 	const { toggleSidebar } = useSidebar();
@@ -22,7 +23,7 @@ export function Header() {
 				<Create />
 				<Nexus />
 				<Refresh />
-				<div className="text-xs text-muted-foreground ms-2">v0.1.4</div>
+				<Updater />
 			</div>
 			<div className="flex gap-2 items-center">
 				<Button

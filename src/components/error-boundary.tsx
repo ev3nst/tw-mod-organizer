@@ -53,7 +53,7 @@ export class ErrorBoundary extends React.Component<
 						<WindowActions className="px-1" />
 					</div>
 
-					<div className="flex items-center justify-center h-screen w-screen app-drag-region">
+					<div className="flex items-center justify-center h-screen w-screen">
 						<div className="relative text-left max-w-3xl p-6  text-white rounded-md">
 							<h1 className="text-4xl font-semibold text-red-500">
 								Error
