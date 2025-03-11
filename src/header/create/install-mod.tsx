@@ -87,8 +87,6 @@ export const InstallMod = () => {
 					modFileMeta.mod_file_path.replace('\\\\', '\\') ===
 						modFilePath
 				) {
-					console.log(modFileMeta, 'meta??');
-					console.log(modFilePath, 'modFilePath??');
 					setURL(modFileMeta.mod_url ?? '');
 					setPreviewURL(modFileMeta.preview_url ?? '');
 					setVersion(modFileMeta.version ?? '');
