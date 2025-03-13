@@ -14,6 +14,7 @@ import { Button } from '@/components/button';
 import { modMetaStore } from './lib/store/mod_meta';
 
 export function MetaInformationDialog() {
+	const [title, setTitle] = useState<string>('');
 	const [categories, setCategories] = useState<string>('');
 
 	const metaInfoOpen = modMetaStore(state => state.metaInfoOpen);
@@ -26,13 +27,24 @@ export function MetaInformationDialog() {
 		md => md.mod_id === selectedMod.identifier,
 	);
 
-	let placeholder = selectedMod.categories;
+	let categoriesPlaceholder = selectedMod.categories;
 	if (
 		typeof selectedModMeta !== 'undefined' &&
+		typeof selectedModMeta.categories !== 'undefined' &&
 		selectedModMeta.categories !== null &&
 		selectedModMeta.categories !== ''
 	) {
-		placeholder = selectedModMeta.categories;
+		categoriesPlaceholder = selectedModMeta.categories;
+	}
+
+	let titlePlaceholder = selectedMod.title;
+	if (
+		typeof selectedModMeta !== 'undefined' &&
+		typeof selectedModMeta.title !== 'undefined' &&
+		selectedModMeta.title !== null &&
+		selectedModMeta.title !== ''
+	) {
+		titlePlaceholder = selectedModMeta.title;
 	}
 
 	const handleSubmit = () => {
@@ -41,7 +53,9 @@ export function MetaInformationDialog() {
 				if (m.mod_id === selectedMod.identifier) {
 					return {
 						...m,
-						categories,
+						title: title !== '' ? title : m.title,
+						categories:
+							categories !== '' ? categories : m.categories,
 					};
 				}
 
@@ -67,12 +81,23 @@ export function MetaInformationDialog() {
 				</DialogHeader>
 				<div className="flex flex-col gap-4">
 					<div className="grid grid-cols-4 items-center gap-3">
+						<Label>Title</Label>
+						<Input
+							autoComplete="off"
+							autoCorrect="off"
+							className="col-span-3"
+							placeholder={titlePlaceholder}
+							value={title}
+							onChange={e => setTitle(e.currentTarget.value)}
+						/>
+					</div>
+					<div className="grid grid-cols-4 items-center gap-3">
 						<Label>Categories</Label>
 						<Input
 							autoComplete="off"
 							autoCorrect="off"
 							className="col-span-3"
-							placeholder={placeholder}
+							placeholder={categoriesPlaceholder}
 							value={categories}
 							onChange={e => setCategories(e.currentTarget.value)}
 						/>

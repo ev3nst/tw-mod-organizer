@@ -83,7 +83,7 @@ export type NexusDownloadResponse = {
 type ModMigrationResponse = {
 	mod_meta_information: Record<
 		string,
-		{ identifier: string; categories: string }[]
+		{ identifier: string; name: string; categories: string }[]
 	>;
 	mod_profiles: Record<
 		string,

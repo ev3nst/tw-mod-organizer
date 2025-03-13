@@ -10,6 +10,7 @@ import { SettingModel } from './setting';
 
 export type ModMetaItem = {
 	mod_id: string;
+	title: string;
 	categories: string;
 	version: string | number;
 };

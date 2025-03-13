@@ -206,12 +206,14 @@ export const ModList = () => {
 					if (currentMeta) {
 						updatedMeta.push({
 							mod_id: mod.identifier,
+							title: currentMeta.title,
 							categories: currentMeta.categories,
 							version: currentMeta.version,
 						});
 					} else {
 						updatedMeta.push({
 							mod_id: mod.identifier,
+							title: '',
 							categories: '',
 							version: '',
 						});
@@ -229,6 +231,7 @@ export const ModList = () => {
 
 					newMeta.push({
 						mod_id: mod.identifier,
+						title: '',
 						categories: '',
 						version: '',
 					});

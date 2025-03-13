@@ -1,18 +1,19 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import { NativeFileInput } from '@/components/native-file-input';
 import { DialogFooter } from '@/components/dialog';
 import { Button } from '@/components/button';
 import { Loading } from '@/components/loading';
 
+import { settingStore } from '@/lib/store/setting';
+import { ProfileModel, profileStore } from '@/lib/store/profile';
+import { ModOrderModel } from '@/lib/store/mod_order';
+import { ModActivationModel } from '@/lib/store/mod_activation';
+import { ModMetaModel } from '@/lib/store/mod_meta';
+
 import api from '@/lib/api';
 import { toastError } from '@/lib/utils';
-import { settingStore } from '@/lib/store/setting';
-import { ModMetaModel } from '@/lib/store/mod_meta';
-import { ProfileModel, profileStore } from '@/lib/store/profile';
-import { toast } from 'sonner';
-import { ModActivationModel } from '@/lib/store/mod_activation';
-import { ModOrderModel } from '@/lib/store/mod_order';
 
 export function ImportData() {
 	const [loading, setLoading] = useState(false);
@@ -77,6 +78,7 @@ export function ImportData() {
 							} else {
 								modMeta.data.push({
 									mod_id: item.identifier,
+									title: item.name,
 									categories: item.categories,
 									version: '',
 								});

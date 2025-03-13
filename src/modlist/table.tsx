@@ -45,8 +45,15 @@ export const ModListTable = () => {
 					.replace('c:', '')
 					.trim();
 
-				const filterMeta = metaData.filter(md =>
-					md.categories.toLowerCase().includes(searchModTextLower),
+				const filterMeta = metaData.filter(
+					md =>
+						md.categories
+							.toLowerCase()
+							.includes(searchModTextLower) ||
+						(typeof md.title !== 'undefined' &&
+							md.title
+								.toLowerCase()
+								.includes(searchModTextLower)),
 				);
 
 				return mods.filter(m => {
@@ -69,9 +76,22 @@ export const ModListTable = () => {
 					}
 				});
 			} else {
+				const filterMeta = metaData.filter(
+					md =>
+						typeof md.title !== 'undefined' &&
+						md.title.toLowerCase().includes(searchModTextLower),
+				);
+
 				return mods.filter(m => {
 					if (!('item_type' in m)) {
 						return false;
+					}
+
+					if (
+						filterMeta.findIndex(f => f.mod_id === m.identifier) !==
+						-1
+					) {
+						return true;
 					}
 
 					return (

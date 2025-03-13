@@ -45,6 +45,7 @@ struct InputData {
 #[derive(Serialize)]
 struct OutputModInfo {
     identifier: String,
+    name: String,
     categories: String,
 }
 
@@ -128,6 +129,7 @@ pub async fn import_data(
             if !m.workshop_id.is_empty() && m.workshop_id.chars().all(char::is_numeric) {
                 mod_info_list.push(OutputModInfo {
                     identifier: m.workshop_id.clone(),
+					name: m.name.clone(),
                     categories: m.categories.clone().unwrap_or_default().join(", "),
                 });
             } else {
@@ -142,6 +144,7 @@ pub async fn import_data(
                         local_mod_lookup.insert(m.path.clone(), uuid.clone());
                         mod_info_list.push(OutputModInfo {
                             identifier: uuid,
+							name: m.name.clone(),
                             categories: m.categories.clone().unwrap_or_default().join(", "),
                         });
                     }

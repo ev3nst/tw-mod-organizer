@@ -17,6 +17,7 @@ export const Category = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 	let categoriesTxt = categories;
 	if (
 		typeof selectedModMeta !== 'undefined' &&
+		typeof selectedModMeta.categories !== 'undefined' &&
 		selectedModMeta.categories !== null &&
 		selectedModMeta.categories !== ''
 	) {
