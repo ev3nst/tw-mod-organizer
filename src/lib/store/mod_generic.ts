@@ -6,7 +6,7 @@ import { debounceCallback } from '@/lib/utils';
 
 export type ModGenericProps<T> = {
 	id: number;
-	profile_id: number;
+	profile_id?: number;
 	app_id: number;
 	data: T[];
 };

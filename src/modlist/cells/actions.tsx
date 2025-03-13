@@ -112,6 +112,10 @@ export const Actions = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 		);
 	}
 
+	const showExternalLink =
+		item_type === 'steam_mod' ||
+		(mod && (mod as ModItem).url !== null && (mod as ModItem).url !== '');
+
 	return (
 		<TableCell>
 			<DropdownMenu>
@@ -132,17 +136,15 @@ export const Actions = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 							<InfoIcon className="w-3 h-3" />
 							Meta Information
 						</DropdownMenuItem>
-						{mod &&
-							(mod as ModItem).url !== null &&
-							(mod as ModItem).url !== '' && (
-								<DropdownMenuItem
-									className="text-xs py-2 my-0"
-									onClick={() => handleOpenUrl(false)}
-								>
-									<EyeIcon className="w-3 h-3" />
-									Open Mod Page in Browser
-								</DropdownMenuItem>
-							)}
+						{showExternalLink && (
+							<DropdownMenuItem
+								className="text-xs py-2 my-0"
+								onClick={() => handleOpenUrl(false)}
+							>
+								<EyeIcon className="w-3 h-3" />
+								Open Mod Page in Browser
+							</DropdownMenuItem>
+						)}
 						{item_type === 'steam_mod' && (
 							<DropdownMenuItem
 								className="text-xs py-2 my-0"
