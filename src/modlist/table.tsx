@@ -19,6 +19,7 @@ import { Input } from '@/components/input';
 import { modsStore } from '@/lib/store/mods';
 import { modOrderStore } from '@/lib/store/mod_order';
 import { modSeparatorStore, isCollapsed } from '@/lib/store/mod_separator';
+import { modMetaStore } from '@/lib/store/mod_meta';
 
 import { Header } from './header';
 import { Row } from './row';
@@ -33,23 +34,39 @@ export const ModListTable = () => {
 	const separators = modSeparatorStore(state => state.data);
 	const setMods = modsStore(state => state.setMods);
 	const setModOrder = modOrderStore(state => state.setData);
+	const metaData = modMetaStore(state => state.data);
 
 	const filteredMods = useMemo(() => {
 		if (searchModText !== '') {
 			let searchModTextLower = searchModText.toLocaleLowerCase();
+
 			if (searchModTextLower.startsWith('c:')) {
 				searchModTextLower = searchModTextLower
 					.replace('c:', '')
 					.trim();
+
+				const filterMeta = metaData.filter(md =>
+					md.categories.toLowerCase().includes(searchModTextLower),
+				);
+
 				return mods.filter(m => {
 					if (!('item_type' in m)) {
 						return false;
 					}
 
-					return (
-						m.categories !== null &&
-						m.categories.toLowerCase().includes(searchModTextLower)
-					);
+					if (
+						filterMeta.findIndex(f => f.mod_id === m.identifier) !==
+						-1
+					) {
+						return true;
+					} else {
+						return (
+							m.categories !== null &&
+							m.categories
+								.toLowerCase()
+								.includes(searchModTextLower)
+						);
+					}
 				});
 			} else {
 				return mods.filter(m => {
