@@ -6,6 +6,9 @@ import { modOrderStore } from '@/lib/store/mod_order';
 import type { ModItemSeparatorUnion } from '@/lib/api';
 
 export const Conflict = ({ mod }: { mod: ModItemSeparatorUnion }) => {
+	const item_type = 'item_type' in mod ? mod.item_type : 'separator';
+	if (item_type === 'separator') return;
+
 	const pack_file_path =
 		'pack_file_path' in mod ? mod.pack_file_path : undefined;
 	if (!pack_file_path) return <TableCell>&nbsp;</TableCell>;
