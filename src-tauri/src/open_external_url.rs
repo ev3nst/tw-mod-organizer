@@ -2,8 +2,8 @@ use std::{os::windows::process::CommandExt, process::Command};
 
 #[tauri::command(rename_all = "snake_case")]
 pub fn open_external_url(url: String) -> Result<(), String> {
-    if !(url.starts_with("http://") || url.starts_with("https://")) {
-        return Err("Invalid URL: must start with http:// or https://".to_string());
+    if !(url.starts_with("http://") || url.starts_with("https://") || url.starts_with("steam://")) {
+        return Err("Invalid URL: must start with http:// or https:// or steam://".to_string());
     }
 
     Command::new("cmd")
