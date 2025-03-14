@@ -15,6 +15,7 @@ import { ConflictDetails } from './conflict-details';
 import { SetPriorityDialog } from './set-priority';
 import { MetaInformationDialog } from './meta-information';
 import { RemoveModDialog } from './remove-mod';
+import { EditSeparator } from './edit-separator';
 
 function App() {
 	const [fetchAppManageLoading, setFetchAppManageLoading] = useState(true);
@@ -69,6 +70,7 @@ function App() {
 						<ConflictDetails />
 						<SetPriorityDialog />
 						<MetaInformationDialog />
+						<EditSeparator />
 						<RemoveModDialog />
 					</SidebarInset>
 					<AppSidebar />

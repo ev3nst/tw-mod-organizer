@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import {
 	Dialog,
@@ -11,7 +12,8 @@ import { Input } from '@/components/input';
 import { Label } from '@/components/label';
 import { Button } from '@/components/button';
 
-import { modMetaStore } from './lib/store/mod_meta';
+import { modMetaStore } from '@/lib/store/mod_meta';
+import { toastError } from '@/lib/utils';
 
 export function MetaInformationDialog() {
 	const [title, setTitle] = useState<string>('');
@@ -27,16 +29,6 @@ export function MetaInformationDialog() {
 		md => md.mod_id === selectedMod.identifier,
 	);
 
-	let categoriesPlaceholder = selectedMod.categories;
-	if (
-		typeof selectedModMeta !== 'undefined' &&
-		typeof selectedModMeta.categories !== 'undefined' &&
-		selectedModMeta.categories !== null &&
-		selectedModMeta.categories !== ''
-	) {
-		categoriesPlaceholder = selectedModMeta.categories;
-	}
-
 	let titlePlaceholder = selectedMod.title;
 	if (
 		typeof selectedModMeta !== 'undefined' &&
@@ -47,22 +39,37 @@ export function MetaInformationDialog() {
 		titlePlaceholder = selectedModMeta.title;
 	}
 
-	const handleSubmit = () => {
-		setMetaData(
-			metaData.map(m => {
-				if (m.mod_id === selectedMod.identifier) {
-					return {
-						...m,
-						title: title !== '' ? title : m.title,
-						categories:
-							categories !== '' ? categories : m.categories,
-					};
-				}
+	let categoriesPlaceholder = selectedMod.categories;
+	if (
+		typeof selectedModMeta !== 'undefined' &&
+		typeof selectedModMeta.categories !== 'undefined' &&
+		selectedModMeta.categories !== null &&
+		selectedModMeta.categories !== ''
+	) {
+		categoriesPlaceholder = selectedModMeta.categories;
+	}
 
-				return m;
-			}),
-		);
-		toggleMetaInfo();
+	const handleSubmit = () => {
+		try {
+			setMetaData(
+				metaData.map(m => {
+					if (m.mod_id === selectedMod.identifier) {
+						return {
+							...m,
+							title: title !== '' ? title : m.title,
+							categories:
+								categories !== '' ? categories : m.categories,
+						};
+					}
+
+					return m;
+				}),
+			);
+			toggleMetaInfo();
+			toast.success('Mod meta details changed.');
+		} catch (error) {
+			toastError(error);
+		}
 	};
 
 	return (

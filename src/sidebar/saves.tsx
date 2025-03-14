@@ -55,7 +55,7 @@ export const Saves = () => {
 	const totalItems = filteredSaveFiles.length;
 	const paginatedFiles = filteredSaveFiles.slice(
 		(currentPage - 1) * perPage,
-		currentPage * perPage
+		currentPage * perPage,
 	);
 
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,13 +64,13 @@ export const Saves = () => {
 
 	const handleDeleteFile = async (
 		e: React.MouseEvent,
-		saveFile: SaveFile
+		saveFile: SaveFile,
 	) => {
 		e.stopPropagation();
 		await api.delete_save_file(selectedGame!.steam_id, saveFile.filename);
 
 		const newSaveFiles = saveFiles.filter(
-			file => file.filename !== saveFile.filename
+			file => file.filename !== saveFile.filename,
 		);
 		setSaveFiles(newSaveFiles);
 
@@ -110,7 +110,7 @@ export const Saves = () => {
 						}`}
 						onClick={() => {
 							setSaveFilePath(
-								saveFilePath === sf.path ? undefined : sf.path
+								saveFilePath === sf.path ? undefined : sf.path,
 							);
 						}}
 					>
@@ -127,7 +127,7 @@ export const Saves = () => {
 										{
 											hour: 'numeric',
 											minute: 'numeric',
-										}
+										},
 									)}
 								</span>
 								<span>{formatFileSize(sf.filesize)}</span>

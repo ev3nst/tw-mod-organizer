@@ -20,7 +20,13 @@ export const modSeparatorStore = createStore<
 	ModSeparator,
 	ModSeparatorModel,
 	ModSeparatorItem,
-	{ toggleCollapse: (separatorId: string) => void }
+	{
+		toggleCollapse: (separatorId: string) => void;
+		selectedSeparator?: ModSeparatorItem;
+		setSelectedSeparator: (separator: ModSeparatorItem) => void;
+		editSeparatorDialogOpen: boolean;
+		toggleEditSeparator: () => void;
+	}
 >({
 	model: ModSeparatorModel,
 	initialState: [],
@@ -35,6 +41,13 @@ export const modSeparatorStore = createStore<
 			);
 			set({ data: newData });
 			debounceCallback(() => syncData(newData));
+		},
+		selectedSeparator: undefined,
+		setSelectedSeparator: selectedSeparator => set({ selectedSeparator }),
+		editSeparatorDialogOpen: false,
+		toggleEditSeparator: () => {
+			const editSeparatorDialogOpen = !get().editSeparatorDialogOpen;
+			set({ editSeparatorDialogOpen });
 		},
 	}),
 });
