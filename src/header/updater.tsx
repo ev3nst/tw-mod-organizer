@@ -173,7 +173,7 @@ export const Updater = () => {
 							? 'Update Available'
 							: 'Check for Updates'}
 					</span>
-					<div className="text-sm text-muted-foreground">v0.2.1</div>
+					<div className="text-sm text-muted-foreground">v0.2.2</div>
 				</Button>
 			</DialogTrigger>
 			<DialogContent
