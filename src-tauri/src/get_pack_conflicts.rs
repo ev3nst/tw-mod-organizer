@@ -1,14 +1,43 @@
 use rayon::prelude::*;
 use rpfm_lib::files::pack::Pack;
+use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::time::SystemTime;
+use tauri::path::BaseDirectory;
+use tauri::Manager;
 use tokio::task;
+
+#[derive(Serialize, Deserialize)]
+struct CacheEntry {
+    file_paths: Vec<String>,
+    file_metadata: HashMap<String, FileMetadata>,
+    conflicts: HashMap<String, HashMap<String, Vec<String>>>,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Eq)]
+struct FileMetadata {
+    size: u64,
+    modified: u64,
+}
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn get_pack_conflicts(
+    handle: tauri::AppHandle,
     folder_paths: Vec<String>,
 ) -> Result<HashMap<String, HashMap<String, Vec<String>>>, String> {
+    let app_cache_dir = handle
+        .path()
+        .resolve("cache".to_string(), BaseDirectory::AppConfig)
+        .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?;
+
+    if !app_cache_dir.exists() {
+        fs::create_dir_all(&app_cache_dir)
+            .map_err(|e| format!("Failed to create cache directory: {}", e))?;
+    }
+
+    let cache_file = app_cache_dir.join("pack_conflicts_cache.json");
     let files_vec: Vec<PathBuf> = folder_paths
         .par_iter()
         .flat_map(|folder_path| {
@@ -46,7 +75,55 @@ pub async fn get_pack_conflicts(
         })
         .collect();
 
-    let result = task::spawn_blocking(move || {
+    let file_paths: Vec<String> = files_vec
+        .iter()
+        .map(|p| p.to_string_lossy().to_string())
+        .collect();
+
+    let file_metadata: HashMap<String, FileMetadata> = files_vec
+        .par_iter()
+        .filter_map(|path| {
+            let metadata = fs::metadata(path).ok()?;
+            let modified = metadata
+                .modified()
+                .ok()?
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .ok()?
+                .as_secs();
+            Some((
+                path.to_string_lossy().to_string(),
+                FileMetadata {
+                    size: metadata.len(),
+                    modified,
+                },
+            ))
+        })
+        .collect();
+
+    if cache_file.exists() {
+        let cache_content = fs::read_to_string(&cache_file).ok();
+        if let Some(content) = cache_content {
+            if let Ok(cache_entry) = serde_json::from_str::<CacheEntry>(&content) {
+                let file_paths_set: HashSet<_> = file_paths.iter().cloned().collect();
+                let cached_paths_set: HashSet<_> = cache_entry.file_paths.iter().cloned().collect();
+
+                if file_paths_set == cached_paths_set {
+                    let all_files_unchanged = file_metadata.iter().all(|(path, metadata)| {
+                        cache_entry
+                            .file_metadata
+                            .get(path)
+                            .map_or(false, |cached| cached == metadata)
+                    });
+
+                    if all_files_unchanged {
+                        return Ok(cache_entry.conflicts);
+                    }
+                }
+            }
+        }
+    }
+
+    let conflicts_result = task::spawn_blocking(move || {
         let pack_files: HashMap<String, HashSet<String>> = files_vec
             .par_iter()
             .filter_map(|pack_file_path| {
@@ -82,10 +159,21 @@ pub async fn get_pack_conflicts(
             })
             .collect();
 
-        Ok(conflicts_by_pack)
+        conflicts_by_pack
     })
     .await
     .map_err(|e| format!("Task failed: {:?}", e))?;
 
-    result
+    let cache_entry = CacheEntry {
+        file_paths,
+        file_metadata,
+        conflicts: conflicts_result.clone(),
+    };
+
+    let cache_json = serde_json::to_string(&cache_entry)
+        .map_err(|e| format!("Failed to serialize cache: {}", e))?;
+
+    fs::write(&cache_file, cache_json).map_err(|e| format!("Failed to write cache file: {}", e))?;
+
+    Ok(conflicts_result)
 }
