@@ -1,17 +1,19 @@
 use std::os::windows::process::CommandExt;
 use std::{fs, path::Path, process::Command};
 
-use crate::steamworks::client;
+use crate::AppState;
 use crate::{steam_paths::steam_paths, supported_games::SUPPORTED_GAMES};
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn start_game(
+    app_state: tauri::State<'_, AppState>,
     app_id: u64,
     add_directory_txt: String,
     used_mods_txt: String,
     save_game: Option<String>,
 ) -> Result<(), String> {
-    client::drop_all_clients();
+    let steam_state = &app_state.steam_state;
+    steam_state.drop_all_clients();
 
     let game = SUPPORTED_GAMES
         .iter()

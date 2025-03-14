@@ -30,12 +30,10 @@ mod subscribed_mods;
 mod supported_games;
 mod unsubscribe;
 
-#[macro_use]
-extern crate lazy_static;
-
 pub struct AppState {
     download_manager: Arc<Mutex<download_manager::DownloadManager>>,
     nexus_auth: nexus_auth_init::NexusAuthState,
+    steam_state: steamworks::client::SteamState,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -67,6 +65,7 @@ pub fn run() {
             nexus_auth: nexus_auth_init::NexusAuthState {
                 ws_connected: Arc::new(Mutex::new(false)),
             },
+            steam_state: steamworks::client::SteamState::new(),
         })
         .invoke_handler(tauri::generate_handler![
             open_external_url::open_external_url,
@@ -95,11 +94,6 @@ pub fn run() {
             start_game::start_game,
             is_game_running::is_game_running
         ])
-        .on_window_event(|_, event| {
-            if let tauri::WindowEvent::Destroyed { .. } = event {
-                steamworks::client::drop_all_clients();
-            }
-        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

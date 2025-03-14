@@ -1,10 +1,12 @@
+use futures_util::FutureExt;
 use std::fs;
 use std::path::{Path, PathBuf};
 use steamworks::{Client, PublishedFileId};
 
 use crate::local_mods::{ModItem, Version};
 use crate::steam_paths::steam_paths;
-use crate::steamworks::{client, workshop_item::workshop::WorkshopItemsResult};
+use crate::steamworks::workshop_item::workshop::WorkshopItemsResult;
+use crate::AppState;
 
 fn find_workshop_path_for_app(app_id: u32) -> Option<String> {
     match steam_paths() {
@@ -97,21 +99,26 @@ fn find_pack_and_image(dir_path: &Path) -> (String, String, String) {
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn subscribed_mods(app_id: u32) -> Result<Vec<ModItem>, String> {
-    if !client::has_client(app_id) {
-        client::drop_all_clients();
-        let steam_client = match Client::init_app(app_id) {
+pub async fn subscribed_mods(
+    app_state: tauri::State<'_, AppState>,
+    app_id: u32,
+) -> Result<Vec<ModItem>, String> {
+    let steam_state = &app_state.steam_state;
+    if !steam_state.has_client(app_id) {
+        steam_state.drop_all_clients();
+        let (steam_client, single_client) = match Client::init_app(app_id) {
             Ok(result) => result,
             Err(err) => return Err(format!("Failed to initialize Steam client: {}", err)),
         };
-        client::set_client(app_id, steam_client);
+        steam_state.set_clients(app_id, steam_client, single_client);
     }
 
-    let steam_client = match client::get_client(app_id) {
+    let steam_client = match steam_state.get_client(app_id) {
         Some(client) => client,
         None => return Err("Failed to get Steam client".to_string()),
     };
 
+    let (tx, mut rx) = tokio::sync::mpsc::channel(32);
     let items_result = tokio::task::spawn_blocking(move || {
         let ugc = steam_client.ugc();
         let subscribed_items = ugc.subscribed_items();
@@ -123,7 +130,7 @@ pub async fn subscribed_mods(app_id: u32) -> Result<Vec<ModItem>, String> {
             });
         }
 
-        let (tx, rx) = std::sync::mpsc::channel();
+        let (tx_inner, rx_inner) = std::sync::mpsc::channel();
         let query_handle = match steam_client
             .ugc()
             .query_items(item_ids.iter().map(|id| PublishedFileId(*id)).collect())
@@ -133,7 +140,7 @@ pub async fn subscribed_mods(app_id: u32) -> Result<Vec<ModItem>, String> {
         };
 
         query_handle.fetch(move |fetch_result| {
-            let _ = tx.send(
+            let _ = tx_inner.send(
                 fetch_result
                     .map(|query_results| WorkshopItemsResult::from_query_results(query_results)),
             );
@@ -142,8 +149,9 @@ pub async fn subscribed_mods(app_id: u32) -> Result<Vec<ModItem>, String> {
         let start_time = std::time::Instant::now();
         let timeout_duration = std::time::Duration::from_secs(30);
         loop {
-            steam_client.run_callbacks();
-            if let Ok(result) = rx.try_recv() {
+            let _ = tx.blocking_send(());
+
+            if let Ok(result) = rx_inner.try_recv() {
                 return result.map_err(|e| format!("Steam API error: {}", e));
             }
 
@@ -153,10 +161,24 @@ pub async fn subscribed_mods(app_id: u32) -> Result<Vec<ModItem>, String> {
 
             std::thread::sleep(std::time::Duration::from_millis(10));
         }
-    })
-    .await
-    .unwrap_or_else(|e| Err(format!("Task join error: {}", e)))?;
+    });
 
+    let mut result = None;
+    let mut items_result = items_result.fuse();
+
+    while result.is_none() {
+        tokio::select! {
+            Some(_) = rx.recv() => {
+                steam_state.run_callbacks(app_id)?;
+            }
+            task_result = &mut items_result => {
+                result = Some(task_result.unwrap_or_else(|e| Err(format!("Task join error: {}", e)))?);
+                break;
+            }
+        }
+    }
+
+    let items_result = result.unwrap();
     let workshop_base_path = find_workshop_path_for_app(app_id);
     let enhanced_items: Vec<ModItem> = items_result
         .items
