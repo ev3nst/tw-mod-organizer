@@ -56,7 +56,6 @@ fn find_workshop_path_for_app(app_id: u32) -> Option<String> {
     }
 }
 
-// Function to find the first .pack file in a directory
 fn find_pack_and_image(dir_path: &Path) -> (String, String, String) {
     if !dir_path.exists() {
         return (String::new(), String::new(), String::new());
@@ -163,32 +162,37 @@ pub async fn subscribed_mods(app_id: u32) -> Result<Vec<ModItem>, String> {
         .items
         .into_iter()
         .filter_map(|item_opt| {
-            item_opt.map(|item| {
-                let published_file_id = item.published_file_id.to_string();
+            item_opt
+                .map(|item| {
+                    let published_file_id = item.published_file_id.to_string();
+                    let (pack_file, pack_file_path, preview_local) =
+                        if let Some(ref base_path) = workshop_base_path {
+                            let item_path = PathBuf::from(base_path).join(&published_file_id);
+                            find_pack_and_image(&item_path)
+                        } else {
+                            (String::new(), String::new(), String::new())
+                        };
 
-                let (pack_file, pack_file_path, preview_local) =
-                    if let Some(ref base_path) = workshop_base_path {
-                        let item_path = PathBuf::from(base_path).join(&published_file_id);
-                        find_pack_and_image(&item_path)
+                    if !pack_file.is_empty() {
+                        Some(ModItem {
+                            identifier: item.published_file_id.to_string(),
+                            title: item.title,
+                            description: Some(item.description),
+                            created_at: item.time_created,
+                            categories: Some(item.tags),
+                            url: Some(item.url),
+                            preview_url: item.preview_url,
+                            version: Some(Version::Number(item.time_updated)),
+                            item_type: "steam_mod".to_string(),
+                            pack_file,
+                            pack_file_path,
+                            preview_local,
+                        })
                     } else {
-                        (String::new(), String::new(), String::new())
-                    };
-
-                ModItem {
-                    identifier: item.published_file_id.to_string(),
-                    title: item.title,
-                    description: Some(item.description),
-                    created_at: item.time_created,
-                    categories: Some(item.tags),
-                    url: Some(item.url),
-                    preview_url: item.preview_url,
-                    version: Some(Version::Number(item.time_updated)),
-                    item_type: "steam_mod".to_string(),
-                    pack_file,
-                    pack_file_path,
-                    preview_local,
-                }
-            })
+                        None
+                    }
+                })
+                .flatten()
         })
         .collect();
 
