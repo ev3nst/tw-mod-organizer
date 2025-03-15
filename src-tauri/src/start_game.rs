@@ -1,5 +1,7 @@
 use std::os::windows::process::CommandExt;
 use std::{fs, path::Path, process::Command};
+use tokio::time::{sleep, Duration};
+use tokio::spawn;
 
 use crate::AppState;
 use crate::{steam_paths::steam_paths, supported_games::SUPPORTED_GAMES};
@@ -38,34 +40,37 @@ pub async fn start_game(
     )
     .map_err(|e| format!("Failed to write used_mods.txt: {}", e))?;
 
-    let exe_path = Path::new(&game_installation_path)
-        .join(format!("{}.exe", game.exe_name))
-        .to_string_lossy()
-        .into_owned();
+    let batch_content = format!(
+        "start /d \"{}\" {}.exe{}{} used_mods.txt;",
+        game_installation_path,
+        game.exe_name,
+        if let Some(save) = &save_game {
+            if !save.is_empty() {
+                format!(" game_startup_mode campaign_load \"{}\" ;", save)
+            } else {
+                String::new()
+            }
+        } else {
+            String::new()
+        },
+        ""
+    );
 
-    let mut args = vec![
-        "/C".to_string(),
-        "start".to_string(),
-        "".to_string(),
-        "/D".to_string(),
-    ];
+    let batch_path = Path::new(&game_installation_path).join("launch_game.bat");
+    fs::write(&batch_path, batch_content)
+        .map_err(|e| format!("Failed to write batch file: {}", e))?;
 
-    args.push(game_installation_path);
-    args.push(exe_path);
-    if let Some(save) = save_game {
-        if !save.is_empty() {
-            args.push("game_startup_mode".to_string());
-            args.push("campaign_load".to_string());
-            args.push(save);
-        }
-    }
-
-    args.push("used_mods.txt".to_string());
     Command::new("cmd")
         .creation_flags(0x08000000)
-        .args(args)
+        .args(&["/C", batch_path.to_string_lossy().as_ref()])
         .spawn()
-        .map_err(|e| format!("Failed to start game: {}", e))?;
+        .map_err(|e| format!("Failed to execute batch file: {}", e))?;
+
+    let batch_path_clone = batch_path.clone();
+    spawn(async move {
+        sleep(Duration::from_secs(10)).await;
+        let _ = fs::remove_file(batch_path_clone);
+    });
 
     Ok(())
 }
