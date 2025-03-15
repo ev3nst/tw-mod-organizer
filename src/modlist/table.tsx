@@ -202,37 +202,43 @@ export const ModListTable = () => {
 	}, [mods]);
 
 	return (
-		<DndContext
-			sensors={sensors}
-			collisionDetection={closestCenter}
-			onDragEnd={handleDragEnd}
-		>
-			<Table className="mb-10 relative">
-				<Header />
-				<TableBody className="text-sm">
-					<SortableContext
-						items={itemIds}
-						strategy={verticalListSortingStrategy}
-					>
-						{modsResolved.map(mod => (
-							<Row
-								key={mod.identifier}
-								mod={mod}
-								modIndex={modIndices.get(mod.identifier) ?? -1}
-								id={mod.identifier}
-							/>
-						))}
-					</SortableContext>
-				</TableBody>
-				<Footer length={mods.length} />
-				<Lock />
-			</Table>
+		<div className="relative flex-1 mb-[41px]">
+			<DndContext
+				sensors={sensors}
+				collisionDetection={closestCenter}
+				onDragEnd={handleDragEnd}
+			>
+				<div className="absolute inset-0 overflow-y-auto dark-scrollbar">
+					<Table className="w-full">
+						<Header />
+						<TableBody className="text-sm">
+							<SortableContext
+								items={itemIds}
+								strategy={verticalListSortingStrategy}
+							>
+								{modsResolved.map(mod => (
+									<Row
+										key={mod.identifier}
+										mod={mod}
+										modIndex={
+											modIndices.get(mod.identifier) ?? -1
+										}
+										id={mod.identifier}
+									/>
+								))}
+							</SortableContext>
+						</TableBody>
+						<Footer length={mods.length} />
+						<Lock />
+					</Table>
+				</div>
+			</DndContext>
 			<Filter
 				activationFilter={activationFilter}
 				setActivationFilter={setActivationFilter}
 				searchModText={searchModText}
 				setSearchModText={setSearchModText}
 			/>
-		</DndContext>
+		</div>
 	);
 };

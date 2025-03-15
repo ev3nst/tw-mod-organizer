@@ -182,3 +182,7 @@ html.dark .w-color-alpha {
 .w-color-editable-input {
 	display: none !important;
 }
+
+.dark-scrollbar::-webkit-scrollbar {
+	width: 10px;
+}

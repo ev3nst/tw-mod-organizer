@@ -34,7 +34,7 @@ export const Filter = ({
 					onValueChange={value => setActivationFilter(value)}
 				>
 					<SelectTrigger
-						className="w-[100px] justify-center rounded-none h-full border-t-0 border-b-0"
+						className="w-[100px] justify-center rounded-none h-full border-t-0 border-l-0 border-b-0"
 						disableIcon
 					>
 						<SelectValue placeholder={activationFilter} />
