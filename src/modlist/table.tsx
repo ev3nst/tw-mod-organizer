@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, ChangeEvent } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
 	DndContext,
 	closestCenter,
@@ -11,10 +11,8 @@ import {
 	SortableContext,
 	verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { SearchIcon } from 'lucide-react';
 
 import { Table, TableBody } from '@/components/table';
-import { Input } from '@/components/input';
 
 import { modsStore } from '@/lib/store/mods';
 import { modOrderStore } from '@/lib/store/mod_order';
@@ -26,20 +24,25 @@ import { Row } from './row';
 import { Footer } from './footer';
 import { Lock } from './lock';
 import { sortMods, sortCollapsedSection } from './utils';
+import { modActivationStore } from '@/lib/store/mod_activation';
+import { ModItemSeparatorUnion } from '@/lib/api';
+import { Filter } from './filter';
 
 export const ModListTable = () => {
 	const [searchModText, setSearchModText] = useState<string>('');
+	const [activationFilter, setActivationFilter] = useState<string>('all');
 
 	const mods = modsStore(state => state.mods);
 	const separators = modSeparatorStore(state => state.data);
 	const setMods = modsStore(state => state.setMods);
 	const setModOrder = modOrderStore(state => state.setData);
 	const metaData = modMetaStore(state => state.data);
+	const modActiveData = modActivationStore(state => state.data);
 
 	const filteredMods = useMemo(() => {
+		let filteredData: ModItemSeparatorUnion[] = mods;
 		if (searchModText !== '') {
 			let searchModTextLower = searchModText.toLocaleLowerCase();
-
 			if (searchModTextLower.startsWith('c:')) {
 				searchModTextLower = searchModTextLower
 					.replace('c:', '')
@@ -56,7 +59,7 @@ export const ModListTable = () => {
 								.includes(searchModTextLower)),
 				);
 
-				return mods.filter(m => {
+				filteredData = mods.filter(m => {
 					if (!('item_type' in m)) {
 						return false;
 					}
@@ -82,7 +85,7 @@ export const ModListTable = () => {
 						md.title.toLowerCase().includes(searchModTextLower),
 				);
 
-				return mods.filter(m => {
+				filteredData = mods.filter(m => {
 					if (!('item_type' in m)) {
 						return false;
 					}
@@ -104,8 +107,19 @@ export const ModListTable = () => {
 				});
 			}
 		}
-		return mods;
-	}, [mods, searchModText]);
+
+		if (activationFilter !== 'all') {
+			filteredData = filteredData.filter(f =>
+				modActiveData.some(
+					s =>
+						s.mod_id === f.identifier &&
+						s.is_active === (activationFilter === 'active'),
+				),
+			);
+		}
+
+		return filteredData;
+	}, [mods, searchModText, activationFilter]);
 
 	const separatorPositions = useMemo(() => {
 		const positions: { id: string; index: number }[] = [];
@@ -178,9 +192,6 @@ export const ModListTable = () => {
 		[mods, separators, setModOrder, setMods],
 	);
 
-	const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) =>
-		setSearchModText(event.currentTarget.value);
-
 	const itemIds = useMemo(() => mods.map(mod => mod.identifier), [mods]);
 	const modIndices = useMemo(() => {
 		const indices = new Map<string, number>();
@@ -200,7 +211,6 @@ export const ModListTable = () => {
 				<Header />
 				<TableBody className="text-sm">
 					<SortableContext
-						disabled={searchModText !== ''}
 						items={itemIds}
 						strategy={verticalListSortingStrategy}
 					>
@@ -217,15 +227,12 @@ export const ModListTable = () => {
 				<Footer length={mods.length} />
 				<Lock />
 			</Table>
-			<div className="fixed bottom-0 left-0 right-0 bg-zinc-900 w-full">
-				<SearchIcon className="absolute left-3 bottom-[12px] w-3.5 h-3.5 text-muted-foreground" />
-				<Input
-					className="rounded-none ps-9 h-10 border-0"
-					placeholder="Search ..."
-					defaultValue={searchModText}
-					onChange={handleSearchChange}
-				/>
-			</div>
+			<Filter
+				activationFilter={activationFilter}
+				setActivationFilter={setActivationFilter}
+				searchModText={searchModText}
+				setSearchModText={setSearchModText}
+			/>
 		</DndContext>
 	);
 };
