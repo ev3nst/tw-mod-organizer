@@ -1,7 +1,7 @@
 {
 	"$schema": "https://schema.tauri.app/config/2",
 	"productName": "TW Mod Organizer",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"identifier": "com.tw-mod-organizer",
 	"build": {
 		"beforeDevCommand": "bun run dev",
@@ -51,15 +51,6 @@
 		]
 	},
 	"plugins": {
-		"updater": {
-			"windows": {
-				"installMode": "basicUi"
-			},
-			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDc2OTlEQ0MxNTNBQ0E4NkQKUldSdHFLeFR3ZHlaZGg2VUZMSjRQa2lzM2xlY09XNit5MFBaWTlta20rVjduUEU4Q2xNSjBmbFkK",
-			"endpoints": [
-				"https://github.com/ev3nst/tw-mod-organizer/releases/latest/download/latest.json"
-			]
-		},
 		"deep-link": {
 			"schema": "nxm",
 			"desktop": {

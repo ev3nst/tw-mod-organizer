@@ -1,6 +1,6 @@
 [package]
 name = "tw-mod-organizer"
-version = "0.3.0"
+version = "0.3.1"
 description = "TW Mod Organizer"
 authors = ["Burak Kartal"]
 edition = "2021"
@@ -41,4 +41,3 @@ steamworks = { version = "0.11.0", features = ["serde"] }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-single-instance = "2"
-tauri-plugin-updater = "2"
