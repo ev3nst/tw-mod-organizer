@@ -18,9 +18,12 @@ import { Checkbox } from '@/components/checkbox';
 
 import { settingStore } from '@/lib/store/setting';
 import { ProfileModel } from '@/lib/store/profile';
+
 import { ModOrderModel } from '@/lib/store/mod_order';
 import { ModActivationModel } from '@/lib/store/mod_activation';
+import { ModSeparatorModel } from '@/lib/store/mod_separator';
 import { profileStore } from '@/lib/store/profile';
+
 import { toastError } from '@/lib/utils';
 
 export const AddProfile = () => {
@@ -70,8 +73,8 @@ export const AddProfile = () => {
 				);
 				const newModActivation = new ModActivationModel({
 					id: undefined as any,
-					profile_id: newProfile.id,
 					app_id: selectedGame!.steam_id,
+					profile_id: newProfile.id,
 					data:
 						modActivation && modActivation.data
 							? modActivation.data
@@ -82,11 +85,25 @@ export const AddProfile = () => {
 				const modOrder = await ModOrderModel.retrieve(profile.id);
 				const newModOrder = new ModOrderModel({
 					id: undefined as any,
-					profile_id: newProfile.id,
 					app_id: selectedGame!.steam_id,
+					profile_id: newProfile.id,
 					data: modOrder && modOrder.data ? modOrder.data : [],
 				});
 				await newModOrder.save();
+
+				const currentSeparators = await ModSeparatorModel.retrieve(
+					profile.id,
+				);
+				const newSeparators = new ModSeparatorModel({
+					id: undefined as any,
+					app_id: selectedGame!.steam_id,
+					profile_id: newProfile.id,
+					data:
+						currentSeparators && currentSeparators.data
+							? currentSeparators.data
+							: [],
+				});
+				await newSeparators.save();
 			}
 
 			const newProfilesArr = [...profiles];
@@ -104,6 +121,10 @@ export const AddProfile = () => {
 
 			toast.success('Profile creation successful.');
 			setProfileName('');
+
+			setTimeout(() => {
+				window.location.reload();
+			}, 150);
 		} catch (error) {
 			toastError(error);
 		} finally {
