@@ -46,7 +46,7 @@ export function Preferences() {
 					<TabsList className="grid grid-cols-2 mr-10 mb-3">
 						<TabsTrigger value="settings">Settings</TabsTrigger>
 						<TabsTrigger value="import_data">
-							Import Data
+							WH3 Mod Manager
 						</TabsTrigger>
 					</TabsList>
 					<TabsContent value="settings">
