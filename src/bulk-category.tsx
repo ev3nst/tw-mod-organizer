@@ -30,13 +30,11 @@ import { toast } from 'sonner';
 import { toastError } from './lib/utils';
 
 export function BulkCategory() {
-	// State for selecting mods to change and filtering/searching
 	const [modsToChange, setModsToChange] = useState<ModItem[]>([]);
 	const [searchModText, setSearchModText] = useState<string>('');
 	const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) =>
 		setSearchModText(event.currentTarget.value);
 
-	// State for categories to add and remove
 	const [categoriesToAdd, setCategoriesToAdd] = useState<string>('');
 	const handleCategoryChange = (event: ChangeEvent<HTMLInputElement>) =>
 		setCategoriesToAdd(event.currentTarget.value);
@@ -52,7 +50,6 @@ export function BulkCategory() {
 	const setMetaData = modMetaStore(state => state.setData);
 	const modActiveData = modActivationStore(state => state.data);
 
-	// Resolve mods with meta title and categories info.
 	const modsResolved = mods.map(rm => {
 		if (!('item_type' in rm)) return rm;
 
@@ -89,13 +86,11 @@ export function BulkCategory() {
 	);
 	const toggleBulkCategory = modMetaStore(state => state.toggleBulkCategory);
 
-	// Helper function to remove then add categories.
 	function applyCategoryChanges(
 		existingCategories: string,
 		add: string,
 		remove: string,
 	) {
-		// Remove categories from the original list first.
 		let updatedCategories = existingCategories;
 		if (remove) {
 			const categoryList = updatedCategories
@@ -115,7 +110,6 @@ export function BulkCategory() {
 				)
 				.join(', ');
 		}
-		// Then add new categories.
 		if (add) {
 			const trimmedUpdated = updatedCategories.trim();
 			const commaExt = trimmedUpdated !== '' ? ', ' : '';
@@ -195,7 +189,7 @@ export function BulkCategory() {
 						</Select>
 						<Input
 							className="flex-grow"
-							placeholder="Search ..."
+							placeholder="C: Category (Optional) - Search Term ..."
 							defaultValue={searchModText}
 							onChange={handleSearchChange}
 						/>
@@ -206,7 +200,6 @@ export function BulkCategory() {
 						defaultValue={categoriesToAdd}
 						onChange={handleCategoryChange}
 					/>
-					{/* New input for removing categories */}
 					<Input
 						className="flex-grow"
 						placeholder="Categories to remove (eg. Empire, Lords)"
@@ -266,7 +259,6 @@ export function BulkCategory() {
 							<AccordionContent>
 								<div className="max-h-[200px] overflow-y-auto">
 									{modsToChange.map(mtc => {
-										// Compute final categories for preview
 										const previewCategories =
 											applyCategoryChanges(
 												mtc.categories,

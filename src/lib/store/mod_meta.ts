@@ -87,33 +87,63 @@ export function filterMods(
 	modActiveData: ModActivationItem[],
 ): ModItemSeparatorUnion[] {
 	let filteredData: ModItemSeparatorUnion[] = mods;
+
 	if (searchModText !== '') {
 		let searchModTextLower = searchModText.toLocaleLowerCase();
 		if (searchModTextLower.startsWith('c:')) {
 			searchModTextLower = searchModTextLower.replace('c:', '').trim();
+			const dashIndex = searchModTextLower.indexOf('-');
+			const categoryPart =
+				dashIndex !== -1
+					? searchModTextLower.substring(0, dashIndex).trim()
+					: searchModTextLower;
 
-			const filterMeta = metaData.filter(
-				md =>
-					md.categories.toLowerCase().includes(searchModTextLower) ||
-					(typeof md.title !== 'undefined' &&
-						md.title.toLowerCase().includes(searchModTextLower)),
-			);
+			const categoryTerms = categoryPart
+				.split(',')
+				.map(term => term.trim())
+				.filter(term => term !== '');
+
+			const titleTerm =
+				dashIndex !== -1
+					? searchModTextLower.substring(dashIndex + 1).trim()
+					: '';
 
 			filteredData = mods.filter(m => {
 				if (!('item_type' in m)) {
 					return false;
 				}
 
-				if (
-					filterMeta.findIndex(f => f.mod_id === m.identifier) !== -1
-				) {
-					return true;
-				} else {
-					return (
+				const matchesAllCategories = categoryTerms.every(term => {
+					const matchesModCategory =
 						m.categories !== null &&
-						m.categories.toLowerCase().includes(searchModTextLower)
+						m.categories.toLowerCase().includes(term);
+
+					const matchesMetaCategory = metaData.some(
+						md =>
+							md.mod_id === m.identifier &&
+							md.categories.toLowerCase().includes(term),
 					);
+
+					return matchesModCategory || matchesMetaCategory;
+				});
+
+				let matchesTitle = true;
+				if (titleTerm !== '') {
+					const matchesModTitle = m.title
+						.toLowerCase()
+						.includes(titleTerm);
+
+					const matchesMetaTitle = metaData.some(
+						md =>
+							md.mod_id === m.identifier &&
+							typeof md.title !== 'undefined' &&
+							md.title.toLowerCase().includes(titleTerm),
+					);
+
+					matchesTitle = matchesModTitle || matchesMetaTitle;
 				}
+
+				return matchesAllCategories && matchesTitle;
 			});
 		} else {
 			const filterMeta = metaData.filter(

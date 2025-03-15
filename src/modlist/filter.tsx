@@ -50,7 +50,7 @@ export const Filter = ({
 				<SearchIcon className="absolute left-0 bottom-[12px] w-3.5 h-3.5 text-muted-foreground" />
 				<Input
 					className="rounded-none ps-6 h-10 border-0"
-					placeholder="Search ..."
+					placeholder="C: Category (Optional) - Search Term ..."
 					defaultValue={searchModText}
 					onChange={handleSearchChange}
 				/>
