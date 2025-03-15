@@ -16,6 +16,7 @@ import { SetPriorityDialog } from './set-priority';
 import { MetaInformationDialog } from './meta-information';
 import { RemoveModDialog } from './remove-mod';
 import { EditSeparator } from './edit-separator';
+import { BulkCategory } from './bulk-category';
 
 function App() {
 	const [fetchAppManageLoading, setFetchAppManageLoading] = useState(true);
@@ -72,6 +73,7 @@ function App() {
 						<MetaInformationDialog />
 						<EditSeparator />
 						<RemoveModDialog />
+						<BulkCategory />
 					</SidebarInset>
 					<AppSidebar />
 				</div>

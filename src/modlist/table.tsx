@@ -16,17 +16,17 @@ import { Table, TableBody } from '@/components/table';
 
 import { modsStore } from '@/lib/store/mods';
 import { modOrderStore } from '@/lib/store/mod_order';
+import { modActivationStore } from '@/lib/store/mod_activation';
 import { modSeparatorStore, isCollapsed } from '@/lib/store/mod_separator';
-import { modMetaStore } from '@/lib/store/mod_meta';
+import { filterMods, modMetaStore } from '@/lib/store/mod_meta';
 
 import { Header } from './header';
 import { Row } from './row';
 import { Footer } from './footer';
 import { Lock } from './lock';
-import { sortMods, sortCollapsedSection } from './utils';
-import { modActivationStore } from '@/lib/store/mod_activation';
-import { ModItemSeparatorUnion } from '@/lib/api';
 import { Filter } from './filter';
+
+import { sortMods, sortCollapsedSection } from './utils';
 
 export const ModListTable = () => {
 	const [searchModText, setSearchModText] = useState<string>('');
@@ -40,85 +40,13 @@ export const ModListTable = () => {
 	const modActiveData = modActivationStore(state => state.data);
 
 	const filteredMods = useMemo(() => {
-		let filteredData: ModItemSeparatorUnion[] = mods;
-		if (searchModText !== '') {
-			let searchModTextLower = searchModText.toLocaleLowerCase();
-			if (searchModTextLower.startsWith('c:')) {
-				searchModTextLower = searchModTextLower
-					.replace('c:', '')
-					.trim();
-
-				const filterMeta = metaData.filter(
-					md =>
-						md.categories
-							.toLowerCase()
-							.includes(searchModTextLower) ||
-						(typeof md.title !== 'undefined' &&
-							md.title
-								.toLowerCase()
-								.includes(searchModTextLower)),
-				);
-
-				filteredData = mods.filter(m => {
-					if (!('item_type' in m)) {
-						return false;
-					}
-
-					if (
-						filterMeta.findIndex(f => f.mod_id === m.identifier) !==
-						-1
-					) {
-						return true;
-					} else {
-						return (
-							m.categories !== null &&
-							m.categories
-								.toLowerCase()
-								.includes(searchModTextLower)
-						);
-					}
-				});
-			} else {
-				const filterMeta = metaData.filter(
-					md =>
-						typeof md.title !== 'undefined' &&
-						md.title.toLowerCase().includes(searchModTextLower),
-				);
-
-				filteredData = mods.filter(m => {
-					if (!('item_type' in m)) {
-						return false;
-					}
-
-					if (
-						filterMeta.findIndex(f => f.mod_id === m.identifier) !==
-						-1
-					) {
-						return true;
-					}
-
-					return (
-						m.title.toLowerCase().includes(searchModTextLower) ||
-						(m.categories !== null &&
-							m.categories
-								.toLowerCase()
-								.includes(searchModTextLower))
-					);
-				});
-			}
-		}
-
-		if (activationFilter !== 'all') {
-			filteredData = filteredData.filter(f =>
-				modActiveData.some(
-					s =>
-						s.mod_id === f.identifier &&
-						s.is_active === (activationFilter === 'active'),
-				),
-			);
-		}
-
-		return filteredData;
+		return filterMods(
+			searchModText,
+			activationFilter,
+			mods,
+			metaData,
+			modActiveData,
+		);
 	}, [mods, searchModText, activationFilter]);
 
 	const separatorPositions = useMemo(() => {

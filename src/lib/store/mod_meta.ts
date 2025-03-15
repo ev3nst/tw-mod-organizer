@@ -1,12 +1,13 @@
-import { ModItem } from '@/lib/api';
+import { ModItem, ModItemSeparatorUnion } from '@/lib/api';
 import {
 	ModGenericModel,
 	ModGenericProps,
 	ModelConstructor,
 	createStore,
 } from '@/lib/store/mod_generic';
+import { SettingModel } from '@/lib/store/setting';
+import { ModActivationItem } from '@/lib/store/mod_activation';
 import { debounceCallback } from '@/lib/utils';
-import { SettingModel } from './setting';
 
 export type ModMetaItem = {
 	mod_id: string;
@@ -45,28 +46,111 @@ export const modMetaStore = createStore<
 	ModMetaItem,
 	{
 		metaInfoOpen: boolean;
-		selectedMod: ModItem;
 		toggleMetaInfo: () => void;
+		selectedMod: ModItem;
 		setSelectedMod: (selectedMod: ModItem) => void;
+		bulkCategoryDialogOpen: boolean;
+		toggleBulkCategory: () => void;
 	}
 >({
 	model: ModMetaModel as ModelConstructor<ModMeta, ModMetaModel, ModMetaItem>,
 	initialState: [],
 	extend: (set, get) => ({
-		metaInfoOpen: false,
-		selectedMod: {
-			title: '',
-		} as any,
 		setData: (data: ModMetaItem[]) => {
 			set({ data } as any);
 			debounceCallback(() => syncData(data));
 		},
+		metaInfoOpen: false,
 		toggleMetaInfo: () => {
 			const metaInfoOpen = !get().metaInfoOpen;
 			set({ metaInfoOpen });
 		},
+		selectedMod: {
+			title: '',
+		} as any,
 		setSelectedMod: selectedMod => {
 			set({ selectedMod });
 		},
+		bulkCategoryDialogOpen: false,
+		toggleBulkCategory: () => {
+			const bulkCategoryDialogOpen = !get().bulkCategoryDialogOpen;
+			set({ bulkCategoryDialogOpen });
+		},
 	}),
 });
+
+export function filterMods(
+	searchModText: string,
+	activationFilter: string,
+	mods: ModItemSeparatorUnion[],
+	metaData: ModMetaItem[],
+	modActiveData: ModActivationItem[],
+): ModItemSeparatorUnion[] {
+	let filteredData: ModItemSeparatorUnion[] = mods;
+	if (searchModText !== '') {
+		let searchModTextLower = searchModText.toLocaleLowerCase();
+		if (searchModTextLower.startsWith('c:')) {
+			searchModTextLower = searchModTextLower.replace('c:', '').trim();
+
+			const filterMeta = metaData.filter(
+				md =>
+					md.categories.toLowerCase().includes(searchModTextLower) ||
+					(typeof md.title !== 'undefined' &&
+						md.title.toLowerCase().includes(searchModTextLower)),
+			);
+
+			filteredData = mods.filter(m => {
+				if (!('item_type' in m)) {
+					return false;
+				}
+
+				if (
+					filterMeta.findIndex(f => f.mod_id === m.identifier) !== -1
+				) {
+					return true;
+				} else {
+					return (
+						m.categories !== null &&
+						m.categories.toLowerCase().includes(searchModTextLower)
+					);
+				}
+			});
+		} else {
+			const filterMeta = metaData.filter(
+				md =>
+					typeof md.title !== 'undefined' &&
+					md.title.toLowerCase().includes(searchModTextLower),
+			);
+
+			filteredData = mods.filter(m => {
+				if (!('item_type' in m)) {
+					return false;
+				}
+
+				if (
+					filterMeta.findIndex(f => f.mod_id === m.identifier) !== -1
+				) {
+					return true;
+				}
+
+				return (
+					m.title.toLowerCase().includes(searchModTextLower) ||
+					(m.categories !== null &&
+						m.categories.toLowerCase().includes(searchModTextLower))
+				);
+			});
+		}
+	}
+
+	if (activationFilter !== 'all') {
+		filteredData = filteredData.filter(f =>
+			modActiveData.some(
+				s =>
+					s.mod_id === f.identifier &&
+					s.is_active === (activationFilter === 'active'),
+			),
+		);
+	}
+
+	return filteredData;
+}

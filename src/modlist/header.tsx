@@ -10,8 +10,9 @@ import {
 import { Button } from '@/components/button';
 
 import { settingStore } from '@/lib/store/setting';
-
 import { ProfileSwitcher } from '@/modlist/profile';
+import { modMetaStore } from '@/lib/store/mod_meta';
+
 import { ToggleAll } from '@/modlist/toggle-all';
 
 export const Header = () => {
@@ -22,6 +23,8 @@ export const Header = () => {
 	const setConflict = settingStore(state => state.setConflict);
 	const setVersion = settingStore(state => state.setVersion);
 
+	const toggleBulkCategory = modMetaStore(state => state.toggleBulkCategory);
+
 	return (
 		<TableHeader>
 			<TableRow>
@@ -29,7 +32,14 @@ export const Header = () => {
 				<TableHead className="text-center">#</TableHead>
 				<ToggleAll />
 				<ProfileSwitcher />
-				{toggle_category && <TableHead>CATEGORY</TableHead>}
+				{toggle_category && (
+					<TableHead
+						className="hover:cursor-pointer hover:brightness-125"
+						onClick={() => toggleBulkCategory()}
+					>
+						CATEGORY
+					</TableHead>
+				)}
 				{toggle_conflict && (
 					<TableHead className="text-center">CONFLICT</TableHead>
 				)}

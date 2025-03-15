@@ -50,20 +50,25 @@ export function MetaInformationDialog() {
 	}
 
 	const handleSubmit = () => {
-		try {
-			setMetaData(
-				metaData.map(m => {
-					if (m.mod_id === selectedMod.identifier) {
-						return {
-							...m,
-							title,
-							categories,
-						};
-					}
+		const newTitle = title.trim();
+		let newCategories = categories.trim();
+		if (newCategories.endsWith(',')) {
+			newCategories = newCategories.slice(0, -1);
+		}
 
-					return m;
-				}),
-			);
+		try {
+			const newMetaData = metaData.map(m => {
+				if (m.mod_id === selectedMod.identifier) {
+					return {
+						...m,
+						title: newTitle,
+						categories: newCategories,
+					};
+				}
+
+				return m;
+			});
+			setMetaData(newMetaData);
 			toggleMetaInfo();
 			toast.success('Mod meta details changed.');
 		} catch (error) {
