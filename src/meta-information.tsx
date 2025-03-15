@@ -56,9 +56,8 @@ export function MetaInformationDialog() {
 					if (m.mod_id === selectedMod.identifier) {
 						return {
 							...m,
-							title: title !== '' ? title : m.title,
-							categories:
-								categories !== '' ? categories : m.categories,
+							title,
+							categories,
 						};
 					}
 
@@ -93,8 +92,8 @@ export function MetaInformationDialog() {
 							autoComplete="off"
 							autoCorrect="off"
 							className="col-span-3"
-							placeholder={titlePlaceholder}
-							value={title}
+							placeholder={selectedModMeta?.title}
+							defaultValue={titlePlaceholder}
 							onChange={e => setTitle(e.currentTarget.value)}
 						/>
 					</div>
@@ -104,8 +103,8 @@ export function MetaInformationDialog() {
 							autoComplete="off"
 							autoCorrect="off"
 							className="col-span-3"
-							placeholder={categoriesPlaceholder}
-							value={categories}
+							placeholder={selectedMod.categories}
+							defaultValue={categoriesPlaceholder}
 							onChange={e => setCategories(e.currentTarget.value)}
 						/>
 					</div>
