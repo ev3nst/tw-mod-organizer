@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import { RefreshCwIcon } from 'lucide-react';
 
 import { Button } from '@/components/button';
@@ -14,14 +13,13 @@ export const Refresh = () => {
 	const init_reload = settingStore(state => state.init_reload);
 	const setInitReload = settingStore(state => state.setInitReload);
 
-	const handleRefresh = useCallback(() => {
+	const handleRefresh = () => {
 		try {
 			setInitReload(!init_reload);
 		} catch (error) {
 			toastError(error);
-		} finally {
 		}
-	}, []);
+	};
 
 	return (
 		<Button
