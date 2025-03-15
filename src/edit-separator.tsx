@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -8,17 +7,14 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/dialog';
-import { Input } from '@/components/input';
-import { Label } from '@/components/label';
-import { Button } from '@/components/button';
+
+import { SeparatorForm } from '@/components/separator-form';
 
 import { settingStore } from '@/lib/store/setting';
 import { modSeparatorStore } from '@/lib/store/mod_separator';
 import { toastError } from '@/lib/utils';
 
 export function EditSeparator() {
-	const [title, setTitle] = useState<string>('');
-
 	const init_reload = settingStore(state => state.init_reload);
 	const setInitReload = settingStore(state => state.setInitReload);
 
@@ -34,7 +30,7 @@ export function EditSeparator() {
 	const separators = modSeparatorStore(state => state.data);
 	const setSeparators = modSeparatorStore(state => state.setData);
 
-	if (!selectedSeparator) return;
+	if (!selectedSeparator) return null;
 
 	const selectedSeparatorMeta = separators.find(
 		md => md.identifier === selectedSeparator.identifier,
@@ -50,17 +46,28 @@ export function EditSeparator() {
 		titlePlaceholder = selectedSeparatorMeta.title;
 	}
 
-	const handleSubmit = () => {
+	const handleSubmit = (values: {
+		title: string;
+		backgroundColor: string;
+		textColor: string;
+	}) => {
 		try {
 			setSeparators(
 				separators.map(m => {
 					if (m.identifier === selectedSeparator.identifier) {
 						return {
 							...m,
-							title: title !== '' ? title : m.title,
+							title: values.title !== '' ? values.title : m.title,
+							text_color:
+								values.textColor !== ''
+									? values.textColor
+									: m.text_color,
+							background_color:
+								values.backgroundColor !== ''
+									? values.backgroundColor
+									: m.background_color,
 						};
 					}
-
 					return m;
 				}),
 			);
@@ -89,27 +96,17 @@ export function EditSeparator() {
 						{selectedSeparator.title}
 					</DialogDescription>
 				</DialogHeader>
-				<div className="flex flex-col gap-4">
-					<div className="grid grid-cols-4 items-center gap-3">
-						<Label>Title</Label>
-						<Input
-							autoComplete="off"
-							autoCorrect="off"
-							className="col-span-3"
-							placeholder={titlePlaceholder}
-							value={title}
-							onChange={e => setTitle(e.currentTarget.value)}
-						/>
-					</div>
 
-					<Button
-						type="button"
-						variant="secondary"
-						onClick={handleSubmit}
-					>
-						Save
-					</Button>
-				</div>
+				<SeparatorForm
+					initialValues={{
+						title: titlePlaceholder,
+						backgroundColor:
+							selectedSeparatorMeta?.background_color,
+						textColor: selectedSeparatorMeta?.text_color,
+					}}
+					submitLabel="Save"
+					onSubmit={handleSubmit}
+				/>
 			</DialogContent>
 		</Dialog>
 	);
