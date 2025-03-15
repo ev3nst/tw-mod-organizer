@@ -7,16 +7,14 @@ import {
 } from '@/components/select';
 import { TableHead } from '@/components/table';
 
-import { settingStore } from '@/lib/store/setting';
 import { profileStore } from '@/lib/store/profile';
 
-import { AddProfile } from './add-profile';
+import { ProfileDialog } from './profile-dialog';
 import { DeleteProfile } from './delete-profile';
 
 export const ProfileSwitcher = () => {
 	const profile = profileStore(state => state.profile);
 	const profiles = profileStore(state => state.profiles);
-	const selectedGame = settingStore(state => state.selectedGame);
 
 	return (
 		<TableHead>
@@ -28,7 +26,7 @@ export const ProfileSwitcher = () => {
 							f => f.name === value,
 						);
 						if (findProfile) {
-							await findProfile.setActive(selectedGame!.steam_id);
+							await findProfile.setActive();
 							window.location.reload();
 						}
 					}}
@@ -56,8 +54,8 @@ export const ProfileSwitcher = () => {
 					</SelectContent>
 				</Select>
 				<div className="flex gap-1 items-center">
+					<ProfileDialog />
 					<DeleteProfile />
-					<AddProfile />
 				</div>
 			</div>
 		</TableHead>

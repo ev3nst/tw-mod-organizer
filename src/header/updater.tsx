@@ -22,6 +22,7 @@ import {
 import { Button } from '@/components/button';
 import { Separator } from '@/components/separator';
 
+import { settingStore } from '@/lib/store/setting';
 import { determineErrorMessage } from '@/lib/utils';
 
 type UpdateState = {
@@ -53,6 +54,9 @@ export const Updater = () => {
 	const [isUpdating, setIsUpdating] = useState(false);
 	const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
 	const [updateComplete, setUpdateComplete] = useState(false);
+
+	const isGameRunning = settingStore(state => state.isGameRunning);
+	const shouldLockScreen = settingStore(state => state.shouldLockScreen);
 
 	useEffect(() => {
 		checkForUpdates(true);
@@ -153,9 +157,15 @@ export const Updater = () => {
 				<Button
 					size="sm"
 					variant="ghost"
-					className="relative flex items-center justify-center"
+					className={`relative flex items-center justify-center ${
+						checkingForUpdate || isGameRunning || shouldLockScreen
+							? 'disabled'
+							: ''
+					}`}
 					onClick={() => checkForUpdates(false)}
-					disabled={checkingForUpdate}
+					disabled={
+						checkingForUpdate || isGameRunning || shouldLockScreen
+					}
 				>
 					{updateAvailable ? (
 						<>
@@ -173,7 +183,7 @@ export const Updater = () => {
 							? 'Update Available'
 							: 'Check for Updates'}
 					</span>
-					<div className="text-sm text-muted-foreground">v0.2.2</div>
+					<div className="text-sm text-muted-foreground">v0.3.0</div>
 				</Button>
 			</DialogTrigger>
 			<DialogContent

@@ -16,6 +16,7 @@ import { ImportData } from './import-data';
 
 export function Preferences() {
 	const isGameRunning = settingStore(state => state.isGameRunning);
+	const shouldLockScreen = settingStore(state => state.shouldLockScreen);
 
 	return (
 		<Dialog>
@@ -23,9 +24,9 @@ export function Preferences() {
 				<Button
 					variant="ghost"
 					className={`clickable-content group/toggle h-8 w-8 px-0 ${
-						isGameRunning ? 'disabled' : ''
+						isGameRunning || shouldLockScreen ? 'disabled' : ''
 					}`}
-					disabled={isGameRunning}
+					disabled={isGameRunning || shouldLockScreen}
 				>
 					<SettingsIcon />
 					<span className="sr-only">Settings</span>

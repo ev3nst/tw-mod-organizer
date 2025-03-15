@@ -14,19 +14,12 @@ import {
 } from '@/components/alert-dialog';
 import { Button } from '@/components/button';
 
-import { settingStore } from '@/lib/store/setting';
 import { profileStore } from '@/lib/store/profile';
-import { ModOrderModel } from '@/lib/store/mod_order';
-import { ModActivationModel } from '@/lib/store/mod_activation';
-
 import { toastError } from '@/lib/utils';
 
 export const DeleteProfile = () => {
 	const [processLoading, setProcessLoading] = useState<boolean>(false);
-
 	const profile = profileStore(state => state.profile);
-	const profiles = profileStore(state => state.profiles);
-	const selectedGame = settingStore(state => state.selectedGame);
 
 	const handleSubmit = async () => {
 		setProcessLoading(true);
@@ -36,26 +29,7 @@ export const DeleteProfile = () => {
 				return;
 			}
 
-			let nextInLine;
-			for (let pi = 0; pi < profiles.length; pi++) {
-				if (profiles[pi].id !== profile.id) {
-					nextInLine = profiles[pi];
-					break;
-				}
-			}
-			if (nextInLine) {
-				await nextInLine.setActive(selectedGame!.steam_id);
-			} else {
-				toast.error('Could not find any available profile to switch.');
-				return;
-			}
-
-			const modOrder = await ModOrderModel.retrieve(profile.id);
-			await modOrder?.delete();
-			const modActivation = await ModActivationModel.retrieve(profile.id);
-			await modActivation?.delete();
 			await profile.delete();
-
 			toast.success('Profile deleted.');
 			setTimeout(() => {
 				window.location.reload();

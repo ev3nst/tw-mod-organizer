@@ -1,16 +1,7 @@
 import { type ChangeEvent, useState } from 'react';
-import { PlusIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from '@/components/dialog';
+import { DialogFooter } from '@/components/dialog';
 import { Input } from '@/components/input';
 import { Label } from '@/components/label';
 import { Button } from '@/components/button';
@@ -111,7 +102,7 @@ export const AddProfile = () => {
 			setProfiles(newProfilesArr);
 
 			if (switchToNew) {
-				await newProfile.setActive(selectedGame!.steam_id);
+				await newProfile.setActive();
 				setProfile(newProfile);
 			}
 
@@ -133,85 +124,75 @@ export const AddProfile = () => {
 	};
 
 	return (
-		<Dialog>
-			<DialogTrigger asChild>
-				<Button variant="ghost" size="icon" className="w-7 h-7">
-					<PlusIcon />
-				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-[425px]">
-				<DialogHeader>
-					<DialogTitle>Add Profile</DialogTitle>
-					<DialogDescription>
+		<div>
+			<div className="grid gap-4 py-4">
+				<div className="flex flex-col gap-3 mb-3">
+					<Label htmlFor="name">
+						Name <span className="text-red-500">*</span>
+					</Label>
+					<Input
+						id="name"
+						value={profileName}
+						onChange={handleProfileName}
+						autoComplete="off"
+						className="col-span-3"
+					/>
+					<p className="text-sm text-muted-foreground">
 						Name of the profile must be unique.
-					</DialogDescription>
-				</DialogHeader>
-				<div className="grid gap-4 py-4">
-					<div className="flex flex-col gap-3 mb-3">
-						<Label htmlFor="name">
-							Name <span className="text-red-500">*</span>
-						</Label>
-						<Input
-							id="name"
-							value={profileName}
-							onChange={handleProfileName}
-							autoComplete="off"
-							className="col-span-3"
-						/>
-					</div>
-					<div className="flex items-center space-x-2">
-						<Checkbox
-							id="copy_modlist_structure"
-							checked={copyModListStructure}
-							onCheckedChange={checked =>
-								setCopyModListStructure(checked as any)
-							}
-						/>
-						<label
-							htmlFor="copy_modlist_structure"
-							className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-						>
-							Copy the current mod list structure
-						</label>
-					</div>
-					<div className="flex items-center space-x-2">
-						<Checkbox
-							id="switch_to_new"
-							checked={switchToNew}
-							onCheckedChange={checked =>
-								setSwitchToNew(checked as any)
-							}
-						/>
-						<label
-							htmlFor="switch_to_new"
-							className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-						>
-							Switch to new profile after its creation
-						</label>
-					</div>
+					</p>
 				</div>
-				<DialogFooter>
-					<Button
-						type="button"
-						variant="info"
-						className={
-							processLoading ||
-							profileName === null ||
-							profileName.trim() === ''
-								? 'disabled'
-								: ''
+				<div className="flex items-center space-x-2">
+					<Checkbox
+						id="copy_modlist_structure"
+						checked={copyModListStructure}
+						onCheckedChange={checked =>
+							setCopyModListStructure(checked as any)
 						}
-						disabled={
-							processLoading ||
-							profileName === null ||
-							profileName.trim() === ''
-						}
-						onClick={handleSubmit}
+					/>
+					<label
+						htmlFor="copy_modlist_structure"
+						className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 					>
-						Save
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+						Copy the current mod list structure
+					</label>
+				</div>
+				<div className="flex items-center space-x-2">
+					<Checkbox
+						id="switch_to_new"
+						checked={switchToNew}
+						onCheckedChange={checked =>
+							setSwitchToNew(checked as any)
+						}
+					/>
+					<label
+						htmlFor="switch_to_new"
+						className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+					>
+						Switch to new profile after its creation
+					</label>
+				</div>
+			</div>
+			<DialogFooter>
+				<Button
+					type="button"
+					variant="info"
+					className={
+						processLoading ||
+						profileName === null ||
+						profileName.trim() === ''
+							? 'disabled'
+							: ''
+					}
+					disabled={
+						processLoading ||
+						profileName === null ||
+						profileName.trim() === ''
+					}
+					onClick={handleSubmit}
+				>
+					Save
+				</Button>
+			</DialogFooter>
+		</div>
 	);
 };

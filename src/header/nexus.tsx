@@ -20,6 +20,7 @@ import api from '@/lib/api';
 
 export const Nexus = () => {
 	const isGameRunning = settingStore(state => state.isGameRunning);
+	const shouldLockScreen = settingStore(state => state.shouldLockScreen);
 	const setNexusAuthApi = settingStore(state => state.setNexusAuthApi);
 	const setNexusAuthParams = settingStore(state => state.setNexusAuthParams);
 	const nexus_api_key = settingStore(state => state.nexus_api_key);
@@ -55,9 +56,9 @@ export const Nexus = () => {
 				<Button
 					variant="ghost"
 					className={`clickable-content ${
-						isGameRunning ? 'disabled' : ''
+						isGameRunning || shouldLockScreen ? 'disabled' : ''
 					}`}
-					disabled={isGameRunning}
+					disabled={isGameRunning || shouldLockScreen}
 				>
 					<img src="/nexus-logo.png" className="w-5 h-5" />
 					Nexus
@@ -95,9 +96,9 @@ export const Nexus = () => {
 				<Button
 					variant="ghost"
 					className={`clickable-content ${
-						isGameRunning ? 'disabled' : ''
+						isGameRunning || shouldLockScreen ? 'disabled' : ''
 					}`}
-					disabled={isGameRunning}
+					disabled={isGameRunning || shouldLockScreen}
 				>
 					<img
 						src="/nexus-logo.png"

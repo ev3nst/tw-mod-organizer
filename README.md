@@ -10,12 +10,14 @@ Requires Windows 10, Steam, 7z (for local mod installation).
 
 -	Lightweight and small bundle size
 -   Mod profiles
+-	Import & Export Mod Lists
 -   Re-ordering mods with a simple drag and drop
 -   Viewing mod conflicts
 -	Separators to group your mods
 -	Fast and smart filtering
 -   Installing manual mods within app with profile in mind. This ensures you do not have to extract mod files into to the game installation and possibly over complicating folder structure for further management
 -   Nexus Mods integration - downloading directly with deep links
+-	Custom category and title assignment for mods
 -   Simple UI
 
 ## Known Bugs
@@ -51,3 +53,5 @@ MIT
 ## Credits
 
 This project includes code from [steamworks.js](https://github.com/ceifa/steamworks.js), licensed under the MIT License.
+
+Thanks [Frodo45127](https://github.com/Frodo45127) for creating [rpfm](https://github.com/Frodo45127/rpfm) which is one of the fundamental part of this app.

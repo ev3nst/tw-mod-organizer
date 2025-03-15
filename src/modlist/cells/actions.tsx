@@ -168,6 +168,18 @@ const ModActions = ({ mod }: { mod: ModItem }) => {
 							Meta Information
 						</DropdownMenuItem>
 
+						{mod.item_type !== 'steam_mod' && (
+							<DropdownMenuItem
+								className="text-xs py-2 my-0"
+								onClick={() =>
+									api.highlight_path(mod.pack_file_path)
+								}
+							>
+								<EyeIcon className="w-3 h-3" />
+								Open Mod Location
+							</DropdownMenuItem>
+						)}
+
 						{showExternalLink && (
 							<DropdownMenuItem
 								className="text-xs py-2 my-0"

@@ -16,6 +16,7 @@ export const Play = () => {
 	const [loading, setLoading] = useState(false);
 
 	const isGameRunning = settingStore(state => state.isGameRunning);
+	const shouldLockScreen = settingStore(state => state.shouldLockScreen);
 	const setIsGameRunning = settingStore(state => state.setIsGameRunning);
 	const selectedGame = settingStore(state => state.selectedGame);
 
@@ -102,14 +103,16 @@ export const Play = () => {
 		<SidebarFooter className="mt-auto sticky bottom-0 bg-background pt-2 pb-2 z-10">
 			<RippleButton
 				className={`bg-gradient-to-r px-6 py-3 text-white font-medium transition-all duration-100 ease-in-out hover:from-green-500 hover:to-emerald-600 hover:shadow-[0_0_10px_rgba(16,185,129,0.8)] ${
-					isGameRunning || loading ? 'disabled' : ''
+					isGameRunning || shouldLockScreen || loading
+						? 'disabled'
+						: ''
 				} ${
 					saveFilePath && saveFilePath !== ''
 						? 'from-orange-500 to-red-600'
 						: 'from-blue-500 to-indigo-600'
 				}`}
 				onClick={handlePlay}
-				disabled={isGameRunning || loading}
+				disabled={isGameRunning || shouldLockScreen || loading}
 			>
 				{playButtonText}
 				{loading && <Loading />}

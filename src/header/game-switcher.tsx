@@ -13,11 +13,12 @@ export function GameSwitcher() {
 	const selectedGame = settingStore(state => state.selectedGame);
 	const setSelectedGame = settingStore(state => state.setSelectedGame);
 	const isGameRunning = settingStore(state => state.isGameRunning);
+	const shouldLockScreen = settingStore(state => state.shouldLockScreen);
 
 	return (
 		<Select
 			defaultValue={selectedGame!.slug}
-			disabled={isGameRunning}
+			disabled={isGameRunning || shouldLockScreen}
 			onValueChange={value => {
 				const findGame = games.find(f => f.slug === value);
 				if (findGame) {

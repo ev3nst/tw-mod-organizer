@@ -6,6 +6,7 @@ mod create_app_default_paths;
 mod delete_mod;
 mod delete_save_file;
 mod download_manager;
+mod export_profile;
 mod get_pack_conflicts;
 mod get_pack_files;
 mod get_save_files;
@@ -21,11 +22,13 @@ mod nexus_auth_init;
 mod nexus_download_link;
 mod nxm_protocol_toggle;
 mod open_external_url;
+mod parse_profile_json;
 mod protected_paths;
 mod start_game;
 mod steam_library_paths;
 mod steam_paths;
 mod steamworks;
+mod subscribe;
 mod subscribed_mods;
 mod supported_games;
 mod unsubscribe;
@@ -92,7 +95,10 @@ pub fn run() {
             import_data::import_data,
             install_mod::install_mod,
             start_game::start_game,
-            is_game_running::is_game_running
+            is_game_running::is_game_running,
+            export_profile::export_profile,
+            parse_profile_json::parse_profile_json,
+            subscribe::subscribe
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

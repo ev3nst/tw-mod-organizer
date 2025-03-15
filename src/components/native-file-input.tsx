@@ -19,11 +19,30 @@ const NativeFileInput = ({
 	dialogTitle,
 	extensionFilter,
 	className,
+	variant = 'outline',
+	size = 'default',
+	disabled = false,
 }: {
 	onFileChange: (file: FileMeta) => boolean;
 	dialogTitle?: string;
 	extensionFilter?: string[];
 	className?: string;
+	variant?:
+		| 'outline'
+		| 'default'
+		| 'link'
+		| 'default-outline'
+		| 'success'
+		| 'info'
+		| 'success-outline'
+		| 'info-outline'
+		| 'destructive'
+		| 'secondary'
+		| 'ghost'
+		| null
+		| undefined;
+	size?: 'default' | 'sm' | 'lg' | 'icon' | null | undefined;
+	disabled?: boolean;
 }) => {
 	const [currentFile, setCurrentFile] = useState<FileMeta>();
 
@@ -56,10 +75,12 @@ const NativeFileInput = ({
 	return (
 		<div className={cn('flex flex-col gap-2', className)}>
 			<Button
-				className="items-center"
-				variant="outline"
+				className={`items-center ${disabled ? 'disabled' : ''}`}
+				variant={variant}
+				size={size}
 				type="button"
 				onClick={handleButtonClick}
+				disabled={disabled}
 			>
 				{currentFile ? (
 					<div className="flex gap-2 text-foreground text-xs items-end">

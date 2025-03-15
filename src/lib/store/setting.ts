@@ -219,6 +219,9 @@ type SettingStore = {
 	isGameRunning: boolean;
 	setIsGameRunning: (isGameRunning: boolean) => void;
 
+	shouldLockScreen: boolean;
+	setLockScreen: (shouldLockScreen: boolean) => void;
+
 	init_reload: boolean;
 	setInitReload: (init_reload: boolean) => void;
 };
@@ -228,6 +231,7 @@ export const settingStore = create<SettingStore>(set => ({
 	setLoading: loading => {
 		set({ loading });
 	},
+
 	steam_library_paths: {
 		library_folder_paths: [],
 		game_install_paths: {},
@@ -236,21 +240,25 @@ export const settingStore = create<SettingStore>(set => ({
 	setSteamLibraryPaths: steam_library_paths => {
 		set({ steam_library_paths });
 	},
+
 	mod_download_path: '',
 	setModDownloadPath: mod_download_path => {
 		set({ mod_download_path });
 		debounceCallback(syncSetting);
 	},
+
 	mod_installation_path: '',
 	setModInstallationPath: mod_installation_path => {
 		set({ mod_installation_path });
 		debounceCallback(syncSetting);
 	},
+
 	selectedGame: undefined,
 	setSelectedGame: selectedGame => {
 		set({ selectedGame });
 		debounceCallback(syncSetting);
 	},
+
 	games: [],
 	setGames: (games, steam_library_paths) => {
 		games = games.map(game => {
@@ -267,11 +275,13 @@ export const settingStore = create<SettingStore>(set => ({
 
 		set({ games });
 	},
+
 	nexus_api_key: '',
 	setNexusAuthApi: nexus_api_key => {
 		set({ nexus_api_key });
 		debounceCallback(syncSetting);
 	},
+
 	nexus_auth_params: {
 		id: null,
 		token: null,
@@ -280,25 +290,33 @@ export const settingStore = create<SettingStore>(set => ({
 		set({ nexus_auth_params });
 		debounceCallback(syncSetting);
 	},
+
 	toggle_category: true,
 	setCategory: toggle_category => {
 		set({ toggle_category });
 		debounceCallback(syncSetting);
 	},
+
 	toggle_conflict: true,
 	setConflict: toggle_conflict => {
 		set({ toggle_conflict });
 		debounceCallback(syncSetting);
 	},
+
 	toggle_version: true,
 	setVersion: toggle_version => {
 		set({ toggle_version });
 		debounceCallback(syncSetting);
 	},
+
 	isGameRunning: false,
 	setIsGameRunning: isGameRunning => {
 		set({ isGameRunning });
 	},
+
+	shouldLockScreen: false,
+	setLockScreen: shouldLockScreen => set({ shouldLockScreen }),
+
 	init_reload: false,
 	setInitReload: init_reload => set({ init_reload }),
 }));

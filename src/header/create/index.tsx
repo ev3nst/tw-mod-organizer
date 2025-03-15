@@ -18,6 +18,7 @@ import { CreateSeparator } from './create-separator';
 
 export const Create = () => {
 	const isGameRunning = settingStore(state => state.isGameRunning);
+	const shouldLockScreen = settingStore(state => state.shouldLockScreen);
 
 	const installModItemOpen = modsStore(state => state.installModItemOpen);
 	const setInstallModItemOpen = modsStore(
@@ -33,9 +34,9 @@ export const Create = () => {
 				<Button
 					variant="ghost"
 					className={`clickable-content ${
-						isGameRunning ? 'disabled' : ''
+						isGameRunning || shouldLockScreen ? 'disabled' : ''
 					}`}
-					disabled={isGameRunning}
+					disabled={isGameRunning || shouldLockScreen}
 				>
 					<ArchiveIcon />
 					Create

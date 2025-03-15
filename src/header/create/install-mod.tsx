@@ -22,6 +22,7 @@ export const InstallMod = () => {
 	const [nameAutoFilled, setNameAutoFilled] = useState(false);
 	const [url, setURL] = useState('');
 	const [previewURL, setPreviewURL] = useState('');
+	const [imageFilePath, setImageFilePath] = useState('');
 	const [version, setVersion] = useState('');
 	const [categories, setCategories] = useState('');
 	const [packFiles, setPackFiles] = useState<string[]>([]);
@@ -73,6 +74,7 @@ export const InstallMod = () => {
 					setURL('');
 					setNameAutoFilled(false);
 					setPreviewURL('');
+					setImageFilePath('');
 					setSelectedPackFile('');
 					setModFilePath('');
 					return;
@@ -80,6 +82,16 @@ export const InstallMod = () => {
 
 				setPackFiles(packFiles.map(pf => pf.filename));
 				setSelectedPackFile(packFiles[0].filename);
+
+				const imageFiles = zipContents.filter(
+					zc =>
+						zc.filename.endsWith('.jpg') ||
+						zc.filename.endsWith('.png'),
+				);
+
+				if (imageFiles.length > 0) {
+					setImageFilePath(imageFiles[0].filename);
+				}
 
 				if (
 					typeof modFileMeta !== 'undefined' &&
@@ -130,14 +142,21 @@ export const InstallMod = () => {
 					title: name,
 					zip_file_path: modFilePath,
 					pack_file_path: selectedPackFile,
+					image_file_path:
+						imageFilePath === '' ? undefined : imageFilePath,
+					preview_url: previewURL === '' ? undefined : previewURL,
 					url,
-					preview_url: previewURL,
 					categories,
 					version,
 				},
 				mod_installation_path,
 			);
 			toast.success('Mod installed.');
+			setName('');
+			setCategories('');
+			setVersion('');
+			setModFilePath('');
+			setSelectedPackFile('');
 			setInitReload(!init_reload);
 		} catch (error) {
 			toastError(error);
@@ -212,6 +231,8 @@ export const InstallMod = () => {
 					}}
 				/>
 			</div>
+
+			{previewURL && <img src={previewURL} className="h-[50px]" />}
 
 			{sameNameWithMods && (
 				<div className="grid items-center mt-4">

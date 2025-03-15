@@ -10,6 +10,7 @@ import { toastError } from '@/lib/utils';
 export const Refresh = () => {
 	const loading = settingStore(state => state.loading);
 	const isGameRunning = settingStore(state => state.isGameRunning);
+	const shouldLockScreen = settingStore(state => state.shouldLockScreen);
 	const init_reload = settingStore(state => state.init_reload);
 	const setInitReload = settingStore(state => state.setInitReload);
 
@@ -26,9 +27,9 @@ export const Refresh = () => {
 		<Button
 			variant="ghost"
 			className={`clickable-content ${
-				isGameRunning || loading ? 'disabled' : ''
+				isGameRunning || shouldLockScreen || loading ? 'disabled' : ''
 			}`}
-			disabled={isGameRunning || loading}
+			disabled={isGameRunning || shouldLockScreen || loading}
 			onClick={handleRefresh}
 		>
 			{loading ? (

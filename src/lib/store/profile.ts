@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 
 import { dbWrapper } from '@/lib/db';
+import { ModOrderModel } from '@/lib/store/mod_order';
+import { ModActivationModel } from '@/lib/store/mod_activation';
 
 export type Profile = {
 	id: number;
@@ -79,7 +81,7 @@ export class ProfileModel {
 			);
 			if (profiles.length > 0) {
 				const profileMod = new ProfileModel(profiles[0]);
-				await profileMod.setActive(app_id);
+				await profileMod.setActive();
 				return profileMod;
 			} else {
 				const defaultProfile = new ProfileModel({
@@ -129,11 +131,11 @@ export class ProfileModel {
 		}
 	}
 
-	public async setActive(app_id: number): Promise<boolean> {
+	public async setActive(): Promise<boolean> {
 		if (this.id) {
 			await dbWrapper.db.execute(
 				'UPDATE profiles SET is_active = 0 WHERE app_id = ?',
-				[app_id],
+				[this.props.app_id],
 			);
 			const result = await dbWrapper.db.execute(
 				`UPDATE profiles SET is_active = 1 WHERE id = ?`,
@@ -155,6 +157,25 @@ export class ProfileModel {
 		if (!this.props.id) {
 			throw new Error('ID is required to delete a profile');
 		}
+
+		const profiles = await ProfileModel.all(this.props.app_id);
+		let nextInLine;
+		for (let pi = 0; pi < profiles.length; pi++) {
+			if (profiles[pi].id !== this.props.id) {
+				nextInLine = profiles[pi];
+				break;
+			}
+		}
+		if (nextInLine) {
+			await nextInLine.setActive();
+		} else {
+			throw new Error('Could not find any available profile to switch.');
+		}
+
+		const modOrder = await ModOrderModel.retrieve(this.props.id);
+		await modOrder?.delete();
+		const modActivation = await ModActivationModel.retrieve(this.props.id);
+		await modActivation?.delete();
 
 		const result: any = await dbWrapper.db.execute(
 			`DELETE FROM profiles WHERE id = ?`,

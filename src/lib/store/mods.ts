@@ -6,6 +6,7 @@ type PartialModFileMeta = {
 	mod_file_path?: string;
 	mod_url?: string | null;
 	preview_url?: string | null;
+	image_file_path?: string | null;
 	version?: string | null;
 };
 

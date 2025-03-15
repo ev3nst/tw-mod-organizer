@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs::{create_dir_all, File};
 use std::io::Write;
+use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -19,6 +20,7 @@ pub struct InstallModDetails {
     description: Option<String>,
     categories: Option<String>,
     url: Option<String>,
+    image_file_path: Option<String>,
     preview_url: Option<String>,
     version: Option<String>,
 }
@@ -82,13 +84,48 @@ pub async fn install_mod(
         .and_then(|name| name.to_str())
         .unwrap_or("Invalid pack file path");
 
+    let mut preview_url = Some(String::new());
+    if let Some(url) = &mod_details.preview_url {
+        if !url.trim().is_empty() {
+            preview_url = Some(url.clone());
+        }
+    }
+
+    if preview_url.as_ref().map_or(true, |s| s.is_empty()) {
+        if let Some(image_file_path) = &mod_details.image_file_path {
+            if !image_file_path.trim().is_empty() {
+                let output_path = format!("-o{}", mod_folder.to_str().unwrap());
+                let extract_result = Command::new(&seven_zip_path)
+                    .creation_flags(0x08000000)
+                    .args([
+                        "e",
+                        &mod_details.zip_file_path,
+                        image_file_path,
+                        &output_path,
+                        "-y",
+                    ])
+                    .output();
+
+                if let Ok(output) = extract_result {
+                    if output.status.success() {
+                        if let Some(image_filename) = Path::new(image_file_path).file_name() {
+                            if let Some(filename_str) = image_filename.to_str() {
+                                preview_url = Some(filename_str.to_string());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     let meta = ModMeta {
         identifier: mod_details.identifier.clone(),
         title: mod_details.title.clone(),
         description: mod_details.description.clone(),
         categories: mod_details.categories.clone(),
         version: mod_details.version.clone(),
-        preview_url: mod_details.preview_url.clone(),
+        preview_url,
         url: mod_details.url.clone(),
         pack_file: pack_file_resolved.to_owned(),
         downloaded_url: mod_details.downloaded_url.clone(),
@@ -106,6 +143,7 @@ pub async fn install_mod(
 
     let output_path = format!("-o{}", mod_folder.to_str().unwrap());
     let output = Command::new(&seven_zip_path)
+        .creation_flags(0x08000000)
         .args([
             "e",
             &mod_details.zip_file_path,

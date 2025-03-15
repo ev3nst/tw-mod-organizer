@@ -4,7 +4,7 @@ use std::process::Command;
 use winreg::enums::*;
 use winreg::RegKey;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FileInfo {
     filename: String,
     filesize: u64,
@@ -25,7 +25,7 @@ pub async fn get_zip_contents(zip_file_path: String) -> Result<Vec<FileInfo>, St
         .ok_or_else(|| "7-Zip is required but was not found. Please install 7-Zip.".to_string())?;
 
     let output = Command::new(&seven_zip_path)
-        .args(["l", "-slt", "-ba", &zip_file_path])
+        .args(["l", "-slt", "-ba", "-sccUTF-8", &zip_file_path])
         .output()
         .map_err(|e| format!("Failed to execute 7z: {}", e))?;
 
@@ -40,12 +40,12 @@ pub async fn get_zip_contents(zip_file_path: String) -> Result<Vec<FileInfo>, St
     let mut current_filename = String::new();
     let mut current_filesize: u64 = 0;
     let mut is_directory = false;
-    let mut is_collecting = false;
 
     for line in output_str.lines() {
         let line = line.trim();
+
         if line.is_empty() {
-            if is_collecting && !current_filename.is_empty() && !is_directory {
+            if !current_filename.is_empty() && !is_directory {
                 files.push(FileInfo {
                     filename: current_filename.clone(),
                     filesize: current_filesize,
@@ -55,30 +55,25 @@ pub async fn get_zip_contents(zip_file_path: String) -> Result<Vec<FileInfo>, St
             current_filename = String::new();
             current_filesize = 0;
             is_directory = false;
-            is_collecting = true;
             continue;
         }
 
-        if is_collecting {
-            if line.starts_with("Path = ") {
-                current_filename = line.trim_start_matches("Path = ").to_string();
-            } else if line.starts_with("Size = ") {
-                current_filesize = line
-                    .trim_start_matches("Size = ")
-                    .parse::<u64>()
-                    .unwrap_or(0);
-            } else if line.starts_with("Folder = ") {
-                is_directory = line.trim_start_matches("Folder = ") == "+";
-            } else if line.starts_with("Attributes = ") {
-                let attrs = line.trim_start_matches("Attributes = ");
-                if attrs.contains('D') {
-                    is_directory = true;
-                }
+        if line.starts_with("Path = ") {
+            current_filename = line.trim_start_matches("Path = ").to_string();
+        } else if line.starts_with("Size = ") {
+            let size_str = line.trim_start_matches("Size = ");
+            current_filesize = size_str.parse::<u64>().unwrap_or(0);
+        } else if line.starts_with("Folder = ") {
+            is_directory = line.trim_start_matches("Folder = ") == "+";
+        } else if line.starts_with("Attributes = ") {
+            let attrs = line.trim_start_matches("Attributes = ");
+            if attrs.contains('D') {
+                is_directory = true;
             }
         }
     }
 
-    if is_collecting && !current_filename.is_empty() && !is_directory {
+    if !current_filename.is_empty() && !is_directory {
         files.push(FileInfo {
             filename: current_filename,
             filesize: current_filesize,

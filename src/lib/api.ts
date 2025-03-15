@@ -1,5 +1,9 @@
 import { convertFileSrc, invoke } from '@tauri-apps/api/core';
-import { SettingModel } from './store/setting';
+import { SettingModel } from '@/lib/store/setting';
+
+import type { ModOrderItem } from '@/lib/store/mod_order';
+import type { ModActivationItem } from '@/lib/store/mod_activation';
+import type { ModMetaItem } from '@/lib/store/mod_meta';
 
 export type IGameMeta = {
 	name: string;
@@ -99,6 +103,16 @@ type ModMigrationResponse = {
 	>;
 };
 
+export type ProfileExportData = {
+	app_id: number;
+	name: string;
+	mods: ModItem[];
+	mod_order: ModOrderItem[];
+	mod_activation: ModActivationItem[];
+	mod_meta: ModMetaItem[];
+	mod_separators: ModSeparatorItem[];
+};
+
 class API {
 	async supported_games(): Promise<IGameMeta[]> {
 		return invoke('supported_games');
@@ -147,6 +161,13 @@ class API {
 		return invoke('local_mods', {
 			app_id,
 			mod_installation_path: setting.mod_installation_path,
+		});
+	}
+
+	async subscribe(app_id: number, item_id: number): Promise<boolean> {
+		return invoke('subscribe', {
+			app_id,
+			item_id,
 		});
 	}
 
@@ -243,11 +264,12 @@ class API {
 			title: string;
 			zip_file_path: string;
 			pack_file_path: string;
+			preview_url?: string;
+			image_file_path?: string;
 			downloaded_url?: string;
 			description?: string;
 			categories?: string;
 			url?: string;
-			preview_url?: string;
 			version?: string;
 		},
 		mod_installation_path: string,
@@ -278,6 +300,26 @@ class API {
 			add_directory_txt,
 			used_mods_txt,
 			save_game,
+		});
+	}
+
+	async export_profile(
+		app_id: number,
+		profile_id: number,
+		profile_name: string,
+		json_string: string,
+	): Promise<string> {
+		return invoke('export_profile', {
+			app_id,
+			profile_id,
+			profile_name,
+			json_string,
+		});
+	}
+
+	async parse_profile_json(json_path: string): Promise<ProfileExportData> {
+		return invoke('parse_profile_json', {
+			json_path,
 		});
 	}
 }
