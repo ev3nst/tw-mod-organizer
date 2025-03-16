@@ -23,7 +23,7 @@ struct FileMetadata {
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn get_pack_conflicts(
+pub async fn pack_conflicts(
     handle: tauri::AppHandle,
     folder_paths: Vec<String>,
 ) -> Result<HashMap<String, HashMap<String, Vec<String>>>, String> {

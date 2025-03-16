@@ -249,6 +249,7 @@ export const ModList = () => {
 			let mods: ModItemSeparatorUnion[] = await api.get_mods(
 				selectedGame!.steam_id,
 			);
+			console.log(mods, 'mods');
 			const separators = await resolveSeparator();
 			setSeparators(separators);
 			mods = [...mods, ...separators];
@@ -258,7 +259,7 @@ export const ModList = () => {
 				steam_library_paths.game_workshop_paths[selectedGame!.slug],
 			];
 
-			const conflicts = await api.get_pack_conflicts(modPaths);
+			const conflicts = await api.pack_conflicts(modPaths);
 			setConflicts(conflicts);
 
 			const modOrder = await resolveOrder(mods);

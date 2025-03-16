@@ -4,8 +4,8 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 
-use crate::install_mod::ModMeta;
-use crate::protected_paths::PROTECTED_PATHS;
+use crate::r#mod::install::ModMeta;
+use crate::utils::protected_paths::PROTECTED_PATHS;
 
 pub fn migrate_local_mod(
     app_id: u64,

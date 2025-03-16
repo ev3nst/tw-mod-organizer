@@ -7,8 +7,10 @@ use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::AppHandle;
 
-use crate::create_app_default_paths::create_app_default_paths;
-use crate::{get_zip_contents::find_7zip_path, protected_paths::PROTECTED_PATHS};
+use crate::sevenz::find_7zip_path::find_7zip_path;
+use crate::utils::create_app_default_paths::create_app_default_paths;
+
+use super::validate_mod_path::validate_mod_path;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InstallModDetails {
@@ -70,7 +72,7 @@ pub async fn install_mod(
     let app_mods_path = base_path.join(app_id.to_string());
     let mod_folder = app_mods_path.join(&mod_details.identifier);
     let mod_id = mod_details.identifier.clone();
-    validate_mod_path(&mod_folder, app_id, mod_id)?;
+    validate_mod_path(&mod_folder, app_id, mod_id, false)?;
 
     create_dir_all(&mod_folder).map_err(|e| format!("Failed to create mod directory: {}", e))?;
 
@@ -157,28 +159,6 @@ pub async fn install_mod(
     if !output.status.success() {
         let error = String::from_utf8_lossy(&output.stderr);
         return Err(format!("7z extraction failed: {}", error));
-    }
-
-    Ok(())
-}
-
-fn validate_mod_path(path: &Path, app_id: u32, item_id: String) -> Result<(), String> {
-    let path_str = path.to_string_lossy();
-    for protected in PROTECTED_PATHS {
-        if path_str.starts_with(protected) {
-            return Err(format!(
-                "Access to protected path '{}' is forbidden",
-                protected
-            ));
-        }
-    }
-
-    let expected_suffix = format!("{}\\{}", app_id, item_id);
-    if !path_str.ends_with(&expected_suffix) {
-        return Err(format!(
-            "Path does not match expected folder structure: {}",
-            path_str
-        ));
     }
 
     Ok(())

@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::process::Command;
-use winreg::enums::*;
-use winreg::RegKey;
+
+use super::find_7zip_path::find_7zip_path;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FileInfo {
@@ -11,7 +11,7 @@ pub struct FileInfo {
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn get_zip_contents(zip_file_path: String) -> Result<Vec<FileInfo>, String> {
+pub async fn zip_contents(zip_file_path: String) -> Result<Vec<FileInfo>, String> {
     if zip_file_path.trim().is_empty() {
         return Err("Archive path cannot be empty".to_string());
     }
@@ -88,31 +88,4 @@ pub async fn get_zip_contents(zip_file_path: String) -> Result<Vec<FileInfo>, St
     }
 
     Ok(files)
-}
-
-pub fn find_7zip_path() -> Option<String> {
-    let common_paths = [
-        r"C:\Program Files\7-Zip\7z.exe",
-        r"C:\Program Files (x86)\7-Zip\7z.exe",
-    ];
-
-    for path in common_paths.iter() {
-        if std::path::Path::new(path).exists() {
-            return Some(path.to_string());
-        }
-    }
-
-    let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
-    for key_path in [r"SOFTWARE\7-Zip", r"SOFTWARE\WOW6432Node\7-Zip"].iter() {
-        if let Ok(key) = hklm.open_subkey(key_path) {
-            if let Ok(path) = key.get_value::<String, _>("Path") {
-                let full_path = format!("{}\\7z.exe", path.trim_end_matches('\\'));
-                if std::path::Path::new(&full_path).exists() {
-                    return Some(full_path);
-                }
-            }
-        }
-    }
-
-    None
 }

@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
-use crate::create_app_default_paths::create_app_default_paths;
 use crate::migrate_local_mod::migrate_local_mod;
-use crate::protected_paths::PROTECTED_PATHS;
-use crate::supported_games::SUPPORTED_GAMES;
+use crate::utils::create_app_default_paths::create_app_default_paths;
+use crate::utils::protected_paths::PROTECTED_PATHS;
+use crate::utils::supported_games::SUPPORTED_GAMES;
 
 #[derive(Deserialize)]
 struct InputMod {

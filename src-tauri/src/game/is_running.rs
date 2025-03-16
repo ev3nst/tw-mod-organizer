@@ -3,7 +3,7 @@ use std::{
     process::{Command, Stdio},
 };
 
-use crate::supported_games::SUPPORTED_GAMES;
+use crate::utils::supported_games::SUPPORTED_GAMES;
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn is_game_running(app_id: u64) -> Result<bool, String> {

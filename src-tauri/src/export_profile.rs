@@ -2,7 +2,7 @@ use std::{fs::File, io::Write};
 
 use tauri::{path::BaseDirectory, Manager};
 
-use crate::create_app_default_paths::create_app_default_paths;
+use crate::utils::create_app_default_paths::create_app_default_paths;
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn export_profile(

@@ -55,7 +55,7 @@ export const InstallMod = () => {
 			modFilePath !== ''
 		) {
 			try {
-				const zipContents = await api.get_zip_contents(modFilePath);
+				const zipContents = await api.zip_contents(modFilePath);
 				if (zipContents.length === 0) {
 					toast.error(
 						'Zip contents are empty or there was an error file fetching the contents.',
@@ -232,7 +232,11 @@ export const InstallMod = () => {
 				/>
 			</div>
 
-			{previewURL && <img src={previewURL} className="h-[50px]" />}
+			{previewURL && (
+				<div>
+					<img src={previewURL} className="h-[50px]" />
+				</div>
+			)}
 
 			{sameNameWithMods && (
 				<div className="grid items-center mt-4">

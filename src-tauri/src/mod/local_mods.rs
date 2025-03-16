@@ -23,6 +23,7 @@ pub struct ModItem {
     pub pack_file: String,
     pub pack_file_path: String,
     pub preview_local: String,
+    pub creator_name: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -85,6 +86,7 @@ pub async fn local_mods(
             pack_file: pack_file.file_name().unwrap().to_string_lossy().to_string(),
             pack_file_path: pack_file.to_string_lossy().to_string(),
             preview_local,
+            creator_name: Some("".to_string()),
         });
     }
 

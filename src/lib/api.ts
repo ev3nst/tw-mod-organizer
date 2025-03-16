@@ -190,14 +190,8 @@ class API {
 		});
 	}
 
-	async get_pack_files(pack_file_path: string): Promise<string[]> {
-		return invoke('get_pack_files', {
-			pack_file_path,
-		});
-	}
-
-	async get_pack_conflicts(folder_paths: string[]): Promise<PackConflicts> {
-		return invoke('get_pack_conflicts', {
+	async pack_conflicts(folder_paths: string[]): Promise<PackConflicts> {
+		return invoke('pack_conflicts', {
 			folder_paths,
 		});
 	}
@@ -238,8 +232,8 @@ class API {
 		});
 	}
 
-	async get_save_files(app_id: number): Promise<SaveFile[]> {
-		return invoke('get_save_files', {
+	async save_files(app_id: number): Promise<SaveFile[]> {
+		return invoke('save_files', {
 			app_id,
 		});
 	}
@@ -251,8 +245,8 @@ class API {
 		});
 	}
 
-	async get_zip_contents(zip_file_path: string): Promise<ZipItemInfo[]> {
-		return invoke('get_zip_contents', {
+	async zip_contents(zip_file_path: string): Promise<ZipItemInfo[]> {
+		return invoke('zip_contents', {
 			zip_file_path,
 		});
 	}

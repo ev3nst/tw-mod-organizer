@@ -1,13 +1,11 @@
 use std::path::Path;
 use trash::delete;
 
-use crate::get_save_files::get_roaming_folder;
-use crate::supported_games::SUPPORTED_GAMES;
+use crate::utils::{roaming_folder::roaming_folder, supported_games::SUPPORTED_GAMES};
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn delete_save_file(app_id: u64, filename: String) -> Result<(), String> {
-    let roaming_folder =
-        get_roaming_folder().ok_or_else(|| "Roaming folder could not be resolved.")?;
+    let roaming_folder = roaming_folder().ok_or_else(|| "Roaming folder could not be resolved.")?;
 
     let game = SUPPORTED_GAMES
         .iter()

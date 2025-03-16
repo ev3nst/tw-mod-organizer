@@ -27,6 +27,7 @@ use steamworks::SteamId;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct PlayerSteamId {
+    pub raw: SteamId,
     pub steam_id64: u64,
     pub steam_id32: String,
     pub account_id: u32,
@@ -35,6 +36,7 @@ pub struct PlayerSteamId {
 impl PlayerSteamId {
     pub(crate) fn from_steamid(steam_id: SteamId) -> Self {
         Self {
+            raw: steam_id,
             steam_id64: steam_id.raw(),
             steam_id32: steam_id.steamid32(),
             account_id: steam_id.account_id().raw(),

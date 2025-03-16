@@ -1,11 +1,10 @@
-use std::env;
 use std::fs::read_dir;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::time::UNIX_EPOCH;
 
 use serde::{Deserialize, Serialize};
 
-use crate::supported_games;
+use crate::utils::{roaming_folder::roaming_folder, supported_games::SUPPORTED_GAMES};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SaveFile {
@@ -16,11 +15,10 @@ pub struct SaveFile {
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn get_save_files(app_id: u64) -> Result<Vec<SaveFile>, String> {
-    let roaming_folder =
-        get_roaming_folder().ok_or_else(|| "Roaming folder could not be resolved.")?;
+pub async fn save_files(app_id: u64) -> Result<Vec<SaveFile>, String> {
+    let roaming_folder = roaming_folder().ok_or_else(|| "Roaming folder could not be resolved.")?;
 
-    let game = supported_games::SUPPORTED_GAMES
+    let game = SUPPORTED_GAMES
         .iter()
         .find(|game| game.steam_id == app_id)
         .ok_or_else(|| format!("Given app_id {} is not supported", app_id))?;
@@ -78,14 +76,4 @@ pub async fn get_save_files(app_id: u64) -> Result<Vec<SaveFile>, String> {
     }
 
     Ok(save_files)
-}
-
-pub fn get_roaming_folder() -> Option<PathBuf> {
-    if let Ok(home_dir) = env::var("USERPROFILE") {
-        let mut path = PathBuf::from(home_dir);
-        path.push("AppData\\Roaming");
-        Some(path)
-    } else {
-        None
-    }
 }

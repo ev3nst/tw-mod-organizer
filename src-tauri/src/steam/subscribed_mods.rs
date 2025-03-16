@@ -1,102 +1,13 @@
 use futures_util::FutureExt;
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use steamworks::{Client, PublishedFileId};
 
-use crate::local_mods::{ModItem, Version};
-use crate::steam_paths::steam_paths;
-use crate::steamworks::workshop_item::workshop::WorkshopItemsResult;
+use crate::pack::find_pack_and_image::find_pack_and_image;
+use crate::r#mod::local_mods::{ModItem, Version};
+use crate::steam::workshop_item::workshop::WorkshopItemsResult;
 use crate::AppState;
 
-fn find_workshop_path_for_app(app_id: u32) -> Option<String> {
-    match steam_paths() {
-        Ok(steam_install_paths) => {
-            for steam_install_path in steam_install_paths {
-                let library_meta_file = Path::new(&steam_install_path)
-                    .join("steamapps")
-                    .join("libraryfolders.vdf");
-
-                if !library_meta_file.exists() {
-                    continue;
-                }
-
-                let file_data = match fs::read_to_string(&library_meta_file) {
-                    Ok(data) => data,
-                    Err(_) => continue,
-                };
-
-                let re = regex::Regex::new(r#""(.*?)""#).unwrap();
-                let matches: Vec<&str> = re.find_iter(&file_data).map(|m| m.as_str()).collect();
-
-                let mut library_folder_paths = Vec::new();
-                for i in 0..matches.len() {
-                    let match_str = matches[i].replace("\"", "");
-                    if match_str == "path" && i + 1 < matches.len() {
-                        let lib_path = Path::new(&matches[i + 1].replace("\"", ""))
-                            .to_str()
-                            .unwrap_or("")
-                            .to_string();
-                        library_folder_paths.push(lib_path.replace("\\\\", "\\"));
-                    }
-                }
-
-                for lib_path in &library_folder_paths {
-                    let workshop_path = Path::new(lib_path)
-                        .join("steamapps")
-                        .join("workshop")
-                        .join("content")
-                        .join(app_id.to_string());
-
-                    if workshop_path.exists() {
-                        return Some(workshop_path.to_string_lossy().into_owned());
-                    }
-                }
-            }
-            None
-        }
-        Err(_) => None,
-    }
-}
-
-fn find_pack_and_image(dir_path: &Path) -> (String, String, String) {
-    if !dir_path.exists() {
-        return (String::new(), String::new(), String::new());
-    }
-
-    let mut pack_file = (String::new(), String::new());
-    let mut image_file = String::new();
-
-    if let Ok(entries) = fs::read_dir(dir_path) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-
-            if path.is_file() {
-                if path.extension().map_or(false, |ext| ext == "pack") {
-                    pack_file = (
-                        path.file_name()
-                            .and_then(|n| n.to_str())
-                            .unwrap_or("")
-                            .to_string(),
-                        path.to_string_lossy().to_string(),
-                    );
-                }
-                if image_file.is_empty()
-                    && path
-                        .extension()
-                        .map_or(false, |ext| matches!(ext.to_str(), Some("jpg" | "png")))
-                {
-                    image_file = path.to_string_lossy().to_string();
-                }
-            }
-
-            if !pack_file.0.is_empty() && !image_file.is_empty() {
-                break;
-            }
-        }
-    }
-
-    (pack_file.0, pack_file.1, image_file)
-}
+use super::workshop_path_for_app::workshop_path_for_app;
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn subscribed_mods(
@@ -119,6 +30,7 @@ pub async fn subscribed_mods(
             .clone()
     };
 
+    let steam_client_clone = steam_client.clone();
     let (tx, mut rx) = tokio::sync::mpsc::channel(32);
     let items_task = tokio::task::spawn_blocking(move || {
         let ugc = steam_client.ugc();
@@ -180,15 +92,24 @@ pub async fn subscribed_mods(
     }
 
     let items_result = items_result.unwrap()?;
-    let workshop_base_path = find_workshop_path_for_app(app_id);
+    let workshop_base_path = workshop_path_for_app(app_id);
     let mut mods: Vec<ModItem> = Vec::new();
 
+    let friends = steam_client_clone.friends();
     for item in items_result.items.into_iter().flatten() {
         if let Some(ref base_path) = workshop_base_path {
             let item_path = PathBuf::from(base_path).join(&item.published_file_id.to_string());
             let (pack_file, pack_file_path, preview_local) = find_pack_and_image(&item_path);
 
             if !pack_file.is_empty() {
+                let creator = friends.get_friend(item.owner.raw);
+                let mut creator_name = creator.name();
+                if creator_name == "[unknown]" {
+                    let _ = friends.request_user_information(item.owner.raw, true);
+                    let creator = friends.get_friend(item.owner.raw);
+                    creator_name = creator.name();
+                }
+
                 mods.push(ModItem {
                     identifier: item.published_file_id.to_string(),
                     title: item.title,
@@ -202,6 +123,7 @@ pub async fn subscribed_mods(
                     pack_file,
                     pack_file_path,
                     preview_local,
+                    creator_name: Some(creator_name),
                 })
             }
         }

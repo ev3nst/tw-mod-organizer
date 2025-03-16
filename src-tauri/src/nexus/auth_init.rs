@@ -9,7 +9,7 @@ use tauri_plugin_dialog::DialogExt;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
-use crate::open_external_url::open_external_url;
+use crate::utils::open_external_url::open_external_url;
 use crate::AppState;
 
 // Define schemas and types

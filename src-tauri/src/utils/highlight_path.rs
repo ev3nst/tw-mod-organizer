@@ -2,7 +2,7 @@ use std::fs::canonicalize;
 use std::path::Path;
 use std::process::Command;
 
-use crate::create_app_default_paths::create_app_default_paths;
+use crate::utils::create_app_default_paths::create_app_default_paths;
 
 #[tauri::command(rename_all = "snake_case")]
 pub fn highlight_path(handle: tauri::AppHandle, file_path: String) -> Result<(), String> {

@@ -33,8 +33,8 @@ fn capitalize(s: String) -> String {
 pub mod workshop {
     use serde::Serialize;
 
-    use crate::steamworks::localplayer::PlayerSteamId;
-    use crate::steamworks::workshop::workshop::UgcItemVisibility;
+    use crate::steam::localplayer::PlayerSteamId;
+    use crate::steam::workshop::workshop::UgcItemVisibility;
 
     use super::capitalize;
 

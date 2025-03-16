@@ -11,7 +11,7 @@ pub struct ModActivation {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ModMeta {
+pub struct ModMetaData {
     categories: Option<String>,
     mod_id: String,
     title: Option<String>,
@@ -56,7 +56,7 @@ pub struct ModEntry {
 pub struct ProfileData {
     app_id: u32,
     mod_activation: Vec<ModActivation>,
-    mod_meta: Vec<ModMeta>,
+    mod_meta: Vec<ModMetaData>,
     mod_order: Vec<ModOrder>,
     mod_separators: Vec<ModSeparator>,
     mods: Vec<ModEntry>,

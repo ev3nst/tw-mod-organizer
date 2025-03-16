@@ -2,8 +2,9 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs, path::Path};
 
-use crate::steam_paths::steam_paths;
-use crate::supported_games::SUPPORTED_GAMES;
+use crate::utils::supported_games::SUPPORTED_GAMES;
+
+use super::steam_paths::steam_paths;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SteamPaths {
