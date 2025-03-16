@@ -60,7 +60,8 @@ export const ModListTable = () => {
 	}, [mods]);
 
 	const hiddenItems = useMemo(() => {
-		if (searchModText !== '') return new Set<string>();
+		if (searchModText !== '' || activationFilter !== 'all')
+			return new Set<string>();
 
 		const hidden = new Set<string>();
 		for (let i = 0; i < separatorPositions.length; i++) {
@@ -81,7 +82,7 @@ export const ModListTable = () => {
 			}
 		}
 		return hidden;
-	}, [mods, separatorPositions, separators, searchModText]);
+	}, [mods, separatorPositions, separators, searchModText, activationFilter]);
 
 	const modsResolved = useMemo(() => {
 		return filteredMods.filter(mod => !hiddenItems.has(mod.identifier));

@@ -177,7 +177,8 @@ export function filterMods(
 			modActiveData.some(
 				s =>
 					s.mod_id === f.identifier &&
-					s.is_active === (activationFilter === 'active'),
+					s.is_active === (activationFilter === 'active') &&
+					'item_type' in f,
 			),
 		);
 	}
