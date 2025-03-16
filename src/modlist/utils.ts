@@ -10,12 +10,15 @@ export function sortCollapsedSection(
 	const oldIndex = items.findIndex(item => item.identifier === active.id);
 	const newIndex = items.findIndex(item => item.identifier === over?.id);
 
-	const separatorPositions: { id: string; index: number }[] = [];
-	items.forEach((item, index) => {
-		if (!('item_type' in item)) {
-			separatorPositions.push({ id: item.identifier, index });
-		}
-	});
+	const separatorPositions = items.reduce(
+		(acc, item, index) => {
+			if (isSeparator(item)) {
+				acc.push({ id: item.identifier, index });
+			}
+			return acc;
+		},
+		[] as { id: string; index: number }[],
+	);
 
 	const activeSepIdx = separatorPositions.findIndex(
 		sep => sep.id === active.id,
@@ -24,14 +27,13 @@ export function sortCollapsedSection(
 		activeSepIdx < separatorPositions.length - 1
 			? separatorPositions[activeSepIdx + 1].index
 			: items.length;
-
 	const sectionSize = nextSepIdx - oldIndex;
 	const newArray = [...items];
 	const movedSection = newArray.splice(oldIndex, sectionSize);
 
 	let insertAt = newIndex;
 	if (newIndex > oldIndex) {
-		insertAt -= sectionSize;
+		insertAt = newIndex - sectionSize + 1;
 	}
 
 	newArray.splice(insertAt, 0, ...movedSection);
