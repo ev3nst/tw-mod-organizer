@@ -13,6 +13,7 @@ import { Checkbox } from '@/components/checkbox';
 import { Input } from '@/components/input';
 import { Button } from '@/components/button';
 import { Separator } from '@/components/separator';
+import { Loading } from '@/components/loading';
 
 import { settingStore } from '@/lib/store/setting';
 import { ProfileModel, profileStore } from '@/lib/store/profile';
@@ -24,7 +25,7 @@ import { ModMetaItem } from '@/lib/store/mod_meta';
 
 import api, { ModItem, ProfileExportData } from '@/lib/api';
 import { toastError } from '@/lib/utils';
-import { Loading } from '@/components/loading';
+import { isSeparator } from '@/modlist/utils';
 
 export const ImportProfile = () => {
 	const [importProfileName, setImportProfileName] = useState('');
@@ -39,7 +40,7 @@ export const ImportProfile = () => {
 		useState<ProfileExportData>();
 
 	const mods = modsStore(state => state.mods);
-	const modsOnly = mods.filter(mod => 'item_type' in mod) as ModItem[];
+	const modsOnly = mods.filter(mod => !isSeparator(mod)) as ModItem[];
 	const games = settingStore(state => state.games);
 	const setLockScreen = settingStore(state => state.setLockScreen);
 	const profiles = profileStore(state => state.profiles);

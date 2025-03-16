@@ -1,13 +1,13 @@
 import { TableCell } from '@/components/table';
 
+import type { ModItemSeparatorUnion } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 import { conflictsStore } from '@/lib/store/conflict';
 import { modOrderStore } from '@/lib/store/mod_order';
-import type { ModItemSeparatorUnion } from '@/lib/api';
+import { isSeparator } from '@/modlist/utils';
 
 export const Conflict = ({ mod }: { mod: ModItemSeparatorUnion }) => {
-	const item_type = 'item_type' in mod ? mod.item_type : 'separator';
-	if (item_type === 'separator') return;
+	if (isSeparator(mod)) return;
 
 	const pack_file_path =
 		'pack_file_path' in mod ? mod.pack_file_path : undefined;

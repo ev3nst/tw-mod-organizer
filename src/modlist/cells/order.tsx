@@ -4,6 +4,7 @@ import { TableCell } from '@/components/table';
 
 import { ModItemSeparatorUnion } from '@/lib/api';
 import { modSeparatorStore, isCollapsed } from '@/lib/store/mod_separator';
+import { isSeparator } from '@/modlist/utils';
 
 export const Order = ({
 	mod,
@@ -12,11 +13,10 @@ export const Order = ({
 	mod: ModItemSeparatorUnion;
 	modIndex: number;
 }) => {
-	const item_type = 'item_type' in mod ? mod.item_type : 'separator';
 	const separators = modSeparatorStore(state => state.data);
 	const toggleCollapse = modSeparatorStore(state => state.toggleCollapse);
 
-	if (item_type === 'separator') {
+	if (isSeparator(mod)) {
 		const cellStyle = {
 			backgroundColor: mod.background_color,
 			color: mod.text_color,

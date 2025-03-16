@@ -3,10 +3,10 @@ import { TableCell } from '@/components/table';
 import type { ModItemSeparatorUnion } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 import { modMetaStore } from '@/lib/store/mod_meta';
+import { isSeparator } from '@/modlist/utils';
 
 export const Category = ({ mod }: { mod: ModItemSeparatorUnion }) => {
-	const item_type = 'item_type' in mod ? mod.item_type : undefined;
-	if (!item_type) return;
+	if (isSeparator(mod)) return;
 
 	const toggle_category = settingStore(state => state.toggle_category);
 	const categories = 'categories' in mod ? mod.categories : undefined;

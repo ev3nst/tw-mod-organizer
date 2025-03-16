@@ -15,6 +15,7 @@ import { modMetaStore } from '@/lib/store/mod_meta';
 
 import api from '@/lib/api';
 import { toastError } from '@/lib/utils';
+import { isSeparator } from '@/modlist/utils';
 
 export const ExportProfile = () => {
 	const [exportLoading, setExportLoading] = useState(false);
@@ -39,7 +40,7 @@ export const ExportProfile = () => {
 			const exportData = {
 				app_id: selectedGame!.steam_id,
 				name: profile.name,
-				mods: mods.filter(mod => 'item_type' in mod),
+				mods: mods.filter(mod => !isSeparator(mod)),
 				mod_order: modOrderData,
 				mod_activation: modActivationData,
 				mod_meta: modMetaData,

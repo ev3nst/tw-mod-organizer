@@ -4,39 +4,74 @@ import { Checkbox } from '@/components/checkbox';
 import type { ModItem, ModItemSeparatorUnion } from '@/lib/api';
 import { modsStore } from '@/lib/store/mods';
 import { modActivationStore } from '@/lib/store/mod_activation';
+import { isSeparator } from '@/modlist/utils';
+
+const getChildMods = (
+	items: ModItemSeparatorUnion[],
+	separatorId: string,
+): ModItem[] => {
+	let collecting = false;
+	const children: ModItem[] = [];
+
+	for (const item of items) {
+		if (item.identifier === separatorId) {
+			collecting = true;
+			continue;
+		}
+		if (collecting) {
+			if (isSeparator(item)) break;
+			children.push(item as ModItem);
+		}
+	}
+	return children;
+};
+
+const findSeparatorPositions = (
+	mods: ModItemSeparatorUnion[],
+): { id: string; index: number }[] =>
+	mods
+		.map((mod, index) =>
+			isSeparator(mod) ? { id: mod.identifier, index } : null,
+		)
+		.filter(Boolean) as { id: string; index: number }[];
 
 export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 	const mods = modsStore(state => state.mods);
-	const mod_activation = modActivationStore(state => state.data);
+	const modActivation = modActivationStore(state => state.data);
 	const setModActivation = modActivationStore(state => state.setData);
-	const currentSelection = mod_activation.find(
-		f => f.mod_id === mod.identifier,
+	const currentSelection = modActivation.find(
+		ma => ma.mod_id === mod.identifier,
 	);
 
 	const handleSeparatorCheckedChange = () => {
-		const separatorPositions = findSeparatorPositions(mods);
-		const findIndex = mods.findIndex(f => f.identifier === mod.identifier);
-		const breakLine = separatorPositions.find(
-			sp => sp.id !== mod.identifier && sp.index > findIndex,
+		const currentIndex = mods.findIndex(
+			m => m.identifier === mod.identifier,
 		);
-		const breakIndex = breakLine ? breakLine.index : null;
-
-		const toToggle = mods.filter(
-			(_, mi) => mi > findIndex && (!breakIndex || mi < breakIndex),
+		const separatorPositions = findSeparatorPositions(mods);
+		const nextSeparator = separatorPositions.find(
+			sp => sp.id !== mod.identifier && sp.index > currentIndex,
+		);
+		const nextSeparatorIndex = nextSeparator
+			? nextSeparator.index
+			: mods.length;
+		const sectionItems = mods.slice(
+			currentIndex + 1,
+			nextSeparatorIndex,
 		) as ModItem[];
 
-		const hasPassive = mod_activation.some(
-			ma =>
-				toToggle.some(f => f.identifier === ma.mod_id) && !ma.is_active,
+		const shouldActivate = sectionItems.some(item =>
+			modActivation.find(
+				ma => ma.mod_id === item.identifier && !ma.is_active,
+			),
 		);
 
-		const updatedSection = toToggle.map(t => ({
-			mod_id: t.identifier,
-			is_active: hasPassive,
-			title: t.title,
+		const updatedSection = sectionItems.map(item => ({
+			mod_id: item.identifier,
+			is_active: shouldActivate,
+			title: item.title,
 		}));
 
-		const updatedModActivation = mod_activation.map(item => {
+		const updatedModActivation = modActivation.map(item => {
 			const updatedItem = updatedSection.find(
 				sectionItem => sectionItem.mod_id === item.mod_id,
 			);
@@ -47,12 +82,11 @@ export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 	};
 
 	const handleCheckedChange = (checked: boolean) => {
-		const updatedModActivation = mod_activation.map(item =>
+		const updatedModActivation = modActivation.map(item =>
 			item.mod_id === mod.identifier
 				? { ...item, is_active: checked }
 				: item,
 		);
-
 		setModActivation(updatedModActivation);
 	};
 
@@ -60,27 +94,35 @@ export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 		backgroundColor: mod.background_color,
 		color: mod.text_color,
 	};
+	const checkboxClass =
+		'border-muted-foreground data-[state=checked]:bg-green-500 data-[state=checked]:text-white data-[state=checked]:border-green-800 shadow-none';
 
-	const item_type = 'item_type' in mod ? mod.item_type : 'separator';
-	return (
-		<TableCell style={cellStyle}>
-			<Checkbox
-				className="border-muted-foreground data-[state=checked]:bg-green-500 data-[state=checked]:text-white data-[state=checked]:border-green-800 shadow-none"
-				checked={currentSelection?.is_active}
-				onCheckedChange={
-					item_type === 'separator'
-						? handleSeparatorCheckedChange
-						: handleCheckedChange
-				}
-			/>
-		</TableCell>
-	);
-};
+	if (isSeparator(mod)) {
+		const childMods = getChildMods(mods, mod.identifier);
+		const allActive = childMods.every(
+			child =>
+				modActivation.find(ma => ma.mod_id === child.identifier)
+					?.is_active !== false,
+		);
 
-const findSeparatorPositions = (mods: ModItemSeparatorUnion[]) => {
-	return mods
-		.map((mod, index) =>
-			!('item_type' in mod) ? { id: mod.identifier, index } : null,
-		)
-		.filter(Boolean) as { id: string; index: number }[];
+		return (
+			<TableCell style={cellStyle}>
+				<Checkbox
+					className={checkboxClass}
+					checked={allActive}
+					onCheckedChange={handleSeparatorCheckedChange}
+				/>
+			</TableCell>
+		);
+	} else {
+		return (
+			<TableCell style={cellStyle}>
+				<Checkbox
+					className={checkboxClass}
+					checked={currentSelection?.is_active}
+					onCheckedChange={handleCheckedChange}
+				/>
+			</TableCell>
+		);
+	}
 };

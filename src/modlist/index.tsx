@@ -21,6 +21,7 @@ import api, { ModItem, ModItemSeparatorUnion } from '@/lib/api';
 import { normalizeOrder, toastError } from '@/lib/utils';
 
 import { ModListTable } from './table';
+import { isSeparator } from './utils';
 
 export const ModList = () => {
 	const [fetchModsLoading, setFetchModsLoading] = useState(false);
@@ -196,9 +197,7 @@ export const ModList = () => {
 				let updatedMeta = [];
 				for (let mi = 0; mi < mods.length; mi++) {
 					const mod = mods[mi] as ModItem;
-					const itemType =
-						'item_type' in mod ? mod.item_type : 'separator';
-					if (itemType === 'separator') continue;
+					if (isSeparator(mod)) continue;
 
 					const currentMeta = modMeta.data.find(
 						f => f.mod_id === mod.identifier,
@@ -225,9 +224,7 @@ export const ModList = () => {
 				const newMeta = [];
 				for (let mi = 0; mi < mods.length; mi++) {
 					const mod = mods[mi] as ModItem;
-					const itemType =
-						'item_type' in mod ? mod.item_type : 'separator';
-					if (itemType === 'separator') continue;
+					if (isSeparator(mod)) continue;
 
 					newMeta.push({
 						mod_id: mod.identifier,

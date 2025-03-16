@@ -20,13 +20,13 @@ import { modActivationStore } from '@/lib/store/mod_activation';
 import { modSeparatorStore, isCollapsed } from '@/lib/store/mod_separator';
 import { filterMods, modMetaStore } from '@/lib/store/mod_meta';
 
+import { sortMods, sortCollapsedSection, isSeparator } from '@/modlist/utils';
+
 import { Header } from './header';
 import { Row } from './row';
 import { Footer } from './footer';
 import { Lock } from './lock';
 import { Filter } from './filter';
-
-import { sortMods, sortCollapsedSection } from './utils';
 
 export const ModListTable = () => {
 	const [searchModText, setSearchModText] = useState<string>('');
@@ -52,7 +52,7 @@ export const ModListTable = () => {
 	const separatorPositions = useMemo(() => {
 		const positions: { id: string; index: number }[] = [];
 		mods.forEach((mod, index) => {
-			if (!('item_type' in mod)) {
+			if (isSeparator(mod)) {
 				positions.push({ id: mod.identifier, index });
 			}
 		});
@@ -101,12 +101,11 @@ export const ModListTable = () => {
 			const { active, over } = event;
 			if (active.id !== over?.id) {
 				const draggedItem = mods.find(m => m.identifier === active.id);
-				const isSeparator =
-					draggedItem && !('item_type' in draggedItem);
 
 				let result;
 				if (
-					isSeparator &&
+					draggedItem &&
+					isSeparator(draggedItem) &&
 					isCollapsed(separators, active.id as string)
 				) {
 					result = sortCollapsedSection(mods, active, over);

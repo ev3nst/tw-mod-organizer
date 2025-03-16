@@ -70,3 +70,6 @@ export function sortMods(
 		mods: newArray,
 	};
 }
+
+export const isSeparator = (mod: ModItemSeparatorUnion): boolean =>
+	!('item_type' in mod);

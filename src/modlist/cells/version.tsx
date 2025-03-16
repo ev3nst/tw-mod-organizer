@@ -1,11 +1,11 @@
 import { TableCell } from '@/components/table';
 
-import { settingStore } from '@/lib/store/setting';
 import type { ModItemSeparatorUnion } from '@/lib/api';
+import { settingStore } from '@/lib/store/setting';
+import { isSeparator } from '@/modlist/utils';
 
 export const Version = ({ mod }: { mod: ModItemSeparatorUnion }) => {
-	const item_type = 'item_type' in mod ? mod.item_type : undefined;
-	if (!item_type) return;
+	if (isSeparator(mod)) return;
 
 	let version = 'version' in mod ? mod.version : undefined;
 	const toggle_version = settingStore(state => state.toggle_version);

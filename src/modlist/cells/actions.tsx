@@ -28,6 +28,7 @@ import api, {
 	ModSeparatorItem,
 } from '@/lib/api';
 import { toastError } from '@/lib/utils';
+import { isSeparator } from '@/modlist/utils';
 
 function determineModUrl(
 	mod: ModItemSeparatorUnion,
@@ -223,9 +224,7 @@ const ModActions = ({ mod }: { mod: ModItem }) => {
 };
 
 export const Actions = ({ mod }: { mod: ModItemSeparatorUnion }) => {
-	const isSeparator = !('item_type' in mod);
-
-	if (isSeparator) {
+	if (isSeparator(mod)) {
 		return <SeparatorActions mod={mod as ModSeparatorItem} />;
 	}
 

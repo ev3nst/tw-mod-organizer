@@ -3,16 +3,15 @@ import { TableCell } from '@/components/table';
 import type { ModItemSeparatorUnion } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 import { modMetaStore } from '@/lib/store/mod_meta';
+import { isSeparator } from '@/modlist/utils';
 
 export const Title = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 	const { title, background_color, text_color } = mod;
-	const item_type = 'item_type' in mod ? mod.item_type : 'separator';
-	const isSeparator = item_type === 'separator';
 
 	const metaData = modMetaStore(state => state.data);
 	const selectedModMeta = metaData.find(md => md.mod_id === mod.identifier);
 
-	if (isSeparator) {
+	if (isSeparator(mod)) {
 		const cellStyle = {
 			backgroundColor: background_color,
 			color: text_color,
