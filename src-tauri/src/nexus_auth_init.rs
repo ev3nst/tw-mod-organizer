@@ -125,7 +125,7 @@ pub async fn nexus_auth_init(
                     let (mut write, mut read) = ws_stream.split();
                     *ws_connected.lock().await = true;
 
-					let request_id = Uuid::new_v4().to_string();
+                    let request_id = Uuid::new_v4().to_string();
                     let request = NexusAuthRequest {
                         id: request_id.clone(),
                         token: None,

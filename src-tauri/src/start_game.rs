@@ -1,7 +1,7 @@
 use std::os::windows::process::CommandExt;
 use std::{fs, path::Path, process::Command};
-use tokio::time::{sleep, Duration};
 use tokio::spawn;
+use tokio::time::{sleep, Duration};
 
 use crate::AppState;
 use crate::{steam_paths::steam_paths, supported_games::SUPPORTED_GAMES};
