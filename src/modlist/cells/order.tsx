@@ -1,4 +1,4 @@
-import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+import { MinusIcon, PlusIcon } from 'lucide-react';
 
 import { TableCell } from '@/components/table';
 
@@ -31,9 +31,9 @@ export const Order = ({
 					onClick={() => toggleCollapse(mod.identifier)}
 				>
 					{modCollapsed ? (
-						<ChevronDownIcon className="w-4 h-4" />
+						<PlusIcon className="w-4 h-4" />
 					) : (
-						<ChevronUpIcon className="w-4 h-4" />
+						<MinusIcon className="w-4 h-4" />
 					)}
 				</div>
 			</TableCell>
