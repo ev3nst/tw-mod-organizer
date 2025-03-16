@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-// Modified by Burak Kartal on [28/02/2025]
+// Modified by Burak Kartal on [16/03/2025]
 
 use serde::Serialize;
 use steamworks::SteamId;
