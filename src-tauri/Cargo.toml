@@ -21,23 +21,22 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = ["protocol-asset", "devtools"] }
 tauri-plugin-opener = "2"
 tauri-plugin-sql = { version = "2", features = ["sqlite"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-deep-link = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1.43.0", features = ["full"] }
-rpfm_lib = "4.3.14"
-rayon = "1.10.0"
-winreg = "0.55.0"
-regex = "1.11.1"
-tauri-plugin-dialog = "2"
-tauri-plugin-deep-link = "2"
-ulid = "1.2.0"
 tokio-tungstenite = { version = "0.26.2", features = ["native-tls"] }
 futures-util = "0.3.31"
 sqlx = { version = "0.8.3", features = ["sqlite", "runtime-tokio-rustls"] }
-trash = "5.2.2"
+rayon = "1.10.0"
+winreg = "0.55.0"
+regex = "1.11.1"
 reqwest = { version = "0.12.12", features = ["stream", "json"] }
 uuid = "1.15.1"
 steamworks = { version = "0.11.0", features = ["serde"] }
+rpfm_lib = "4.3.14"
+trash = "5.2.2"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-single-instance = "2"

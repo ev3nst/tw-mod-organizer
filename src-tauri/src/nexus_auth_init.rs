@@ -7,7 +7,7 @@ use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_dialog::DialogExt;
 use tokio::sync::Mutex;
-use ulid::Ulid;
+use uuid::Uuid;
 
 use crate::open_external_url::open_external_url;
 use crate::AppState;
@@ -125,7 +125,7 @@ pub async fn nexus_auth_init(
                     let (mut write, mut read) = ws_stream.split();
                     *ws_connected.lock().await = true;
 
-                    let request_id = Ulid::new().to_string();
+					let request_id = Uuid::new_v4().to_string();
                     let request = NexusAuthRequest {
                         id: request_id.clone(),
                         token: None,
