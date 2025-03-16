@@ -94,8 +94,14 @@ export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 		backgroundColor: mod.background_color,
 		color: mod.text_color,
 	};
-	const checkboxClass =
-		'border-muted-foreground data-[state=checked]:bg-green-500 data-[state=checked]:text-white data-[state=checked]:border-green-800 shadow-none';
+	const checkboxClass = `
+	border-muted-foreground
+	data-[state=checked]:bg-green-500
+	data-[state=checked]:text-white
+	data-[state=checked]:border-green-800
+	shadow-none
+	h-4 w-4 flex items-center justify-center
+	`;
 
 	if (isSeparator(mod)) {
 		const childMods = getChildMods(mods, mod.identifier);

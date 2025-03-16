@@ -25,7 +25,7 @@ export const Order = ({
 		const modCollapsed = isCollapsed(separators, mod.identifier);
 
 		return (
-			<TableCell style={cellStyle}>
+			<TableCell className="select-none" style={cellStyle}>
 				<div
 					className="flex items-center justify-center hover:cursor-pointer hover:opacity-70"
 					onClick={() => toggleCollapse(mod.identifier)}
