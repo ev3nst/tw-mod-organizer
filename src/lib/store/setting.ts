@@ -10,6 +10,7 @@ export type ModListColumnVisibility = {
 	category: boolean;
 	conflict: boolean;
 	version: boolean;
+	creator: boolean;
 };
 
 export type NexusAuthParams = {
@@ -70,6 +71,7 @@ export class SettingModel {
 						category: true,
 						conflict: true,
 						version: true,
+						creator: false,
 					},
 					mod_installation_path: null,
 					mod_download_path: null,
@@ -208,13 +210,13 @@ type SettingStore = {
 	setNexusAuthParams: (nexus_auth_params: NexusAuthParams) => void;
 
 	toggle_category: boolean;
-	setCategory: (toggle_category: boolean) => void;
-
 	toggle_conflict: boolean;
-	setConflict: (toggle_conflict: boolean) => void;
-
 	toggle_version: boolean;
-	setVersion: (toggle_version: boolean) => void;
+	toggle_creator: boolean;
+	setColumnSelection: (
+		column: 'category' | 'conflict' | 'version' | 'creator',
+		value: boolean,
+	) => void;
 
 	isGameRunning: boolean;
 	setIsGameRunning: (isGameRunning: boolean) => void;
@@ -292,21 +294,22 @@ export const settingStore = create<SettingStore>(set => ({
 	},
 
 	toggle_category: true,
-	setCategory: toggle_category => {
-		set({ toggle_category });
-		debounceCallback(syncSetting);
-	},
-
 	toggle_conflict: true,
-	setConflict: toggle_conflict => {
-		set({ toggle_conflict });
-		debounceCallback(syncSetting);
-	},
-
 	toggle_version: true,
-	setVersion: toggle_version => {
-		set({ toggle_version });
-		debounceCallback(syncSetting);
+	toggle_creator: false,
+
+	setColumnSelection: (key, value) => {
+		const keyStr = `toggle_${key}`;
+		const columns = [
+			'toggle_category',
+			'toggle_conflict',
+			'toggle_version',
+			'toggle_creator',
+		] as any;
+		if (columns.includes(keyStr)) {
+			set({ [keyStr]: value });
+			debounceCallback(syncSetting);
+		}
 	},
 
 	isGameRunning: false,
@@ -331,6 +334,7 @@ const syncSetting = async () => {
 		toggle_category,
 		toggle_conflict,
 		toggle_version,
+		toggle_creator,
 	} = settingStore.getState();
 	const setting = await SettingModel.retrieve();
 
@@ -377,12 +381,14 @@ const syncSetting = async () => {
 	if (
 		setting.column_selections.category !== toggle_category ||
 		setting.column_selections.conflict !== toggle_conflict ||
-		setting.column_selections.version !== toggle_version
+		setting.column_selections.version !== toggle_version ||
+		setting.column_selections.creator !== toggle_creator
 	) {
 		setting.column_selections = {
 			category: toggle_category,
 			conflict: toggle_conflict,
 			version: toggle_version,
+			creator: toggle_creator,
 		};
 		changed = true;
 	}

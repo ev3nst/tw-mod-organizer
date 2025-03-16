@@ -12,6 +12,7 @@ import { Title } from './cells/title';
 import { Category } from './cells/category';
 import { Conflict } from './cells/conflict';
 import { Version } from './cells/version';
+import { Creator } from './cells/creator';
 import { Actions } from './cells/actions';
 import { Order } from './cells/order';
 
@@ -59,6 +60,7 @@ const RowComponent = ({ mod, modIndex, id }: RowProps) => {
 			<Category mod={mod} />
 			<Conflict mod={mod} />
 			<Version mod={mod} />
+			<Creator mod={mod} />
 			<Actions mod={mod as ModItem} />
 		</TableRow>
 	);

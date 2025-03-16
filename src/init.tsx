@@ -28,9 +28,7 @@ function Init() {
 	);
 	const setNexusAuthApi = settingStore(state => state.setNexusAuthApi);
 	const setNexusAuthParams = settingStore(state => state.setNexusAuthParams);
-	const setCategory = settingStore(state => state.setCategory);
-	const setConflict = settingStore(state => state.setConflict);
-	const setVersion = settingStore(state => state.setVersion);
+	const setColumnSelection = settingStore(state => state.setColumnSelection);
 
 	const init = useCallback(async () => {
 		setInitLoading(true);
@@ -41,9 +39,10 @@ function Init() {
 		setGames(supportedGames, steamLibraryPaths);
 
 		const setting = await SettingModel.retrieve();
-		setCategory(setting.column_selections.category);
-		setConflict(setting.column_selections.conflict);
-		setVersion(setting.column_selections.version);
+		setColumnSelection('category', setting.column_selections.category);
+		setColumnSelection('conflict', setting.column_selections.conflict);
+		setColumnSelection('version', setting.column_selections.version);
+		setColumnSelection('creator', setting.column_selections.creator);
 		setNexusAuthApi(setting.nexus_api_key ?? null);
 		setNexusAuthParams(
 			setting.nexus_auth_params ?? {

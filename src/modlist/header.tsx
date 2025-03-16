@@ -19,9 +19,8 @@ export const Header = () => {
 	const toggle_category = settingStore(state => state.toggle_category);
 	const toggle_conflict = settingStore(state => state.toggle_conflict);
 	const toggle_version = settingStore(state => state.toggle_version);
-	const setCategory = settingStore(state => state.setCategory);
-	const setConflict = settingStore(state => state.setConflict);
-	const setVersion = settingStore(state => state.setVersion);
+	const toggle_creator = settingStore(state => state.toggle_creator);
+	const setColumnSelection = settingStore(state => state.setColumnSelection);
 
 	const toggleBulkCategory = modMetaStore(state => state.toggleBulkCategory);
 
@@ -44,6 +43,7 @@ export const Header = () => {
 					<TableHead className="text-center">CONFLICT</TableHead>
 				)}
 				{toggle_version && <TableHead>VERSION</TableHead>}
+				{toggle_creator && <TableHead>CREATOR</TableHead>}
 				<TableHead className="flex justify-center">
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
@@ -54,21 +54,35 @@ export const Header = () => {
 						<DropdownMenuContent>
 							<DropdownMenuCheckboxItem
 								checked={toggle_category}
-								onCheckedChange={setCategory}
+								onCheckedChange={isChecked =>
+									setColumnSelection('category', isChecked)
+								}
 							>
 								Categories
 							</DropdownMenuCheckboxItem>
 							<DropdownMenuCheckboxItem
 								checked={toggle_conflict}
-								onCheckedChange={setConflict}
+								onCheckedChange={isChecked =>
+									setColumnSelection('conflict', isChecked)
+								}
 							>
 								Conflict
 							</DropdownMenuCheckboxItem>
 							<DropdownMenuCheckboxItem
 								checked={toggle_version}
-								onCheckedChange={setVersion}
+								onCheckedChange={isChecked =>
+									setColumnSelection('version', isChecked)
+								}
 							>
 								Version
+							</DropdownMenuCheckboxItem>
+							<DropdownMenuCheckboxItem
+								checked={toggle_creator}
+								onCheckedChange={isChecked =>
+									setColumnSelection('creator', isChecked)
+								}
+							>
+								Creator
 							</DropdownMenuCheckboxItem>
 						</DropdownMenuContent>
 					</DropdownMenu>

@@ -93,40 +93,109 @@ pub async fn subscribed_mods(
 
     let items_result = items_result.unwrap()?;
     let workshop_base_path = workshop_path_for_app(app_id);
-    let mut mods: Vec<ModItem> = Vec::new();
 
-    let friends = steam_client_clone.friends();
+    let mut mod_items = Vec::new();
+    let mut creator_ids = Vec::new();
+
+    let steam_client_for_friends = steam_client_clone.clone();
+    let (creator_tx, mut creator_rx) = tokio::sync::mpsc::channel(32);
+
     for item in items_result.items.into_iter().flatten() {
         if let Some(ref base_path) = workshop_base_path {
             let item_path = PathBuf::from(base_path).join(&item.published_file_id.to_string());
             let (pack_file, pack_file_path, preview_local) = find_pack_and_image(&item_path);
 
             if !pack_file.is_empty() {
-                let creator = friends.get_friend(item.owner.raw);
-                let mut creator_name = creator.name();
-                if creator_name == "[unknown]" {
-                    let _ = friends.request_user_information(item.owner.raw, true);
-                    let creator = friends.get_friend(item.owner.raw);
-                    creator_name = creator.name();
-                }
-
-                mods.push(ModItem {
-                    identifier: item.published_file_id.to_string(),
-                    title: item.title,
-                    description: Some(item.description),
-                    created_at: item.time_created,
-                    categories: Some(item.tags),
-                    url: Some(item.url),
-                    preview_url: item.preview_url,
-                    version: Some(Version::Number(item.time_updated)),
-                    item_type: "steam_mod".to_string(),
-                    pack_file,
-                    pack_file_path,
-                    preview_local,
-                    creator_name: Some(creator_name),
-                })
+                creator_ids.push(item.owner.raw);
+                mod_items.push((item, pack_file, pack_file_path, preview_local));
             }
         }
+    }
+
+    let creator_names = if !mod_items.is_empty() {
+        let creator_task = tokio::task::spawn_blocking(move || {
+            let friends = steam_client_for_friends.friends();
+            let mut unknown_creators = std::collections::HashSet::new();
+
+            let unique_creator_ids: std::collections::HashSet<_> =
+                creator_ids.iter().cloned().collect();
+
+            for &creator_id in &unique_creator_ids {
+                let creator = friends.get_friend(creator_id);
+                if creator.name() == "[unknown]" {
+                    unknown_creators.insert(creator_id);
+                    let _ = friends.request_user_information(creator_id, true);
+                }
+            }
+
+            if !unknown_creators.is_empty() {
+                let start_time = std::time::Instant::now();
+                let timeout = std::time::Duration::from_secs(3);
+
+                while !unknown_creators.is_empty() && start_time.elapsed() < timeout {
+                    let _ = creator_tx.blocking_send(());
+                    std::thread::sleep(std::time::Duration::from_millis(100));
+                    unknown_creators.retain(|&id| {
+                        let creator = friends.get_friend(id);
+                        creator.name() == "[unknown]"
+                    });
+                }
+            }
+
+            let mut names = std::collections::HashMap::new();
+            for &id in &creator_ids {
+                let creator = friends.get_friend(id);
+                names.insert(id, creator.name());
+            }
+
+            names
+        });
+
+        let mut creator_result = None;
+        let mut fused_creator_task = creator_task.fuse();
+
+        while creator_result.is_none() {
+            tokio::select! {
+                Some(_) = creator_rx.recv() => {
+                    app_state.steam_state.run_callbacks(app_id)?;
+                }
+                task_result = &mut fused_creator_task => {
+                    creator_result = Some(
+                        task_result.map_err(|e| format!("Creator task error: {}", e))?
+                    );
+                    break;
+                }
+            }
+        }
+
+        creator_result.unwrap()
+    } else {
+        std::collections::HashMap::new()
+    };
+
+    let mut mods = Vec::new();
+    for (item, pack_file, pack_file_path, preview_local) in mod_items {
+        let creator_name = creator_names
+            .get(&item.owner.raw)
+            .cloned()
+            .unwrap_or_else(|| "[unknown]".to_string());
+
+        mods.push(ModItem {
+            identifier: item.published_file_id.to_string(),
+            title: item.title,
+            description: Some(item.description),
+            created_at: item.time_created,
+            categories: Some(item.tags),
+            url: Some(item.url),
+            preview_url: item.preview_url,
+            version: Some(Version::Number(item.time_updated)),
+            item_type: "steam_mod".to_string(),
+            pack_file,
+            pack_file_path,
+            preview_local,
+			creator_id: Some(item.owner.steam_id64.to_string()),
+            creator_name: Some(creator_name),
+        });
     }
 
     Ok(mods)

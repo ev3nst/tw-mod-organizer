@@ -24,6 +24,8 @@ export type ModItem = {
 	created_at: number;
 	categories: string;
 	version: string | number;
+	creator_id: string | null;
+	creator_name: string | null;
 	item_type: string; // steam_mod, local_mod
 	url?: string;
 	preview_url?: string | null;

@@ -4,7 +4,9 @@ import {
 	EllipsisVerticalIcon,
 	EyeIcon,
 	InfoIcon,
+	LinkIcon,
 	TrashIcon,
+	UserIcon,
 } from 'lucide-react';
 
 import { TableCell } from '@/components/table';
@@ -110,6 +112,8 @@ const SeparatorActions = ({ mod }: { mod: ModSeparatorItem }) => {
 };
 
 const ModActions = ({ mod }: { mod: ModItem }) => {
+	const selectedGame = settingStore(state => state.selectedGame);
+
 	const toggleMetaInfo = modMetaStore(state => state.toggleMetaInfo);
 	const setSelectedMetaMod = modMetaStore(state => state.setSelectedMod);
 
@@ -119,7 +123,7 @@ const ModActions = ({ mod }: { mod: ModItem }) => {
 	const toggleModRemove = modsStore(state => state.toggleModRemove);
 	const setSelectedRemoveMod = modsStore(state => state.setSelectedMod);
 
-	const handleOpenUrl = useCallback(
+	const handleOpenModUrl = useCallback(
 		async (inSteamClient: boolean = false) => {
 			const modUrl = determineModUrl(mod, inSteamClient);
 			if (!modUrl) return;
@@ -184,9 +188,9 @@ const ModActions = ({ mod }: { mod: ModItem }) => {
 						{showExternalLink && (
 							<DropdownMenuItem
 								className="text-xs py-2 my-0"
-								onClick={() => handleOpenUrl(false)}
+								onClick={() => handleOpenModUrl(false)}
 							>
-								<EyeIcon className="w-3 h-3" />
+								<LinkIcon className="w-3 h-3" />
 								Open Mod Page in Browser
 							</DropdownMenuItem>
 						)}
@@ -194,12 +198,32 @@ const ModActions = ({ mod }: { mod: ModItem }) => {
 						{mod.item_type === 'steam_mod' && (
 							<DropdownMenuItem
 								className="text-xs py-2 my-0"
-								onClick={() => handleOpenUrl(true)}
+								onClick={() => handleOpenModUrl(true)}
 							>
 								<EyeIcon className="w-3 h-3" />
 								Open Mod Page in Steam Client
 							</DropdownMenuItem>
 						)}
+
+						{mod.item_type === 'steam_mod' &&
+							typeof mod.creator_id === 'string' &&
+							mod.creator_id !== null && (
+								<DropdownMenuItem
+									className="text-xs py-2 my-0"
+									onClick={() =>
+										api.open_external_url(
+											`steam://openurl/https://steamcommunity.com/profiles/${
+												mod.creator_id
+											}/myworkshopfiles/?appid=${
+												selectedGame!.steam_id
+											}`,
+										)
+									}
+								>
+									<UserIcon className="w-3 h-3" />
+									More from this Author
+								</DropdownMenuItem>
+							)}
 
 						<DropdownMenuItem
 							className="text-xs py-2 my-0"
