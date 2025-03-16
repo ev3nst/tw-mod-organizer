@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { XIcon } from 'lucide-react';
+import { ArrowDownUpIcon, XIcon } from 'lucide-react';
 
 import { SidebarInput } from '@/components/sidebar';
 import { PaginationControls } from '@/components/pagination-controls';
@@ -55,7 +55,7 @@ export const Saves = () => {
 	const totalItems = filteredSaveFiles.length;
 	const paginatedFiles = filteredSaveFiles.slice(
 		(currentPage - 1) * perPage,
-		currentPage * perPage,
+		currentPage * perPage
 	);
 
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,13 +64,13 @@ export const Saves = () => {
 
 	const handleDeleteFile = async (
 		e: React.MouseEvent,
-		saveFile: SaveFile,
+		saveFile: SaveFile
 	) => {
 		e.stopPropagation();
 		await api.delete_save_file(selectedGame!.steam_id, saveFile.filename);
 
 		const newSaveFiles = saveFiles.filter(
-			file => file.filename !== saveFile.filename,
+			file => file.filename !== saveFile.filename
 		);
 		setSaveFiles(newSaveFiles);
 
@@ -88,6 +88,10 @@ export const Saves = () => {
 		setCurrentPage(1);
 	};
 
+	const handleFileSort = () => {
+		setSaveFiles([...saveFiles].reverse());
+	};
+
 	return (
 		<div>
 			<div className="flex gap-4 items-center px-3 mb-2">
@@ -96,6 +100,9 @@ export const Saves = () => {
 					value={searchQuery}
 					onChange={handleSearchChange}
 				/>
+				<Button size="icon" variant="ghost" onClick={handleFileSort}>
+					<ArrowDownUpIcon />
+				</Button>
 			</div>
 			<p className="px-3 text-sm text-muted-foreground mb-2">
 				You can select a save file to continue.
@@ -110,7 +117,7 @@ export const Saves = () => {
 						}`}
 						onClick={() => {
 							setSaveFilePath(
-								saveFilePath === sf.path ? undefined : sf.path,
+								saveFilePath === sf.path ? undefined : sf.path
 							);
 						}}
 					>
@@ -127,7 +134,7 @@ export const Saves = () => {
 										{
 											hour: 'numeric',
 											minute: 'numeric',
-										},
+										}
 									)}
 								</span>
 								<span>{formatFileSize(sf.filesize)}</span>
