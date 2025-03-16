@@ -4,7 +4,7 @@
 
 Requires Windows 10, Steam, 7z (for local mod installation).
 
-![App image](https://i.imgur.com/uPFAAvz.png)
+![App image](https://i.imgur.com/zm0GGFP.png)
 
 ## Features
 
