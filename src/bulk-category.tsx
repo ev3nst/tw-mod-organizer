@@ -1,3 +1,7 @@
+import { useState, ChangeEvent, useMemo } from 'react';
+import { ArrowRightIcon, PlusIcon, XIcon } from 'lucide-react';
+import { toast } from 'sonner';
+
 import {
 	Dialog,
 	DialogContent,
@@ -20,14 +24,12 @@ import {
 	AccordionTrigger,
 } from '@/components/accordion';
 import { Button } from '@/components/button';
-import { filterMods, modMetaStore } from './lib/store/mod_meta';
-import { modsStore } from './lib/store/mods';
-import { ArrowRightIcon, PlusIcon, XIcon } from 'lucide-react';
-import { useState, ChangeEvent, useMemo } from 'react';
-import { modActivationStore } from './lib/store/mod_activation';
-import { ModItem } from './lib/api';
-import { toast } from 'sonner';
-import { toastError } from './lib/utils';
+
+import { ModItem } from '@/lib/api';
+import { modsStore } from '@/lib/store/mods';
+import { modActivationStore } from '@/lib/store/mod_activation';
+import { filterMods, modMetaStore } from '@/lib/store/mod_meta';
+import { toastError } from '@/lib/utils';
 
 export function BulkCategory() {
 	const [modsToChange, setModsToChange] = useState<ModItem[]>([]);
@@ -166,13 +168,12 @@ export function BulkCategory() {
 		>
 			<DialogContent className="min-w-[600px]">
 				<DialogHeader>
-					<DialogTitle className="flex items-baseline gap-3">
+					<DialogTitle>
 						<div>Bulk Update Categories</div>
-						<div className="text-sm text-muted-foreground"></div>
 					</DialogTitle>
 					<DialogDescription className="text-xs mt-1 break-all"></DialogDescription>
 				</DialogHeader>
-				<div className="flex flex-col gap-4">
+				<div className="flex flex-col gap-2.5">
 					<div className="flex justify-between items-center gap-2">
 						<Select
 							value={activationFilter}
@@ -218,16 +219,16 @@ export function BulkCategory() {
 								Mods ({filteredMods.length})
 							</AccordionTrigger>
 							<AccordionContent>
-								<div className="max-h-[200px] overflow-y-auto">
+								<div className="max-h-[180px] overflow-y-auto divide-y">
 									{filteredMods.map(m => (
 										<div
-											className="flex justify-between text-xs py-2 px-4 hover:bg-black/80"
+											className="flex justify-between text-xs py-2 px-4  hover:bg-black/80"
 											key={`bulk_c_filt_mod_${m.identifier}`}
 										>
-											<div className="flex flex-col gap-1">
+											<div className="flex gap-1">
 												<div>{m.title}</div>
 												<div className="text-muted-foreground">
-													{m.categories}
+													- <em>{m.categories}</em>
 												</div>
 											</div>
 
