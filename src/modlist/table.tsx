@@ -1,4 +1,4 @@
-import { useState, memo, useMemo, useCallback } from 'react';
+import { useState, memo, useMemo, useCallback, useEffect } from 'react';
 import {
 	DndContext,
 	closestCenter,
@@ -47,10 +47,24 @@ export const ModListTable = () => {
 	const setModOrder = modOrderStore(state => state.setData);
 	const selectedRows = modOrderStore(state => state.selectedRows);
 	const toggleRow = modOrderStore(state => state.toggleRow);
+	const clearSelection = modOrderStore(state => state.clearSelection);
 
 	const separators = modSeparatorStore(state => state.data);
 	const metaData = modMetaStore(state => state.data);
 	const modActiveData = modActivationStore(state => state.data);
+
+	const handleEscKey = (event: KeyboardEvent) => {
+		if (event.key === 'Escape') {
+			clearSelection();
+		}
+	};
+
+	useEffect(() => {
+		window.addEventListener('keydown', handleEscKey);
+		return () => {
+			window.removeEventListener('keydown', handleEscKey);
+		};
+	}, []);
 
 	const filteredMods = useMemo(() => {
 		return filterMods(
