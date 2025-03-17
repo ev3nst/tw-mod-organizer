@@ -61,6 +61,8 @@ export const Conflict = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 	}
 
 	if (toggle_conflict) {
+		if (win.total === 0 && lose.total === 0) return <TableCell />;
+
 		return (
 			<TableCell
 				onClick={() => {
