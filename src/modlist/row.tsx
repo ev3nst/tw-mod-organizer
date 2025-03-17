@@ -70,7 +70,7 @@ const RowComponent = ({
 			onClick={handleRowClick}
 			className={`${isSelected ? 'ring-1 ring-blue-800' : ''} cursor-pointer`}
 		>
-			<TableCell style={cellStyle}>
+			<TableCell className="select-none" style={cellStyle}>
 				<div
 					className="cursor-move select-none flex items-center justify-center h-full"
 					{...attributes}
