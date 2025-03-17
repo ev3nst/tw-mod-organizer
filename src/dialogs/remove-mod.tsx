@@ -137,20 +137,26 @@ export function RemoveModDialog() {
 								: selectedMod?.title}
 						</div>
 					</DialogTitle>
-					<DialogDescription className="text-xs mt-1 break-all text-sky-700">
-						{selectedRows.size === 1
-							? selectedMod?.pack_file
-							: [...selectedRows].map(sr => (
-									<div
-										className="mt-1"
-										key={`mod_to_remove_${sr}`}
-									>
-										{
-											mods.find(m => m.identifier === sr)!
-												.title
-										}
-									</div>
-								))}
+					<DialogDescription
+						className="text-xs mt-1 break-all text-sky-700"
+						asChild
+					>
+						<div>
+							{selectedRows.size === 1
+								? selectedMod?.pack_file
+								: [...selectedRows].map(sr => (
+										<div
+											className="mt-1"
+											key={`mod_to_remove_${sr}`}
+										>
+											{
+												mods.find(
+													m => m.identifier === sr,
+												)!.title
+											}
+										</div>
+									))}
+						</div>
 					</DialogDescription>
 				</DialogHeader>
 				<div className="text-sm">
