@@ -319,6 +319,13 @@ class API {
 			json_path,
 		});
 	}
+
+	async version_check(): Promise<{
+		timestamp: number;
+		version: string;
+	}> {
+		return invoke('version_check');
+	}
 }
 
 const api = new API();

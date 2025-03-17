@@ -15,6 +15,7 @@ mod export_profile;
 mod import_data;
 mod migrate_local_mod;
 mod parse_profile_json;
+mod version_check;
 
 mod migrations;
 
@@ -59,6 +60,7 @@ pub fn run() {
             import_data::import_data,
             export_profile::export_profile,
             parse_profile_json::parse_profile_json,
+            version_check::version_check,
             r#mod::local_mods::local_mods,
             r#mod::install::install_mod,
             r#mod::delete::delete_mod,
