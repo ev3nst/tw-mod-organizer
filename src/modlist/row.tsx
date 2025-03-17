@@ -70,12 +70,13 @@ const RowComponent = ({
 			onClick={handleRowClick}
 			className={`${isSelected ? 'ring-1 ring-blue-800' : ''} cursor-pointer`}
 		>
-			<TableCell className="select-none" style={cellStyle}>
-				<div
-					className="cursor-move select-none flex items-center justify-center h-full"
-					{...attributes}
-					{...listeners}
-				>
+			<TableCell
+				className="select-none cursor-move"
+				style={cellStyle}
+				{...attributes}
+				{...listeners}
+			>
+				<div className="flex items-center justify-center h-full">
 					<GripVerticalIcon className="h-4 w-4 text-muted-foreground" />
 				</div>
 			</TableCell>
