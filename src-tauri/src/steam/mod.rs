@@ -5,6 +5,7 @@ pub mod steam_paths;
 pub mod subscribe;
 pub mod subscribed_mods;
 pub mod unsubscribe;
+pub mod update_workshop_item;
 pub mod workshop;
 pub mod workshop_item;
 pub mod workshop_path_for_app;

@@ -12,6 +12,7 @@ import { Button } from '@/components/button';
 import { settingStore } from '@/lib/store/setting';
 
 import { Settings } from './settings';
+import { UpdateMods } from './update-mods';
 import { ImportData } from './import-data';
 
 export function Preferences() {
@@ -40,14 +41,20 @@ export function Preferences() {
 				{/* suppress radix error */}
 				<DialogTitle className="hidden" />
 				<Tabs defaultValue="settings">
-					<TabsList className="grid grid-cols-2 mr-10 mb-3">
+					<TabsList className="grid grid-cols-3 mr-5 mb-3">
 						<TabsTrigger value="settings">Settings</TabsTrigger>
+						<TabsTrigger value="update_mods">
+							Update Mods
+						</TabsTrigger>
 						<TabsTrigger value="import_data">
 							WH3 Mod Manager
 						</TabsTrigger>
 					</TabsList>
 					<TabsContent value="settings">
 						<Settings />
+					</TabsContent>
+					<TabsContent value="update_mods">
+						<UpdateMods />
 					</TabsContent>
 					<TabsContent value="import_data">
 						<ImportData />

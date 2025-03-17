@@ -81,6 +81,7 @@ pub fn run() {
             steam::subscribe::subscribe,
             steam::subscribed_mods::subscribed_mods,
             steam::unsubscribe::unsubscribe,
+            steam::update_workshop_item::update_workshop_item,
             utils::supported_games::supported_games,
             utils::open_external_url::open_external_url,
             utils::highlight_path::highlight_path,

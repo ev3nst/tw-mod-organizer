@@ -181,6 +181,13 @@ class API {
 		});
 	}
 
+	async update_workshop_item(app_id: number, item_id: number): Promise<void> {
+		return invoke('update_workshop_item', {
+			app_id,
+			item_id,
+		});
+	}
+
 	async delete_mod(
 		app_id: number,
 		item_id: number | string,
