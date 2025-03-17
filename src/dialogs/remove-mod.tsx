@@ -141,7 +141,10 @@ export function RemoveModDialog() {
 						{selectedRows.size === 1
 							? selectedMod?.pack_file
 							: [...selectedRows].map(sr => (
-									<div className="mt-1">
+									<div
+										className="mt-1"
+										key={`mod_to_remove_${sr}`}
+									>
 										{
 											mods.find(m => m.identifier === sr)!
 												.title
