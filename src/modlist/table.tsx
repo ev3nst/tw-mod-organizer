@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, memo, useMemo, useCallback } from 'react';
 import {
 	DndContext,
 	closestCenter,
@@ -22,6 +22,7 @@ import { modActivationStore } from '@/lib/store/mod_activation';
 import { modSeparatorStore, isCollapsed } from '@/lib/store/mod_separator';
 import { filterMods, modMetaStore } from '@/lib/store/mod_meta';
 
+import type { ModItemSeparatorUnion } from '@/lib/api';
 import {
 	sortMods,
 	sortCollapsedSection,
@@ -38,13 +39,16 @@ import { Filter } from './filter';
 export const ModListTable = () => {
 	const [searchModText, setSearchModText] = useState<string>('');
 	const [activationFilter, setActivationFilter] = useState<string>('all');
-	const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
 	const [activeId, setActiveId] = useState<string | null>(null);
 
 	const mods = modsStore(state => state.mods);
-	const separators = modSeparatorStore(state => state.data);
 	const setMods = modsStore(state => state.setMods);
+
 	const setModOrder = modOrderStore(state => state.setData);
+	const selectedRows = modOrderStore(state => state.selectedRows);
+	const toggleRow = modOrderStore(state => state.toggleRow);
+
+	const separators = modSeparatorStore(state => state.data);
 	const metaData = modMetaStore(state => state.data);
 	const modActiveData = modActivationStore(state => state.data);
 
@@ -97,25 +101,6 @@ export const ModListTable = () => {
 		return filteredMods.filter(mod => !hiddenItems.has(mod.identifier));
 	}, [filteredMods, hiddenItems]);
 
-	const handleRowSelect = useCallback((modId: string, ctrlKey: boolean) => {
-		setSelectedRows(prevSelected => {
-			const newSelected = new Set(prevSelected);
-
-			if (ctrlKey) {
-				if (newSelected.has(modId)) {
-					newSelected.delete(modId);
-				} else {
-					newSelected.add(modId);
-				}
-			} else {
-				newSelected.clear();
-				newSelected.add(modId);
-			}
-
-			return newSelected;
-		});
-	}, []);
-
 	const sensors = useSensors(
 		useSensor(MouseSensor, {
 			activationConstraint: {
@@ -134,26 +119,28 @@ export const ModListTable = () => {
 			const { active, over } = event;
 			setActiveId(null);
 
-			if (active.id !== over?.id && over) {
-				const draggedId = active.id as string;
-				const draggedItem = mods.find(m => m.identifier === draggedId);
-				if (selectedRows.has(draggedId) && selectedRows.size > 1) {
-					const result = sortGroup(mods, selectedRows, over);
-					setModOrder(result.modOrder);
-					setMods(result.mods);
-				} else {
-					let result;
-					if (
-						draggedItem &&
-						isSeparator(draggedItem) &&
-						isCollapsed(separators, draggedId)
-					) {
-						result = sortCollapsedSection(mods, active, over);
-					} else {
-						result = sortMods(mods, active, over);
-					}
+			if (!over || active.id === over.id) return;
 
+			const draggedId = active.id as string;
+			const draggedItem = mods.find(m => m.identifier === draggedId);
+
+			if (draggedItem) {
+				let result;
+				if (selectedRows.has(draggedId) && selectedRows.size > 1) {
+					result = sortGroup(mods, selectedRows, over);
+				} else if (
+					isSeparator(draggedItem) &&
+					isCollapsed(separators, draggedId)
+				) {
+					result = sortCollapsedSection(mods, active, over);
+				} else {
+					result = sortMods(mods, active, over);
+				}
+
+				if (result.modOrder !== modOrderStore.getState().data) {
 					setModOrder(result.modOrder);
+				}
+				if (result.mods !== modsStore.getState().mods) {
 					setMods(result.mods);
 				}
 			}
@@ -161,7 +148,6 @@ export const ModListTable = () => {
 		[mods, separators, selectedRows, setModOrder, setMods],
 	);
 
-	const itemIds = useMemo(() => mods.map(mod => mod.identifier), [mods]);
 	const modIndices = useMemo(() => {
 		const indices = new Map<string, number>();
 		mods.forEach((mod, index) => {
@@ -189,59 +175,39 @@ export const ModListTable = () => {
 				onDragEnd={handleDragEnd}
 			>
 				<div className="absolute inset-0 overflow-y-auto dark-scrollbar">
-					<Table className="w-full">
-						<Header />
-						<TableBody className="text-sm">
-							<SortableContext
-								items={itemIds}
-								strategy={verticalListSortingStrategy}
-							>
-								{modsResolved.map(mod => (
-									<Row
-										key={mod.identifier}
-										mod={mod}
-										modIndex={
-											modIndices.get(mod.identifier) ?? -1
-										}
-										id={mod.identifier}
-										isSelected={selectedRows.has(
-											mod.identifier,
-										)}
-										onSelect={handleRowSelect}
-									/>
-								))}
-							</SortableContext>
-						</TableBody>
-						<Footer length={mods.length} />
-						<Lock />
-					</Table>
+					<ModTable
+						modsResolved={modsResolved}
+						modIndices={modIndices}
+						selectedRows={selectedRows}
+						toggleRow={toggleRow}
+					/>
 				</div>
 
-				<DragOverlay>
-					{activeId && activeMod && (
-						<div className="opacity-80">
-							<table className="w-full border-collapse">
-								<tbody>
-									<tr className="bg-white dark:bg-gray-800 shadow-md rounded-md">
-										<td className="border border-gray-200 dark:border-gray-700 p-2">
-											<div className="flex items-center gap-2">
-												<div className="font-medium text-sm">
-													{activeMod.title}
-												</div>
-												{selectedCount > 1 && (
+				{selectedCount > 1 && (
+					<DragOverlay>
+						{activeId && activeMod && (
+							<div className="opacity-80">
+								<table className="w-full border-collapse">
+									<tbody>
+										<tr className="bg-white dark:bg-gray-800 shadow-md rounded-md">
+											<td className="border border-gray-200 dark:border-gray-700 p-2">
+												<div className="flex items-center gap-2">
+													<div className="font-medium text-sm">
+														{activeMod.title}
+													</div>
 													<div className="bg-blue-700 text-white text-xs px-2 py-1 rounded-full">
 														+{selectedCount - 1}{' '}
 														more
 													</div>
-												)}
-											</div>
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-					)}
-				</DragOverlay>
+												</div>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						)}
+					</DragOverlay>
+				)}
 			</DndContext>
 			<Filter
 				activationFilter={activationFilter}
@@ -252,3 +218,39 @@ export const ModListTable = () => {
 		</div>
 	);
 };
+
+interface ModTableProps {
+	modsResolved: ModItemSeparatorUnion[];
+	modIndices: Map<string, number>;
+	selectedRows: Set<string>;
+	toggleRow: (modId: string, ctrlKey: boolean) => void;
+}
+
+const ModTable: React.FC<ModTableProps> = memo(
+	({ modsResolved, modIndices, selectedRows, toggleRow }) => {
+		return (
+			<Table className="w-full">
+				<Header />
+				<TableBody className="text-sm">
+					<SortableContext
+						items={modsResolved.map(mod => mod.identifier)}
+						strategy={verticalListSortingStrategy}
+					>
+						{modsResolved.map(mod => (
+							<Row
+								key={mod.identifier}
+								mod={mod}
+								modIndex={modIndices.get(mod.identifier) ?? -1}
+								id={mod.identifier}
+								isSelected={selectedRows.has(mod.identifier)}
+								onSelect={toggleRow}
+							/>
+						))}
+					</SortableContext>
+				</TableBody>
+				<Footer length={modsResolved.length} />
+				<Lock />
+			</Table>
+		);
+	},
+);

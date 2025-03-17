@@ -10,7 +10,7 @@ import {
 } from '@/components/dialog';
 import { Button } from '@/components/button';
 
-import api from '@/lib/api';
+import api, { ModItem } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 import { ProfileModel } from '@/lib/store/profile';
 import { modsStore } from '@/lib/store/mods';
@@ -22,6 +22,7 @@ import { ModOrderModel, modOrderStore } from '@/lib/store/mod_order';
 import { ModMetaModel, modMetaStore } from '@/lib/store/mod_meta';
 
 import { toastError } from '@/lib/utils';
+import { isSeparator } from '@/modlist/utils';
 
 export function RemoveModDialog() {
 	const loading = settingStore(state => state.loading);
@@ -32,30 +33,55 @@ export function RemoveModDialog() {
 	const selectedMod = modsStore(state => state.selectedMod);
 	const toggleModRemove = modsStore(state => state.toggleModRemove);
 
+	const mods = modsStore(state => state.mods);
 	const modOrderData = modOrderStore(state => state.data);
 	const modActivationData = modActivationStore(state => state.data);
 	const modMetaData = modMetaStore(state => state.data);
+	const selectedRows = modOrderStore(state => state.selectedRows);
 
-	const handleUnsubscribe = useCallback(async () => {
-		await api.unsubscribe(
-			selectedGame!.steam_id,
-			Number(selectedMod.identifier),
-		);
-		toast.success('Unsubscribed.');
-	}, [selectedGame!.steam_id, selectedMod.identifier]);
+	const handleUnsubscribe = useCallback(
+		async (modIdentifier: string) => {
+			await api.unsubscribe(
+				selectedGame!.steam_id,
+				Number(modIdentifier),
+			);
+			toast.success(`Unsubscribed from mod: ${modIdentifier}`);
+		},
+		[selectedGame!.steam_id],
+	);
 
-	const handleDeleteMod = useCallback(async () => {
-		await api.delete_mod(selectedGame!.steam_id, selectedMod.identifier);
-		toast.success('Deleted.');
-	}, [selectedGame!.steam_id, selectedMod.identifier]);
+	const handleDeleteMod = useCallback(
+		async (modIdentifier: string) => {
+			await api.delete_mod(selectedGame!.steam_id, modIdentifier);
+			toast.success(`Deleted mod: ${modIdentifier}`);
+		},
+		[selectedGame!.steam_id],
+	);
 
 	const handleSubmit = async () => {
 		try {
 			setLoading(true);
-			if (selectedMod.item_type === 'steam_mod') {
-				await handleUnsubscribe();
-			} else {
-				await handleDeleteMod();
+			const modsToProcess =
+				selectedRows.size > 0
+					? Array.from(selectedRows)
+					: [selectedMod.identifier];
+
+			for (const modIdentifier of modsToProcess) {
+				const selectedModData = mods.find(
+					mod => mod.identifier === modIdentifier,
+				);
+
+				if (!selectedModData) continue;
+				if (isSeparator(selectedModData)) continue;
+
+				if (
+					selectedModData &&
+					(selectedModData as ModItem).item_type === 'steam_mod'
+				) {
+					await handleUnsubscribe(modIdentifier);
+				} else {
+					await handleDeleteMod(modIdentifier);
+				}
 			}
 
 			const profile = await ProfileModel.currentProfile(
@@ -63,14 +89,14 @@ export function RemoveModDialog() {
 			);
 
 			const modOrder = await ModOrderModel.retrieve(profile.id);
-			modOrder!.data = [...modOrderData].filter(
-				mr => mr.mod_id !== selectedMod.identifier,
+			modOrder!.data = modOrderData.filter(
+				mr => !modsToProcess.includes(mr.mod_id),
 			);
 			await modOrder!.save();
 
 			const modActivation = await ModActivationModel.retrieve(profile.id);
-			modActivation!.data = [...modActivationData].filter(
-				mr => mr.mod_id !== selectedMod.identifier,
+			modActivation!.data = modActivationData.filter(
+				mr => !modsToProcess.includes(mr.mod_id),
 			);
 			await modActivation!.save();
 
@@ -78,8 +104,8 @@ export function RemoveModDialog() {
 				undefined,
 				selectedGame!.steam_id,
 			);
-			modMeta!.data = [...modMetaData].filter(
-				mr => mr.mod_id !== selectedMod.identifier,
+			modMeta!.data = modMetaData.filter(
+				mr => !modsToProcess.includes(mr.mod_id),
 			);
 			await modMeta!.save();
 
@@ -95,25 +121,39 @@ export function RemoveModDialog() {
 
 	return (
 		<Dialog
-			open={removeModOpen && typeof selectedMod !== 'undefined'}
+			open={
+				removeModOpen &&
+				(selectedRows.size > 0 || selectedMod !== undefined)
+			}
 			onOpenChange={() => toggleModRemove()}
 		>
 			<DialogContent className="min-w-[400px]">
 				<DialogHeader>
 					<DialogTitle className="flex items-baseline gap-3">
-						<div>Remove Mod</div>
+						<div>Remove Mod(s)</div>
 						<div className="text-sm text-blue-500">
-							{selectedMod.title}
+							{selectedRows.size > 1
+								? `${selectedRows.size} Mods Selected`
+								: selectedMod?.title}
 						</div>
 					</DialogTitle>
 					<DialogDescription className="text-xs mt-1 break-all text-sky-700">
-						{selectedMod?.pack_file}
+						{selectedRows.size === 1
+							? selectedMod?.pack_file
+							: [...selectedRows].map(sr => (
+									<div className="mt-1">
+										{
+											mods.find(m => m.identifier === sr)!
+												.title
+										}
+									</div>
+								))}
 					</DialogDescription>
 				</DialogHeader>
-				<div>
-					Are you sure you want to remove this mod ? If mod is within
-					steam workshop it will be unsubscribed but if mod is locally
-					installed then it will be moved to trash.
+				<div className="text-sm">
+					Are you sure you want to remove the selected mod(s)? If the
+					mod is within the Steam workshop, it will be unsubscribed,
+					but if it is locally installed, it will be moved to trash.
 				</div>
 				<Button
 					type="button"

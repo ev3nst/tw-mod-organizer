@@ -146,10 +146,14 @@ const ModActions = ({ mod }: { mod: ModItem }) => {
 		toggleSetPriority();
 	}, [mod, setSelectedPriorityMod, toggleSetPriority]);
 
-	const handleRemove = useCallback(() => {
-		setSelectedRemoveMod(mod);
-		toggleModRemove();
-	}, [mod, setSelectedRemoveMod, toggleModRemove]);
+	const handleRemove = useCallback(
+		(event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+			event.stopPropagation();
+			setSelectedRemoveMod(mod);
+			toggleModRemove();
+		},
+		[mod, setSelectedRemoveMod, toggleModRemove],
+	);
 
 	const showExternalLink =
 		mod.item_type === 'steam_mod' || (mod.url !== null && mod.url !== '');

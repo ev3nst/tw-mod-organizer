@@ -28,6 +28,9 @@ export const modOrderStore = createStore<
 		selectedMod: ModItem;
 		toggleSetPriority: () => void;
 		setSelectedMod: (selectedMod: ModItem) => void;
+		selectedRows: Set<string>;
+		toggleRow: (modId: string, ctrlKey: boolean) => void;
+		clearSelection: () => void;
 	}
 >({
 	model: ModOrderModel,
@@ -45,5 +48,25 @@ export const modOrderStore = createStore<
 		setSelectedMod: selectedMod => {
 			set({ selectedMod });
 		},
+		selectedRows: new Set(),
+		toggleRow: (modId: string, ctrlKey: boolean) =>
+			set((state: any) => {
+				const newSelected = new Set(state.selectedRows);
+
+				if (ctrlKey) {
+					if (newSelected.has(modId)) {
+						newSelected.delete(modId);
+					} else {
+						newSelected.add(modId);
+					}
+				} else {
+					newSelected.clear();
+					newSelected.add(modId);
+				}
+
+				return { selectedRows: newSelected };
+			}),
+
+		clearSelection: () => set({ selectedRows: new Set() }),
 	}),
 });
