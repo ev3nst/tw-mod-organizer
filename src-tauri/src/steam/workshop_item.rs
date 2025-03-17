@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-// Modified by Burak Kartal on [01/03/2025]
+// Modified by Burak Kartal on [17/03/2025]
 
 fn capitalize(s: String) -> String {
     let mut chars = s.chars();
@@ -299,6 +299,7 @@ pub mod workshop {
         pub num_children: u32,
         pub preview_url: Option<String>,
         pub statistics: WorkshopItemStatistic,
+        pub required_items: Vec<u64>,
     }
 
     impl WorkshopItem {
@@ -309,8 +310,16 @@ pub mod workshop {
                 let time_created = time_created_u64.checked_mul(1000);
                 let time_updated = time_updated_u64.checked_mul(1000);
 
+                let required_items = results
+                    .get_children(index)
+                    .unwrap_or_default()
+                    .into_iter()
+                    .map(|file_id| u64::from(file_id.0))
+                    .collect();
+
+                let published_file_id = u64::from(item.published_file_id.0);
                 Self {
-                    published_file_id: u64::from(item.published_file_id.0),
+                    published_file_id,
                     creator_app_id: item.creator_app_id.map(|id| id.0),
                     consumer_app_id: item.consumer_app_id.map(|id| id.0),
                     title: item.title,
@@ -336,6 +345,7 @@ pub mod workshop {
                     num_children: item.num_children,
                     preview_url: results.preview_url(index),
                     statistics: WorkshopItemStatistic::from_query_results(results, index),
+                    required_items,
                 }
             })
         }

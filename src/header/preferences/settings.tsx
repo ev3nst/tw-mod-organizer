@@ -14,6 +14,7 @@ import { Separator } from '@/components/separator';
 
 import api from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
+import { Checkbox } from '@/components/checkbox';
 
 export function Settings() {
 	const [installPath, setInstallPath] = useState('');
@@ -27,6 +28,12 @@ export function Settings() {
 	);
 	const setModDownloadPath = settingStore(state => state.setModDownloadPath);
 	const mod_download_path = settingStore(state => state.mod_download_path);
+	const dependency_confirmation = settingStore(
+		state => state.dependency_confirmation,
+	);
+	const setDependencyConfirmation = settingStore(
+		state => state.setDependencyConfirmation,
+	);
 
 	const handleButtonClick = async (type: 'install' | 'download') => {
 		const openFolderDialogConfig: OpenDialogOptions = {
@@ -173,6 +180,23 @@ export function Settings() {
 						<EyeIcon />
 						View
 					</Button>
+				</div>
+				<Separator className="my-4" />
+
+				<div className="flex items-center space-x-2">
+					<Checkbox
+						id="dependency_confirmation"
+						checked={dependency_confirmation === 1}
+						onCheckedChange={isChecked =>
+							setDependencyConfirmation(isChecked ? 1 : 0)
+						}
+					/>
+					<label
+						htmlFor="dependency_confirmation"
+						className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+					>
+						Mod dependency confirmation
+					</label>
 				</div>
 			</div>
 

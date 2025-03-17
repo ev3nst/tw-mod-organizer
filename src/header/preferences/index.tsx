@@ -34,11 +34,8 @@ export function Preferences() {
 			</DialogTrigger>
 			<DialogContent
 				className="w-[500px]"
-				// @ts-ignore
 				onEscapeKeyDown={e => e.preventDefault()}
-				onInteractOutside={e => {
-					e.preventDefault();
-				}}
+				onInteractOutside={e => e.preventDefault()}
 			>
 				{/* suppress radix error */}
 				<DialogTitle className="hidden" />

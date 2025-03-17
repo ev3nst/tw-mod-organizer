@@ -147,5 +147,13 @@ pub fn get_migrations() -> Vec<Migration> {
 			"#,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 9,
+            description: "add_dependency_confirmation_to_settings",
+            sql: r#"
+			ALTER TABLE settings ADD COLUMN dependency_confirmation INTEGER DEFAULT 0 CHECK(dependency_confirmation IN (0, 1));
+			"#,
+            kind: MigrationKind::Up,
+        },
     ]
 }

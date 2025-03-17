@@ -17,6 +17,7 @@ import { MetaInformationDialog } from './meta-information';
 import { RemoveModDialog } from './remove-mod';
 import { EditSeparator } from './edit-separator';
 import { BulkCategory } from './bulk-category';
+import { RequiredItemsDialog } from './required-items';
 
 function App() {
 	const [fetchAppManageLoading, setFetchAppManageLoading] = useState(true);
@@ -74,6 +75,7 @@ function App() {
 						<EditSeparator />
 						<RemoveModDialog />
 						<BulkCategory />
+						<RequiredItemsDialog />
 					</SidebarInset>
 					<AppSidebar />
 				</div>

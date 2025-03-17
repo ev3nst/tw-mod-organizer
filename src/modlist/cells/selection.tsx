@@ -2,6 +2,7 @@ import { TableCell } from '@/components/table';
 import { Checkbox } from '@/components/checkbox';
 
 import type { ModItem, ModItemSeparatorUnion } from '@/lib/api';
+import { settingStore } from '@/lib/store/setting';
 import { modsStore } from '@/lib/store/mods';
 import { modActivationStore } from '@/lib/store/mod_activation';
 import { isSeparator } from '@/modlist/utils';
@@ -36,11 +37,21 @@ const findSeparatorPositions = (
 		.filter(Boolean) as { id: string; index: number }[];
 
 export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
+	const dependency_confirmation = settingStore(
+		state => state.dependency_confirmation,
+	);
 	const mods = modsStore(state => state.mods);
 	const modActivation = modActivationStore(state => state.data);
 	const setModActivation = modActivationStore(state => state.setData);
 	const currentSelection = modActivation.find(
 		ma => ma.mod_id === mod.identifier,
+	);
+
+	const setRequiredItemsModal = modActivationStore(
+		state => state.setRequiredItemsModal,
+	);
+	const setRequiredItemsMod = modActivationStore(
+		state => state.setRequiredItemsMod,
 	);
 
 	const handleSeparatorCheckedChange = () => {
@@ -87,7 +98,82 @@ export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 				? { ...item, is_active: checked }
 				: item,
 		);
+
 		setModActivation(updatedModActivation);
+
+		let currentMod = mod as ModItem;
+		if (!checked && currentMod.item_type === 'steam_mod') {
+			const dependentMods = mods.filter(
+				otherMod =>
+					!isSeparator(otherMod) &&
+					(otherMod as ModItem).required_items.includes(
+						mod.identifier,
+					) &&
+					updatedModActivation.some(
+						ma =>
+							ma.is_active === true &&
+							ma.mod_id === otherMod.identifier,
+					),
+			) as ModItem[];
+
+			const hasDependentMods = dependentMods.length > 0;
+			if (hasDependentMods) {
+				if (dependency_confirmation) {
+					setRequiredItemsModal(true);
+					setRequiredItemsMod(currentMod);
+					return;
+				} else {
+					const dependentModIds = dependentMods.map(
+						dm => dm.identifier,
+					);
+					const dependencyResolved = updatedModActivation.map(
+						item => {
+							if (dependentModIds.includes(item.mod_id)) {
+								return { ...item, is_active: false };
+							}
+							return item;
+						},
+					);
+
+					setModActivation(dependencyResolved);
+					return;
+				}
+			}
+		}
+
+		if (
+			checked &&
+			currentMod.item_type === 'steam_mod' &&
+			currentMod.required_items.length > 0
+		) {
+			const missingDependencies = currentMod.required_items.filter(
+				requiredId =>
+					updatedModActivation.some(
+						ma =>
+							ma.mod_id === requiredId && ma.is_active === false,
+					),
+			);
+
+			if (missingDependencies.length > 0) {
+				if (dependency_confirmation) {
+					setRequiredItemsModal(true);
+					setRequiredItemsMod(currentMod);
+					return;
+				} else {
+					const dependencyResolved = updatedModActivation.map(
+						item => {
+							if (missingDependencies.includes(item.mod_id)) {
+								return { ...item, is_active: true };
+							}
+							return item;
+						},
+					);
+
+					setModActivation(dependencyResolved);
+					return;
+				}
+			}
+		}
 	};
 
 	const cellStyle = {

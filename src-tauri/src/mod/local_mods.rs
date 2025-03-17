@@ -25,6 +25,7 @@ pub struct ModItem {
     pub preview_local: String,
     pub creator_id: Option<String>,
     pub creator_name: Option<String>,
+    pub required_items: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -89,6 +90,7 @@ pub async fn local_mods(
             preview_local,
             creator_id: None,
             creator_name: Some("".to_string()),
+            required_items: vec![],
         });
     }
 

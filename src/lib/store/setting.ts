@@ -26,6 +26,7 @@ export type Setting = {
 	mod_download_path: string | null;
 	nexus_auth_params: NexusAuthParams;
 	nexus_api_key: string | null;
+	dependency_confirmation: 1 | 0;
 };
 
 export class SettingModel {
@@ -59,8 +60,13 @@ export class SettingModel {
 			const mod_installation_path = `${appConfigPath}\\mods`;
 			const mod_download_path = `${appConfigPath}\\downloads`;
 			const result = await dbWrapper.db.execute(
-				`INSERT INTO settings (column_selections, mod_installation_path, mod_download_path) VALUES (?, ?, ?)`,
-				[column_selections, mod_installation_path, mod_download_path],
+				`INSERT INTO settings (column_selections, mod_installation_path, mod_download_path, dependency_confirmation) VALUES (?, ?, ?, ?)`,
+				[
+					column_selections,
+					mod_installation_path,
+					mod_download_path,
+					1,
+				],
 			);
 
 			if (result.lastInsertId) {
@@ -80,6 +86,7 @@ export class SettingModel {
 						token: null,
 					},
 					nexus_api_key: null,
+					dependency_confirmation: 1,
 				});
 			} else {
 				throw new Error('Error while initiating the settings record');
@@ -179,6 +186,15 @@ export class SettingModel {
 	set nexus_api_key(value: string | null) {
 		this.props.nexus_api_key = value;
 	}
+
+	// Dependency Confirmation
+	get dependency_confirmation(): 1 | 0 {
+		return this.props.dependency_confirmation;
+	}
+
+	set dependency_confirmation(value: 1 | 0) {
+		this.props.dependency_confirmation = value;
+	}
 }
 
 type SettingStore = {
@@ -217,6 +233,9 @@ type SettingStore = {
 		column: 'category' | 'conflict' | 'version' | 'creator',
 		value: boolean,
 	) => void;
+
+	dependency_confirmation: 1 | 0;
+	setDependencyConfirmation: (dependency_confirmation: 1 | 0) => void;
 
 	isGameRunning: boolean;
 	setIsGameRunning: (isGameRunning: boolean) => void;
@@ -312,6 +331,12 @@ export const settingStore = create<SettingStore>(set => ({
 		}
 	},
 
+	dependency_confirmation: 1,
+	setDependencyConfirmation: dependency_confirmation => {
+		set({ dependency_confirmation });
+		debounceCallback(syncSetting);
+	},
+
 	isGameRunning: false,
 	setIsGameRunning: isGameRunning => {
 		set({ isGameRunning });
@@ -335,6 +360,7 @@ const syncSetting = async () => {
 		toggle_conflict,
 		toggle_version,
 		toggle_creator,
+		dependency_confirmation,
 	} = settingStore.getState();
 	const setting = await SettingModel.retrieve();
 
@@ -390,6 +416,11 @@ const syncSetting = async () => {
 			version: toggle_version,
 			creator: toggle_creator,
 		};
+		changed = true;
+	}
+
+	if (setting.dependency_confirmation !== dependency_confirmation) {
+		setting.dependency_confirmation = dependency_confirmation;
 		changed = true;
 	}
 

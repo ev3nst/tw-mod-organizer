@@ -28,11 +28,8 @@ export const ProfileDialog = () => {
 			</DialogTrigger>
 			<DialogContent
 				className="sm:max-w-[600px]"
-				// @ts-ignore
 				onEscapeKeyDown={e => e.preventDefault()}
-				onInteractOutside={e => {
-					e.preventDefault();
-				}}
+				onInteractOutside={e => e.preventDefault()}
 			>
 				{/* suppress radix error */}
 				<DialogTitle className="hidden" />

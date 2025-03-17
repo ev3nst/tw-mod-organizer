@@ -49,13 +49,15 @@ pub async fn subscribed_mods(
             .query_items(item_ids.iter().map(|id| PublishedFileId(*id)).collect())
             .map_err(|e| format!("Failed to create query handle: {}", e))?;
 
-        query_handle.fetch(move |fetch_result| {
-            let _ = tx_inner.send(
-                fetch_result
-                    .map(|query_results| WorkshopItemsResult::from_query_results(query_results))
-                    .map_err(|e| format!("Steam API error: {}", e)),
-            );
-        });
+        query_handle
+            .include_children(true)
+            .fetch(move |fetch_result| {
+                let _ = tx_inner.send(
+                    fetch_result
+                        .map(|query_results| WorkshopItemsResult::from_query_results(query_results))
+                        .map_err(|e| format!("Steam API error: {}", e)),
+                );
+            });
 
         let start_time = std::time::Instant::now();
         let timeout_duration = std::time::Duration::from_secs(30);
@@ -106,8 +108,15 @@ pub async fn subscribed_mods(
             let (pack_file, pack_file_path, preview_local) = find_pack_and_image(&item_path);
 
             if !pack_file.is_empty() {
+                let required_items = item.required_items.clone();
                 creator_ids.push(item.owner.raw);
-                mod_items.push((item, pack_file, pack_file_path, preview_local));
+                mod_items.push((
+                    item,
+                    pack_file,
+                    pack_file_path,
+                    preview_local,
+                    required_items,
+                ));
             }
         }
     }
@@ -174,7 +183,7 @@ pub async fn subscribed_mods(
     };
 
     let mut mods = Vec::new();
-    for (item, pack_file, pack_file_path, preview_local) in mod_items {
+    for (item, pack_file, pack_file_path, preview_local, required_items) in mod_items {
         let creator_name = creator_names
             .get(&item.owner.raw)
             .cloned()
@@ -193,8 +202,9 @@ pub async fn subscribed_mods(
             pack_file,
             pack_file_path,
             preview_local,
-			creator_id: Some(item.owner.steam_id64.to_string()),
+            creator_id: Some(item.owner.steam_id64.to_string()),
             creator_name: Some(creator_name),
+            required_items: required_items.iter().map(|id| id.to_string()).collect(),
         });
     }
 
