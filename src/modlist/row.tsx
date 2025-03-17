@@ -20,9 +20,17 @@ type RowProps = {
 	mod: ModItemSeparatorUnion;
 	modIndex: number;
 	id: string;
+	isSelected?: boolean;
+	onSelect?: (id: string, ctrlKey: boolean) => void;
 };
 
-const RowComponent = ({ mod, modIndex, id }: RowProps) => {
+const RowComponent = ({
+	mod,
+	modIndex,
+	id,
+	isSelected = false,
+	onSelect,
+}: RowProps) => {
 	const {
 		attributes,
 		listeners,
@@ -43,8 +51,25 @@ const RowComponent = ({ mod, modIndex, id }: RowProps) => {
 		color: mod.text_color,
 	};
 
+	const handleRowClick = (e: React.MouseEvent) => {
+		if (onSelect) {
+			onSelect(id, e.ctrlKey);
+		}
+	};
+
 	return (
-		<TableRow ref={setNodeRef} style={style} key={mod.identifier}>
+		<TableRow
+			ref={setNodeRef}
+			style={{
+				...style,
+				...(isSelected
+					? { backgroundColor: 'rgba(59, 130, 246, 0.1)' }
+					: {}),
+			}}
+			key={mod.identifier}
+			onClick={handleRowClick}
+			className={`${isSelected ? 'ring-1 ring-blue-700' : ''} cursor-pointer`}
+		>
 			<TableCell style={cellStyle}>
 				<div
 					className="cursor-move select-none flex items-center justify-center h-full"
@@ -69,6 +94,7 @@ const RowComponent = ({ mod, modIndex, id }: RowProps) => {
 export const Row = memo(RowComponent, (prevProps, nextProps) => {
 	return (
 		prevProps.mod.identifier === nextProps.mod.identifier &&
-		prevProps.modIndex === nextProps.modIndex
+		prevProps.modIndex === nextProps.modIndex &&
+		prevProps.isSelected === nextProps.isSelected
 	);
 });

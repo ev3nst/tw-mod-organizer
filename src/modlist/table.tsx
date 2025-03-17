@@ -6,6 +6,8 @@ import {
 	useSensor,
 	useSensors,
 	DragEndEvent,
+	DragStartEvent,
+	DragOverlay,
 } from '@dnd-kit/core';
 import {
 	SortableContext,
@@ -20,7 +22,12 @@ import { modActivationStore } from '@/lib/store/mod_activation';
 import { modSeparatorStore, isCollapsed } from '@/lib/store/mod_separator';
 import { filterMods, modMetaStore } from '@/lib/store/mod_meta';
 
-import { sortMods, sortCollapsedSection, isSeparator } from '@/modlist/utils';
+import {
+	sortMods,
+	sortCollapsedSection,
+	isSeparator,
+	sortGroup,
+} from '@/modlist/utils';
 
 import { Header } from './header';
 import { Row } from './row';
@@ -31,6 +38,8 @@ import { Filter } from './filter';
 export const ModListTable = () => {
 	const [searchModText, setSearchModText] = useState<string>('');
 	const [activationFilter, setActivationFilter] = useState<string>('all');
+	const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+	const [activeId, setActiveId] = useState<string | null>(null);
 
 	const mods = modsStore(state => state.mods);
 	const separators = modSeparatorStore(state => state.data);
@@ -88,6 +97,25 @@ export const ModListTable = () => {
 		return filteredMods.filter(mod => !hiddenItems.has(mod.identifier));
 	}, [filteredMods, hiddenItems]);
 
+	const handleRowSelect = useCallback((modId: string, ctrlKey: boolean) => {
+		setSelectedRows(prevSelected => {
+			const newSelected = new Set(prevSelected);
+
+			if (ctrlKey) {
+				if (newSelected.has(modId)) {
+					newSelected.delete(modId);
+				} else {
+					newSelected.add(modId);
+				}
+			} else {
+				newSelected.clear();
+				newSelected.add(modId);
+			}
+
+			return newSelected;
+		});
+	}, []);
+
 	const sensors = useSensors(
 		useSensor(MouseSensor, {
 			activationConstraint: {
@@ -96,28 +124,41 @@ export const ModListTable = () => {
 		}),
 	);
 
+	const handleDragStart = useCallback((event: DragStartEvent) => {
+		const { active } = event;
+		setActiveId(active.id as string);
+	}, []);
+
 	const handleDragEnd = useCallback(
 		(event: DragEndEvent) => {
 			const { active, over } = event;
-			if (active.id !== over?.id) {
-				const draggedItem = mods.find(m => m.identifier === active.id);
+			setActiveId(null);
 
-				let result;
-				if (
-					draggedItem &&
-					isSeparator(draggedItem) &&
-					isCollapsed(separators, active.id as string)
-				) {
-					result = sortCollapsedSection(mods, active, over);
+			if (active.id !== over?.id && over) {
+				const draggedId = active.id as string;
+				const draggedItem = mods.find(m => m.identifier === draggedId);
+				if (selectedRows.has(draggedId) && selectedRows.size > 1) {
+					const result = sortGroup(mods, selectedRows, over);
+					setModOrder(result.modOrder);
+					setMods(result.mods);
 				} else {
-					result = sortMods(mods, active, over);
-				}
+					let result;
+					if (
+						draggedItem &&
+						isSeparator(draggedItem) &&
+						isCollapsed(separators, draggedId)
+					) {
+						result = sortCollapsedSection(mods, active, over);
+					} else {
+						result = sortMods(mods, active, over);
+					}
 
-				setModOrder(result.modOrder);
-				setMods(result.mods);
+					setModOrder(result.modOrder);
+					setMods(result.mods);
+				}
 			}
 		},
-		[mods, separators, setModOrder, setMods],
+		[mods, separators, selectedRows, setModOrder, setMods],
 	);
 
 	const itemIds = useMemo(() => mods.map(mod => mod.identifier), [mods]);
@@ -129,11 +170,22 @@ export const ModListTable = () => {
 		return indices;
 	}, [mods]);
 
+	const activeMod = useMemo(() => {
+		if (!activeId) return null;
+		return mods.find(mod => mod.identifier === activeId);
+	}, [activeId, mods]);
+
+	const selectedCount = useMemo(() => {
+		if (!activeId) return 0;
+		return selectedRows.has(activeId) ? selectedRows.size : 0;
+	}, [activeId, selectedRows]);
+
 	return (
 		<div className="relative flex-1 mb-[41px]">
 			<DndContext
 				sensors={sensors}
 				collisionDetection={closestCenter}
+				onDragStart={handleDragStart}
 				onDragEnd={handleDragEnd}
 			>
 				<div className="absolute inset-0 overflow-y-auto dark-scrollbar">
@@ -152,6 +204,10 @@ export const ModListTable = () => {
 											modIndices.get(mod.identifier) ?? -1
 										}
 										id={mod.identifier}
+										isSelected={selectedRows.has(
+											mod.identifier,
+										)}
+										onSelect={handleRowSelect}
 									/>
 								))}
 							</SortableContext>
@@ -160,6 +216,32 @@ export const ModListTable = () => {
 						<Lock />
 					</Table>
 				</div>
+
+				<DragOverlay>
+					{activeId && activeMod && (
+						<div className="opacity-80">
+							<table className="w-full border-collapse">
+								<tbody>
+									<tr className="bg-white dark:bg-gray-800 shadow-md rounded-md">
+										<td className="border border-gray-200 dark:border-gray-700 p-2">
+											<div className="flex items-center gap-2">
+												<div className="font-medium text-sm">
+													{activeMod.title}
+												</div>
+												{selectedCount > 1 && (
+													<div className="bg-blue-700 text-white text-xs px-2 py-1 rounded-full">
+														+{selectedCount - 1}{' '}
+														more
+													</div>
+												)}
+											</div>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					)}
+				</DragOverlay>
 			</DndContext>
 			<Filter
 				activationFilter={activationFilter}
