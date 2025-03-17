@@ -195,7 +195,7 @@ export function RequiredItemsDialog() {
 				)}
 				<em className="text-sm text-muted-foreground">
 					If you want this to occur automatically without asking for
-					your confirmation, you can enable related option in
+					your confirmation, you can disable related option in
 					settings.
 				</em>
 			</DialogContent>
