@@ -73,10 +73,13 @@ export const Downloads = () => {
 									...download,
 									bytes_downloaded,
 									progress:
-										total_size > 0
-											? (bytes_downloaded / total_size) *
-												100
-											: 0,
+										download.progress !== undefined
+											? total_size > 0
+												? (bytes_downloaded /
+														total_size) *
+													100
+												: 0
+											: download.progress,
 								}
 							: download,
 					),
