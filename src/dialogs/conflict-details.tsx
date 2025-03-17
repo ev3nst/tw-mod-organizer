@@ -18,13 +18,22 @@ const ConflictCaseItem = ({
 	title,
 	cases,
 	color,
+	defaultActive,
 }: {
 	title: string;
 	cases: any[];
 	color: string;
+	defaultActive: boolean;
 }) => {
 	return (
-		<Accordion type="single" collapsible className="max-w-[650px]">
+		<Accordion
+			type="single"
+			collapsible
+			defaultValue={
+				defaultActive ? `conflict_case_item_${title}` : undefined
+			}
+			className="max-w-[650px]"
+		>
 			<AccordionItem value={`conflict_case_item_${title}`}>
 				<AccordionTrigger className={`text-${color}-500 py-2`}>
 					{title} ({cases.length})
@@ -62,6 +71,7 @@ const ConflictItem = ({
 					{titles.map((title: string, ti) => (
 						<ConflictCaseItem
 							key={`conflict_case_${name}_${title}_${ti}`}
+							defaultActive={ti === 0}
 							title={title}
 							cases={cases[title]}
 							color={color}
