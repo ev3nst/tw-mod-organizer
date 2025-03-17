@@ -261,7 +261,7 @@ export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 		);
 
 		return (
-			<TableCell style={cellStyle}>
+			<TableCell className="select-none" style={cellStyle}>
 				<Checkbox
 					className={checkboxClass}
 					checked={allActive}
@@ -271,7 +271,7 @@ export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 		);
 	} else {
 		return (
-			<TableCell style={cellStyle}>
+			<TableCell className="select-none" style={cellStyle}>
 				<Checkbox
 					className={checkboxClass}
 					checked={currentSelection?.is_active}
