@@ -31,7 +31,9 @@ export const Play = () => {
 				const result: boolean = await invoke('is_game_running', {
 					app_id: selectedGame!.steam_id,
 				});
-				setIsGameRunning(result);
+				if (isGameRunning !== result) {
+					setIsGameRunning(result);
+				}
 			} catch (error) {
 				console.error('Failed to check if the game is running:', error);
 			}
