@@ -54,6 +54,65 @@ export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 		state => state.setRequiredItemsMod,
 	);
 
+	const processDependencies = (
+		modId: string,
+		shouldActivate: boolean,
+		updatedActivation: typeof modActivation,
+	) => {
+		const currentMod = mods.find(m => m.identifier === modId) as ModItem;
+		if (!currentMod || isSeparator(currentMod)) return updatedActivation;
+
+		let result = [...updatedActivation];
+
+		if (!shouldActivate && currentMod.item_type === 'steam_mod') {
+			const dependentMods = mods.filter(
+				otherMod =>
+					!isSeparator(otherMod) &&
+					(otherMod as ModItem).required_items.includes(modId) &&
+					result.some(
+						ma =>
+							ma.is_active === true &&
+							ma.mod_id === otherMod.identifier,
+					),
+			) as ModItem[];
+
+			if (dependentMods.length > 0) {
+				const dependentModIds = dependentMods.map(dm => dm.identifier);
+				result = result.map(item => {
+					if (dependentModIds.includes(item.mod_id)) {
+						return { ...item, is_active: false };
+					}
+					return item;
+				});
+			}
+		}
+
+		if (
+			shouldActivate &&
+			currentMod.item_type === 'steam_mod' &&
+			currentMod.required_items.length > 0
+		) {
+			const missingDependencies = currentMod.required_items.filter(
+				requiredId =>
+					result.some(
+						ma =>
+							ma.mod_id === requiredId && ma.is_active === false,
+					),
+			);
+
+			if (missingDependencies.length > 0) {
+				result = result.map(item => {
+					if (missingDependencies.includes(item.mod_id)) {
+						return { ...item, is_active: true };
+					}
+					return item;
+				});
+			}
+		}
+
+		return result;
+	};
+
 	const handleSeparatorCheckedChange = () => {
 		const currentIndex = mods.findIndex(
 			m => m.identifier === mod.identifier,
@@ -76,17 +135,21 @@ export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 			),
 		);
 
-		const updatedSection = sectionItems.map(item => ({
-			mod_id: item.identifier,
-			is_active: shouldActivate,
-			title: item.title,
-		}));
-
-		const updatedModActivation = modActivation.map(item => {
-			const updatedItem = updatedSection.find(
-				sectionItem => sectionItem.mod_id === item.mod_id,
+		let updatedModActivation = [...modActivation];
+		sectionItems.forEach(item => {
+			updatedModActivation = updatedModActivation.map(activation =>
+				activation.mod_id === item.identifier
+					? { ...activation, is_active: shouldActivate }
+					: activation,
 			);
-			return updatedItem ? updatedItem : item;
+		});
+
+		sectionItems.forEach(item => {
+			updatedModActivation = processDependencies(
+				item.identifier,
+				shouldActivate,
+				updatedModActivation,
+			);
 		});
 
 		setModActivation(updatedModActivation);
