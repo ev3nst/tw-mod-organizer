@@ -68,7 +68,7 @@ const RowComponent = ({
 			}}
 			key={mod.identifier}
 			onClick={handleRowClick}
-			className={`${isSelected ? 'ring-1 ring-blue-700' : ''} cursor-pointer`}
+			className={`${isSelected ? 'ring-1 ring-blue-800' : ''} cursor-pointer`}
 		>
 			<TableCell style={cellStyle}>
 				<div
