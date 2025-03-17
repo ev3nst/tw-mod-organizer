@@ -8,16 +8,17 @@ import { ProfileModel, profileStore } from '@/lib/store/profile';
 
 import { toastError } from '@/lib/utils';
 
+import { ConflictDetails } from '@/dialogs/conflict-details';
+import { SetPriorityDialog } from '@/dialogs/set-priority';
+import { MetaInformationDialog } from '@/dialogs/meta-information';
+import { RemoveModDialog } from '@/dialogs/remove-mod';
+import { EditSeparator } from '@/dialogs/edit-separator';
+import { BulkCategory } from '@/dialogs/bulk-category';
+import { RequiredItemsDialog } from '@/dialogs/required-items';
+
 import { Header } from './header';
 import { ModList } from './modlist';
 import { AppSidebar } from './sidebar';
-import { ConflictDetails } from './conflict-details';
-import { SetPriorityDialog } from './set-priority';
-import { MetaInformationDialog } from './meta-information';
-import { RemoveModDialog } from './remove-mod';
-import { EditSeparator } from './edit-separator';
-import { BulkCategory } from './bulk-category';
-import { RequiredItemsDialog } from './required-items';
 
 function App() {
 	const [fetchAppManageLoading, setFetchAppManageLoading] = useState(true);
