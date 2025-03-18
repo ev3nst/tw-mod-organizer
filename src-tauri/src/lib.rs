@@ -55,6 +55,14 @@ pub fn run() {
             },
             steam_state: steam::client::SteamState::new(),
         })
+        .on_window_event(|window, event| match event {
+            tauri::WindowEvent::Destroyed { .. } => {
+                let app_handle = window.app_handle();
+                let state = app_handle.state::<AppState>();
+                state.steam_state.drop_all_clients();
+            }
+            _ => {}
+        })
         .invoke_handler(tauri::generate_handler![
             pack::conflicts::pack_conflicts,
             import_data::import_data,
