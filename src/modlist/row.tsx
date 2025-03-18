@@ -15,6 +15,7 @@ import { Version } from './cells/version';
 import { Creator } from './cells/creator';
 import { Actions } from './cells/actions';
 import { Order } from './cells/order';
+import { isSeparator } from './utils';
 
 type RowProps = {
 	mod: ModItemSeparatorUnion;
@@ -52,7 +53,7 @@ const RowComponent = ({
 	};
 
 	const handleRowClick = (e: React.MouseEvent) => {
-		if (onSelect) {
+		if (onSelect && !isSeparator(mod)) {
 			onSelect(id, e.ctrlKey);
 		}
 	};
