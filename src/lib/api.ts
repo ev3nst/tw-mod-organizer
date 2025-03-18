@@ -200,8 +200,12 @@ class API {
 		});
 	}
 
-	async pack_conflicts(folder_paths: string[]): Promise<PackConflicts> {
+	async pack_conflicts(
+		app_id: number,
+		folder_paths: string[],
+	): Promise<PackConflicts> {
 		return invoke('pack_conflicts', {
+			app_id,
 			folder_paths,
 		});
 	}

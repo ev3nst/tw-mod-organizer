@@ -25,6 +25,7 @@ struct FileMetadata {
 #[tauri::command(rename_all = "snake_case")]
 pub async fn pack_conflicts(
     handle: tauri::AppHandle,
+    app_id: u64,
     folder_paths: Vec<String>,
 ) -> Result<HashMap<String, HashMap<String, Vec<String>>>, String> {
     let app_cache_dir = handle
@@ -37,7 +38,8 @@ pub async fn pack_conflicts(
             .map_err(|e| format!("Failed to create cache directory: {}", e))?;
     }
 
-    let cache_file = app_cache_dir.join("pack_conflicts_cache.json");
+    let cache_json_filename = format!("pack_conflicts_{}_cache.json", app_id.to_string());
+    let cache_file = app_cache_dir.join(cache_json_filename);
     let files_vec: Vec<PathBuf> = folder_paths
         .par_iter()
         .flat_map(|folder_path| {
