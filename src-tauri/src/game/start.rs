@@ -34,15 +34,16 @@ pub async fn start_game(
         }
     };
 
-    let used_mods_file_path = Path::new(&game_installation_path).join("used_mods.txt");
+    let used_mods_file_path =
+        Path::new(&game_installation_path).join("tw_mod_organizer_used_mods.txt");
     fs::write(
         &used_mods_file_path,
         format!("{}{}", add_directory_txt, used_mods_txt),
     )
-    .map_err(|e| format!("Failed to write used_mods.txt: {}", e))?;
+    .map_err(|e| format!("Failed to write tw_mod_organizer_used_mods.txt: {}", e))?;
 
     let batch_content = format!(
-        "start /d \"{}\" {}.exe{}{} used_mods.txt;",
+        "start /d \"{}\" {}.exe{}{} tw_mod_organizer_used_mods.txt;",
         game_installation_path,
         game.exe_name,
         if let Some(save) = &save_game {
