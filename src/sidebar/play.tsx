@@ -43,7 +43,7 @@ export const Play = () => {
 		checkIfGameIsRunning();
 
 		return () => clearInterval(interval);
-	}, []);
+	}, [isGameRunning]);
 
 	const handlePlay = async () => {
 		setLoading(true);
