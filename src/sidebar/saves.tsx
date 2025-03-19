@@ -25,7 +25,9 @@ export const Saves = () => {
 	useEffect(() => {
 		const initializeSaveFiles = async () => {
 			try {
-				const files = await api.save_files(selectedGame!.steam_id);
+				const files = (
+					await api.save_files(selectedGame!.steam_id)
+				).sort((a, b) => a.date - b.date);
 				setSaveFiles(files);
 				setFilteredSaveFiles(files);
 			} catch (error) {
