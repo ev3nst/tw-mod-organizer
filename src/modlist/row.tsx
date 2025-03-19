@@ -6,6 +6,7 @@ import { GripVerticalIcon } from 'lucide-react';
 import { TableCell, TableRow } from '@/components/table';
 
 import type { ModItem, ModItemSeparatorUnion } from '@/lib/api';
+import { settingStore } from '@/lib/store/setting';
 
 import { Selection } from './cells/selection';
 import { Title } from './cells/title';
@@ -32,6 +33,9 @@ const RowComponent = ({
 	isSelected = false,
 	onSelect,
 }: RowProps) => {
+	const sort_by = settingStore(state => state.sort_by);
+	const isSortingEnabled = sort_by === 'load_order';
+
 	const {
 		attributes,
 		listeners,
@@ -42,9 +46,11 @@ const RowComponent = ({
 	} = useSortable({ id });
 
 	const style = {
-		transform: CSS.Transform.toString(transform),
-		transition,
-		opacity: isDragging ? 0.5 : 1,
+		transform: isSortingEnabled
+			? CSS.Transform.toString(transform)
+			: undefined,
+		transition: isSortingEnabled ? transition : undefined,
+		opacity: isSortingEnabled && isDragging ? 0.5 : 1,
 	};
 
 	const cellStyle = {
@@ -53,7 +59,7 @@ const RowComponent = ({
 	};
 
 	const handleRowClick = (e: React.MouseEvent) => {
-		if (onSelect && !isSeparator(mod)) {
+		if (sort_by === 'load_order' && onSelect && !isSeparator(mod)) {
 			onSelect(id, e.ctrlKey);
 		}
 	};
@@ -69,16 +75,24 @@ const RowComponent = ({
 			}}
 			key={mod.identifier}
 			onClick={handleRowClick}
-			className={`${isSelected ? 'ring-1 ring-blue-800' : ''} cursor-pointer`}
+			className={`${
+				isSelected ? 'ring-1 ring-blue-800' : ''
+			} cursor-pointer`}
 		>
 			<TableCell
-				className="select-none cursor-move"
+				className={`select-none ${
+					isSortingEnabled ? 'cursor-move' : 'cursor-default'
+				}`}
 				style={cellStyle}
-				{...attributes}
-				{...listeners}
+				{...(isSortingEnabled ? attributes : {})}
+				{...(isSortingEnabled ? listeners : {})}
 			>
 				<div className="flex items-center justify-center h-full">
-					<GripVerticalIcon className="h-4 w-4 text-muted-foreground" />
+					<GripVerticalIcon
+						className={`h-4 w-4 text-muted-foreground ${
+							isSortingEnabled ? '' : 'opacity-50'
+						}`}
+					/>
 				</div>
 			</TableCell>
 			<Order mod={mod} modIndex={modIndex} />

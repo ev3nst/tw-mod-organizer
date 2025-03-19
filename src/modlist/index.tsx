@@ -43,6 +43,7 @@ export const ModList = () => {
 	const mod_installation_path = settingStore(
 		state => state.mod_installation_path,
 	);
+	const sort_by = settingStore(state => state.sort_by);
 
 	const init = useCallback(async () => {
 		const resolveOrder = async (mods: ModItemSeparatorUnion[]) => {
@@ -245,12 +246,10 @@ export const ModList = () => {
 		try {
 			setFetchModsLoading(true);
 			setLoading(true);
-			let mods: ModItemSeparatorUnion[] = await api.get_mods(
-				selectedGame!.steam_id,
-			);
+			let mods = await api.get_mods(selectedGame!.steam_id);
 			const separators = await resolveSeparator();
 			setSeparators(separators);
-			mods = [...mods, ...separators];
+			const modsWithSeparators = [...mods, ...separators];
 
 			const modPaths = [
 				`${mod_installation_path}\\${selectedGame!.steam_id}`,
@@ -263,18 +262,49 @@ export const ModList = () => {
 			);
 			setConflicts(conflicts);
 
-			const modOrder = await resolveOrder(mods);
+			const modOrder = await resolveOrder(modsWithSeparators);
 			setModOrder(modOrder);
-			const orderMap: Record<string, number> = modOrder.reduce(
-				(acc: any, item: any) => {
-					acc[item.mod_id] = item.order;
-					return acc;
-				},
-				{} as Record<string, number>,
-			);
-			const sortedMods = [...mods].sort((a, b) => {
-				return orderMap[a.identifier] - orderMap[b.identifier];
-			});
+
+			let sortedMods: ModItemSeparatorUnion[] = [];
+			switch (sort_by) {
+				case 'load_order':
+					const orderMap: Record<string, number> = modOrder.reduce(
+						(acc: any, item: any) => {
+							acc[item.mod_id] = item.order;
+							return acc;
+						},
+						{} as Record<string, number>,
+					);
+					sortedMods = [...modsWithSeparators].sort((a, b) => {
+						return orderMap[a.identifier] - orderMap[b.identifier];
+					});
+					break;
+				case 'title':
+					sortedMods = [...mods].sort((a, b) =>
+						a.title
+							.toLowerCase()
+							.localeCompare(b.title.toLowerCase()),
+					);
+					break;
+				case 'version':
+					sortedMods = [...mods].sort((a, b) => {
+						const numA = parseFloat(a.version as string);
+						const numB = parseFloat(b.version as string);
+
+						if (!isNaN(numA) && !isNaN(numB)) {
+							return numA - numB;
+						}
+
+						if (!isNaN(numA)) return -1;
+						if (!isNaN(numB)) return 1;
+
+						return 0;
+					});
+					break;
+
+				default:
+					break;
+			}
 
 			setMods(sortedMods);
 			const modActivations = await resolveActivation(sortedMods);
@@ -288,7 +318,7 @@ export const ModList = () => {
 			setFetchModsLoading(false);
 			setLoading(false);
 		}
-	}, [selectedGame!.steam_id, init_reload]);
+	}, [selectedGame!.steam_id, sort_by, init_reload]);
 
 	useEffect(() => {
 		init();

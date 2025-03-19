@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 
 import { SidebarInset, SidebarProvider } from '@/components/sidebar';
+import { TooltipProvider } from '@/components/tooltip';
 import { Loading } from '@/components/loading';
 
 import { settingStore } from '@/lib/store/setting';
@@ -65,22 +66,24 @@ function App() {
 
 	return (
 		<div className="[--header-height:calc(theme(spacing.14))] h-screen w-screen overflow-hidden">
-			<SidebarProvider className="flex flex-col" defaultOpen>
-				<Header />
-				<div className="flex flex-1">
-					<SidebarInset>
-						<ModList />
-						<ConflictDetails />
-						<SetPriorityDialog />
-						<MetaInformationDialog />
-						<EditSeparator />
-						<RemoveModDialog />
-						<BulkCategory />
-						<RequiredItemsDialog />
-					</SidebarInset>
-					<AppSidebar />
-				</div>
-			</SidebarProvider>
+			<TooltipProvider>
+				<SidebarProvider className="flex flex-col" defaultOpen>
+					<Header />
+					<div className="flex flex-1">
+						<SidebarInset>
+							<ModList />
+							<ConflictDetails />
+							<SetPriorityDialog />
+							<MetaInformationDialog />
+							<EditSeparator />
+							<RemoveModDialog />
+							<BulkCategory />
+							<RequiredItemsDialog />
+						</SidebarInset>
+						<AppSidebar />
+					</div>
+				</SidebarProvider>
+			</TooltipProvider>
 		</div>
 	);
 }

@@ -29,6 +29,7 @@ function Init() {
 	const setNexusAuthApi = settingStore(state => state.setNexusAuthApi);
 	const setNexusAuthParams = settingStore(state => state.setNexusAuthParams);
 	const setColumnSelection = settingStore(state => state.setColumnSelection);
+	const setSortBy = settingStore(state => state.setSortBy);
 
 	const init = useCallback(async () => {
 		setInitLoading(true);
@@ -43,6 +44,7 @@ function Init() {
 		setColumnSelection('conflict', setting.column_selections.conflict);
 		setColumnSelection('version', setting.column_selections.version);
 		setColumnSelection('creator', setting.column_selections.creator);
+		setSortBy(setting.sort_by);
 		setNexusAuthApi(setting.nexus_api_key ?? null);
 		setNexusAuthParams(
 			setting.nexus_auth_params ?? {

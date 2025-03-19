@@ -27,6 +27,7 @@ export type Setting = {
 	nexus_auth_params: NexusAuthParams;
 	nexus_api_key: string | null;
 	dependency_confirmation: 1 | 0;
+	sort_by: 'load_order' | 'title' | 'version';
 };
 
 export class SettingModel {
@@ -87,6 +88,7 @@ export class SettingModel {
 					},
 					nexus_api_key: null,
 					dependency_confirmation: 1,
+					sort_by: 'load_order',
 				});
 			} else {
 				throw new Error('Error while initiating the settings record');
@@ -195,6 +197,15 @@ export class SettingModel {
 	set dependency_confirmation(value: 1 | 0) {
 		this.props.dependency_confirmation = value;
 	}
+
+	// Sort By
+	get sort_by(): 'load_order' | 'title' | 'version' {
+		return this.props.sort_by;
+	}
+
+	set sort_by(value: 'load_order' | 'title' | 'version') {
+		this.props.sort_by = value;
+	}
 }
 
 type SettingStore = {
@@ -236,6 +247,9 @@ type SettingStore = {
 
 	dependency_confirmation: 1 | 0;
 	setDependencyConfirmation: (dependency_confirmation: 1 | 0) => void;
+
+	sort_by: 'load_order' | 'title' | 'version';
+	setSortBy: (sort_by: 'load_order' | 'title' | 'version') => void;
 
 	isGameRunning: boolean;
 	setIsGameRunning: (isGameRunning: boolean) => void;
@@ -337,6 +351,12 @@ export const settingStore = create<SettingStore>(set => ({
 		debounceCallback(syncSetting);
 	},
 
+	sort_by: 'load_order',
+	setSortBy: sort_by => {
+		set({ sort_by });
+		debounceCallback(syncSetting);
+	},
+
 	isGameRunning: false,
 	setIsGameRunning: isGameRunning => {
 		set({ isGameRunning });
@@ -361,6 +381,7 @@ const syncSetting = async () => {
 		toggle_version,
 		toggle_creator,
 		dependency_confirmation,
+		sort_by,
 	} = settingStore.getState();
 	const setting = await SettingModel.retrieve();
 
@@ -421,6 +442,11 @@ const syncSetting = async () => {
 
 	if (setting.dependency_confirmation !== dependency_confirmation) {
 		setting.dependency_confirmation = dependency_confirmation;
+		changed = true;
+	}
+
+	if (setting.sort_by !== sort_by) {
+		setting.sort_by = sort_by;
 		changed = true;
 	}
 

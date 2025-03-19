@@ -23,6 +23,7 @@ import { modSeparatorStore, isCollapsed } from '@/lib/store/mod_separator';
 import { filterMods, modMetaStore } from '@/lib/store/mod_meta';
 
 import type { ModItemSeparatorUnion } from '@/lib/api';
+import { settingStore } from '@/lib/store/setting';
 import {
 	sortMods,
 	sortCollapsedSection,
@@ -41,9 +42,12 @@ export const ModListTable = () => {
 	const [activationFilter, setActivationFilter] = useState<string>('all');
 	const [activeId, setActiveId] = useState<string | null>(null);
 
+	const sort_by = settingStore(state => state.sort_by);
+
 	const mods = modsStore(state => state.mods);
 	const setMods = modsStore(state => state.setMods);
 
+	const modOrderData = modOrderStore(state => state.data);
 	const setModOrder = modOrderStore(state => state.setData);
 	const selectedRows = modOrderStore(state => state.selectedRows);
 	const toggleRow = modOrderStore(state => state.toggleRow);
@@ -61,10 +65,14 @@ export const ModListTable = () => {
 
 	useEffect(() => {
 		window.addEventListener('keydown', handleEscKey);
+		if (sort_by !== 'load_order') {
+			clearSelection();
+		}
+
 		return () => {
 			window.removeEventListener('keydown', handleEscKey);
 		};
-	}, []);
+	}, [sort_by]);
 
 	const filteredMods = useMemo(() => {
 		return filterMods(
@@ -151,10 +159,10 @@ export const ModListTable = () => {
 					result = sortMods(mods, active, over);
 				}
 
-				if (result.modOrder !== modOrderStore.getState().data) {
+				if (result.modOrder !== modOrderData) {
 					setModOrder(result.modOrder);
 				}
-				if (result.mods !== modsStore.getState().mods) {
+				if (result.mods !== mods) {
 					setMods(result.mods);
 				}
 			}

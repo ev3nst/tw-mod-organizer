@@ -4,6 +4,8 @@ import {
 	ModGenericProps,
 	createStore,
 } from '@/lib/store/mod_generic';
+import { profileStore } from '@/lib/store/profile';
+import { SettingModel } from '@/lib/store/setting';
 
 export type ModOrderItem = {
 	mod_id: string;
@@ -18,6 +20,18 @@ export class ModOrderModel extends ModGenericModel<ModOrder, ModOrderItem> {
 		return 'mod_orders';
 	}
 }
+
+const customSyncData = async (dataToSync: ModOrderItem[]) => {
+	const { profile } = profileStore.getState();
+	const settings = await SettingModel.retrieve();
+	if (settings.sort_by === 'load_order') {
+		const instance = await ModOrderModel.retrieve(profile.id);
+		if (instance) {
+			instance.data = dataToSync;
+			await instance.save();
+		}
+	}
+};
 
 export const modOrderStore = createStore<
 	ModOrder,
@@ -35,6 +49,7 @@ export const modOrderStore = createStore<
 >({
 	model: ModOrderModel,
 	initialState: [],
+	customSyncData,
 	extend: (set, get) => ({
 		priorityOpen: false,
 		selectedMod: {

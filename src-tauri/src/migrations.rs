@@ -155,5 +155,13 @@ pub fn get_migrations() -> Vec<Migration> {
 			"#,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 10,
+            description: "add_sort_by_to_settings",
+            sql: r#"
+			ALTER TABLE settings ADD COLUMN sort_by TEXT NOT NULL DEFAULT 'load_order';
+			"#,
+            kind: MigrationKind::Up,
+        },
     ]
 }

@@ -166,14 +166,17 @@ export const createStore = <
 	model,
 	initialState,
 	extend,
+	customSyncData,
 }: StoreGeneratorOptions<T, M, D> & {
 	extend?: (
 		set: (state: any) => void,
 		get: () => { data: D[]; setData: (data: D[]) => void } & E,
 		helpers: { syncData: (dataToSync: D[]) => Promise<void> },
 	) => E;
+	customSyncData?: (dataToSync: D[]) => Promise<void>;
 }) => {
 	const createSyncData = () => {
+		if (customSyncData) return customSyncData;
 		return async (dataToSync: D[]) => {
 			const { profile } = profileStore.getState();
 			const instance = await model.retrieve(profile.id);
