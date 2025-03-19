@@ -27,7 +27,7 @@ export const Saves = () => {
 			try {
 				const files = (
 					await api.save_files(selectedGame!.steam_id)
-				).sort((a, b) => a.date - b.date);
+				).sort((a, b) => b.date - a.date);
 				setSaveFiles(files);
 				setFilteredSaveFiles(files);
 			} catch (error) {
