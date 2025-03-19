@@ -8,6 +8,7 @@ import {
 import { SettingModel } from '@/lib/store/setting';
 import { ModActivationItem } from '@/lib/store/mod_activation';
 import { debounceCallback } from '@/lib/utils';
+import { isSeparator } from '@/modlist/utils';
 
 export type ModMetaItem = {
 	mod_id: string;
@@ -109,14 +110,14 @@ export function filterMods(
 					: '';
 
 			filteredData = mods.filter(m => {
-				if (!('item_type' in m)) {
+				if (isSeparator(m)) {
 					return false;
 				}
 
 				const matchesAllCategories = categoryTerms.every(term => {
 					const matchesModCategory =
-						m.categories !== null &&
-						m.categories.toLowerCase().includes(term);
+						(m as ModItem).categories !== null &&
+						(m as ModItem).categories.toLowerCase().includes(term);
 
 					const matchesMetaCategory = metaData.some(
 						md =>
@@ -153,7 +154,7 @@ export function filterMods(
 			);
 
 			filteredData = mods.filter(m => {
-				if (!('item_type' in m)) {
+				if (isSeparator(m)) {
 					return false;
 				}
 
@@ -165,8 +166,10 @@ export function filterMods(
 
 				return (
 					m.title.toLowerCase().includes(searchModTextLower) ||
-					(m.categories !== null &&
-						m.categories.toLowerCase().includes(searchModTextLower))
+					((m as ModItem).categories !== null &&
+						(m as ModItem).categories
+							.toLowerCase()
+							.includes(searchModTextLower))
 				);
 			});
 		}
@@ -178,7 +181,7 @@ export function filterMods(
 				s =>
 					s.mod_id === f.identifier &&
 					s.is_active === (activationFilter === 'active') &&
-					'item_type' in f,
+					!isSeparator(f),
 			),
 		);
 	}

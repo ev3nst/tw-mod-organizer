@@ -36,7 +36,6 @@ export const Version = () => {
 		const fetchLatestVersion = async () => {
 			try {
 				const data = await api.version_check();
-				console.log(data, 'data');
 				if (compareVersions(currentVersion, data.version)) {
 					setNewVersion(data.version);
 				}

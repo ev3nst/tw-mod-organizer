@@ -8,21 +8,30 @@ Requires Windows 10, Steam, 7z (for local mod installation).
 
 ## Features
 
--	Lightweight and small bundle size
--   Mod profiles
--	Import & Export Mod Lists
--   Re-ordering mods with a simple drag and drop
--   Viewing mod conflicts
--	Separators to group your mods
--	Fast and smart filtering
--   Installing manual mods within app with profile in mind. This ensures you do not have to extract mod files into to the game installation and possibly over complicating folder structure for further management
--   Nexus Mods integration - downloading directly with deep links
--	Custom category and title assignment for mods
--   Simple UI
+-   Lightweight and small bundle size
+-   Mod profiles — easily switch between different mod configurations
+-   Import & Export Mod Lists — to share your entire mod profile
+-   Drag-and-drop mod reordering
+-   Custom category and title assignment
+-   View mod conflicts to spot compatibility issues
+-   Use separators to group mods for better organization
+-   Fast and smart filtering to quickly find your mods
+-   Manual mod installation directly within the app, keeping your game folders clean
+-   Nexus Mods integration — direct download with deep links
+-   Force update for Steam Workshop mods — manually check for mod updates when Steam doesn’t
+-   Simple, user-friendly UI
 
 ## Known Bugs
 
-- I could not find a way to properly drop steam api client and stopping the game from steam application (even when game is not actually open) causes this application to close and also if game is running and you close the application unexpected things can occur but i have not found any particular problem with this yet.
+-   I could not find a way to properly drop steam api client and stopping the game from steam application (even when game is not actually open) causes this application to close and also if game is running and you close the application unexpected things can occur but i have not found any particular problem with this yet.
+
+## Planned Improvements
+Here are some ideas I might add in the future, depending on feedback and time:
+
+- Selective file exclusion from conflicts — choose files to exclude or ignore specific conflicts
+- Load order patching — unit size multiplier, language fix etc.
+- Create Steam collections from mod lists — publish your load order as a Steam collection
+- More games to support under Total War title
 
 ## For Developers
 

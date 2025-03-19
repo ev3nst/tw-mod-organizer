@@ -44,7 +44,6 @@ export const ModList = () => {
 		state => state.mod_installation_path,
 	);
 
-	// Set up sensors for drag and drop
 	const init = useCallback(async () => {
 		const resolveOrder = async (mods: ModItemSeparatorUnion[]) => {
 			const modOrder = await ModOrderModel.retrieve(profile.id);

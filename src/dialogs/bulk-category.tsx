@@ -30,6 +30,7 @@ import { modsStore } from '@/lib/store/mods';
 import { modActivationStore } from '@/lib/store/mod_activation';
 import { filterMods, modMetaStore } from '@/lib/store/mod_meta';
 import { toastError } from '@/lib/utils';
+import { isSeparator } from '@/modlist/utils';
 
 export function BulkCategory() {
 	const [modsToChange, setModsToChange] = useState<ModItem[]>([]);
@@ -53,7 +54,7 @@ export function BulkCategory() {
 	const modActiveData = modActivationStore(state => state.data);
 
 	const modsResolved = mods.map(rm => {
-		if (!('item_type' in rm)) return rm;
+		if (isSeparator(rm)) return rm;
 
 		const rmMeta = metaData.find(md => md.mod_id === rm.identifier);
 		return {
@@ -80,7 +81,7 @@ export function BulkCategory() {
 			modsResolved,
 			metaData,
 			modActiveData,
-		).filter(mod => 'item_type' in mod) as ModItem[];
+		).filter(mod => !isSeparator(mod)) as ModItem[];
 	}, [modsResolved, searchModText, activationFilter]);
 
 	const bulkCategoryDialogOpen = modMetaStore(

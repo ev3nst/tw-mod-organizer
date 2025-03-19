@@ -11,6 +11,7 @@ import { settingStore } from '@/lib/store/setting';
 import { modsStore } from '@/lib/store/mods';
 import { modActivationStore } from '@/lib/store/mod_activation';
 import { toastError } from '@/lib/utils';
+import { isSeparator } from '@/modlist/utils';
 
 export const Play = () => {
 	const [loading, setLoading] = useState(false);
@@ -52,11 +53,9 @@ export const Play = () => {
 			let addDirectoryTxt = '';
 			let usedModsTxt = '';
 			for (let ri = 0; ri < reverseLoadOrder.length; ri++) {
-				const mod = reverseLoadOrder[ri] as ModItem;
-				const item_type =
-					'item_type' in mod ? mod.item_type : 'separator';
-				if (item_type === 'separator') continue;
+				if (isSeparator(reverseLoadOrder[ri])) continue;
 
+				const mod = reverseLoadOrder[ri] as ModItem;
 				const isActive = modActivations.some(
 					a => a.is_active === true && a.mod_id === mod.identifier,
 				);
