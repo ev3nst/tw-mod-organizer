@@ -198,6 +198,7 @@ export const ModListTable = () => {
 			>
 				<div className="absolute inset-0 overflow-y-auto dark-scrollbar">
 					<ModTable
+						totalMods={mods.length - separators.length}
 						modsResolved={modsResolved}
 						modIndices={modIndices}
 						selectedRows={selectedRows}
@@ -242,6 +243,7 @@ export const ModListTable = () => {
 };
 
 interface ModTableProps {
+	totalMods: number;
 	modsResolved: ModItemSeparatorUnion[];
 	modIndices: Map<string, number>;
 	selectedRows: Set<string>;
@@ -249,7 +251,7 @@ interface ModTableProps {
 }
 
 const ModTable: React.FC<ModTableProps> = memo(
-	({ modsResolved, modIndices, selectedRows, toggleRow }) => {
+	({ totalMods, modsResolved, modIndices, selectedRows, toggleRow }) => {
 		return (
 			<Table className="w-full">
 				<Header />
@@ -270,7 +272,7 @@ const ModTable: React.FC<ModTableProps> = memo(
 						))}
 					</SortableContext>
 				</TableBody>
-				<Footer length={modsResolved.length} />
+				<Footer length={totalMods} />
 				<Lock />
 			</Table>
 		);
