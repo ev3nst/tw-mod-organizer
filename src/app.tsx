@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { lazy, Suspense, useEffect, useState, useCallback } from 'react';
 
 import { SidebarInset, SidebarProvider } from '@/components/sidebar';
 import { TooltipProvider } from '@/components/tooltip';
@@ -9,13 +9,15 @@ import { ProfileModel, profileStore } from '@/lib/store/profile';
 
 import { toastError } from '@/lib/utils';
 
-import { ConflictDetails } from '@/dialogs/conflict-details';
-import { SetPriorityDialog } from '@/dialogs/set-priority';
-import { MetaInformationDialog } from '@/dialogs/meta-information';
-import { RemoveModDialog } from '@/dialogs/remove-mod';
-import { EditSeparator } from '@/dialogs/edit-separator';
-import { BulkCategory } from '@/dialogs/bulk-category';
-import { RequiredItemsDialog } from '@/dialogs/required-items';
+const ConflictDetailsDialog = lazy(() => import('@/dialogs/conflict-details'));
+const SetPriorityDialog = lazy(() => import('@/dialogs/set-priority'));
+const MetaInformationDialog = lazy(() => import('@/dialogs/meta-information'));
+const RemoveModDialog = lazy(() => import('@/dialogs/remove-mod'));
+const EditSeparatorDialog = lazy(() => import('@/dialogs/edit-separator'));
+const BulkCategoryUpdateDialog = lazy(
+	() => import('@/dialogs/bulk-category-update'),
+);
+const RequiredItemsDialog = lazy(() => import('@/dialogs/required-items'));
 
 import { Header } from './header';
 import { ModList } from './modlist';
@@ -72,13 +74,15 @@ function App() {
 					<div className="flex flex-1">
 						<SidebarInset>
 							<ModList />
-							<ConflictDetails />
-							<SetPriorityDialog />
-							<MetaInformationDialog />
-							<EditSeparator />
-							<RemoveModDialog />
-							<BulkCategory />
-							<RequiredItemsDialog />
+							<Suspense fallback={<Loading />}>
+								<ConflictDetailsDialog />
+								<SetPriorityDialog />
+								<MetaInformationDialog />
+								<EditSeparatorDialog />
+								<RemoveModDialog />
+								<BulkCategoryUpdateDialog />
+								<RequiredItemsDialog />
+							</Suspense>
 						</SidebarInset>
 						<AppSidebar />
 					</div>

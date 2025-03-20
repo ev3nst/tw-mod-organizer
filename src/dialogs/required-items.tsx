@@ -37,7 +37,7 @@ const DependencyModComponent = ({
 	);
 };
 
-export function RequiredItemsDialog() {
+function RequiredItemsDialog() {
 	const mods = modsStore(state => state.mods);
 	const modActivationData = modActivationStore(state => state.data);
 	const setModActivation = modActivationStore(state => state.setData);
@@ -202,3 +202,5 @@ export function RequiredItemsDialog() {
 		</Dialog>
 	);
 }
+
+export default RequiredItemsDialog;

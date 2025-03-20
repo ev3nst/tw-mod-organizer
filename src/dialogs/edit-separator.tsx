@@ -14,7 +14,7 @@ import { settingStore } from '@/lib/store/setting';
 import { modSeparatorStore } from '@/lib/store/mod_separator';
 import { toastError } from '@/lib/utils';
 
-export function EditSeparator() {
+function EditSeparatorDialog() {
 	const init_reload = settingStore(state => state.init_reload);
 	const setInitReload = settingStore(state => state.setInitReload);
 
@@ -111,3 +111,5 @@ export function EditSeparator() {
 		</Dialog>
 	);
 }
+
+export default EditSeparatorDialog;

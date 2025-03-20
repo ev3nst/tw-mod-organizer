@@ -83,7 +83,7 @@ const ConflictItem = ({
 	);
 };
 
-export function ConflictDetails() {
+function ConflictDetailsDialog() {
 	const setCurrentConflict = conflictsStore(
 		state => state.setCurrentConflict,
 	);
@@ -152,3 +152,5 @@ export function ConflictDetails() {
 		</Dialog>
 	);
 }
+
+export default ConflictDetailsDialog;

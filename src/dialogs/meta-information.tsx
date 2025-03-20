@@ -15,7 +15,7 @@ import { Button } from '@/components/button';
 import { modMetaStore } from '@/lib/store/mod_meta';
 import { toastError } from '@/lib/utils';
 
-export function MetaInformationDialog() {
+function MetaInformationDialog() {
 	const [title, setTitle] = useState<string>('');
 	const [categories, setCategories] = useState<string>('');
 
@@ -132,3 +132,5 @@ export function MetaInformationDialog() {
 		</Dialog>
 	);
 }
+
+export default MetaInformationDialog;

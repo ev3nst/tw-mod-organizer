@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import { ArchiveIcon, PauseIcon, PlayIcon, XIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { listen } from '@tauri-apps/api/event';
 
@@ -30,8 +30,6 @@ export const Downloads = () => {
 
 	useEffect(() => {
 		const initializeDownloads = async () => {
-			if (games.length === 0) return;
-
 			const downloadManager = DownloadManager.getInstance();
 			try {
 				const initialDownloads = await downloadManager.retrieve();
@@ -55,7 +53,7 @@ export const Downloads = () => {
 		};
 
 		initializeDownloads();
-	}, [games]);
+	}, []);
 
 	useEffect(() => {
 		const dm = DownloadManager.getInstance();
@@ -92,8 +90,6 @@ export const Downloads = () => {
 
 	useEffect(() => {
 		const setupNXMProtocolListener = async () => {
-			if (games.length === 0) return;
-
 			const unlisten = await listen<string>(
 				'nxm-protocol',
 				async event => {
@@ -191,7 +187,7 @@ export const Downloads = () => {
 		return () => {
 			cleanup.then((fn: any) => fn());
 		};
-	}, [games, selectedGame]);
+	}, [selectedGame]);
 
 	useEffect(() => {
 		const setupDownloadComplete = async () => {

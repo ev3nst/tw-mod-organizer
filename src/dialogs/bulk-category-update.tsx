@@ -32,7 +32,7 @@ import { filterMods, modMetaStore } from '@/lib/store/mod_meta';
 import { toastError } from '@/lib/utils';
 import { isSeparator } from '@/modlist/utils';
 
-export function BulkCategory() {
+function BulkCategoryUpdateDialog() {
 	const [modsToChange, setModsToChange] = useState<ModItem[]>([]);
 	const [searchModText, setSearchModText] = useState<string>('');
 	const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) =>
@@ -329,3 +329,5 @@ export function BulkCategory() {
 		</Dialog>
 	);
 }
+
+export default BulkCategoryUpdateDialog;

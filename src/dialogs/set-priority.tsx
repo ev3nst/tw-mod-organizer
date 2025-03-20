@@ -14,7 +14,7 @@ import { Button } from '@/components/button';
 import { modsStore } from '@/lib/store/mods';
 import { modOrderStore } from '@/lib/store/mod_order';
 
-export function SetPriorityDialog() {
+function SetPriorityDialog() {
 	const [priority, setPriority] = useState<string>('');
 
 	const mods = modsStore(state => state.mods);
@@ -108,3 +108,5 @@ export function SetPriorityDialog() {
 		</Dialog>
 	);
 }
+
+export default SetPriorityDialog;

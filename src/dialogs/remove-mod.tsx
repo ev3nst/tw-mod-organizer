@@ -24,7 +24,7 @@ import { ModMetaModel, modMetaStore } from '@/lib/store/mod_meta';
 import { toastError } from '@/lib/utils';
 import { isSeparator } from '@/modlist/utils';
 
-export function RemoveModDialog() {
+function RemoveModDialog() {
 	const loading = settingStore(state => state.loading);
 	const setLoading = settingStore(state => state.setLoading);
 	const selectedGame = settingStore(state => state.selectedGame);
@@ -90,13 +90,13 @@ export function RemoveModDialog() {
 
 			const modOrder = await ModOrderModel.retrieve(profile.id);
 			modOrder!.data = modOrderData.filter(
-				mr => !modsToProcess.includes(mr.mod_id),
+				mr => modsToProcess.indexOf(mr.mod_id) === -1,
 			);
 			await modOrder!.save();
 
 			const modActivation = await ModActivationModel.retrieve(profile.id);
 			modActivation!.data = modActivationData.filter(
-				mr => !modsToProcess.includes(mr.mod_id),
+				mr => modsToProcess.indexOf(mr.mod_id) === -1,
 			);
 			await modActivation!.save();
 
@@ -105,7 +105,7 @@ export function RemoveModDialog() {
 				selectedGame!.steam_id,
 			);
 			modMeta!.data = modMetaData.filter(
-				mr => !modsToProcess.includes(mr.mod_id),
+				mr => modsToProcess.indexOf(mr.mod_id) === -1,
 			);
 			await modMeta!.save();
 
@@ -177,3 +177,5 @@ export function RemoveModDialog() {
 		</Dialog>
 	);
 }
+
+export default RemoveModDialog;
