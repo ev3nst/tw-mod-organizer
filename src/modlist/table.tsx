@@ -33,7 +33,6 @@ import { sortMods, sortCollapsedSection, sortGroup } from '@/modlist/utils';
 import { Header } from './header';
 import { Row } from './row';
 import { Footer } from './footer';
-import { Lock } from './lock';
 import { Filter } from './filter';
 
 export const ModListTable = () => {
@@ -316,7 +315,6 @@ const ModTable: React.FC<ModTableProps> = memo(
 					</SortableContext>
 				</TableBody>
 				<Footer length={totalMods} />
-				<Lock />
 			</Table>
 		);
 	},
