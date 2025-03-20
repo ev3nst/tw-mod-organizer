@@ -20,12 +20,11 @@ import { ProfileModel, profileStore } from '@/lib/store/profile';
 import { modsStore } from '@/lib/store/mods';
 import { ModOrderModel } from '@/lib/store/mod_order';
 import { ModActivationModel } from '@/lib/store/mod_activation';
-import { ModSeparatorModel } from '@/lib/store/mod_separator';
+import { ModSeparatorModel, isSeparator } from '@/lib/store/mod_separator';
 import { ModMetaItem } from '@/lib/store/mod_meta';
 
 import api, { ModItem, ProfileExportData } from '@/lib/api';
 import { toastError } from '@/lib/utils';
-import { isSeparator } from '@/modlist/utils';
 
 export const ImportProfile = () => {
 	const [importProfileName, setImportProfileName] = useState('');

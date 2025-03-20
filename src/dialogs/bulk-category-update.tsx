@@ -29,8 +29,8 @@ import { ModItem } from '@/lib/api';
 import { modsStore } from '@/lib/store/mods';
 import { modActivationStore } from '@/lib/store/mod_activation';
 import { filterMods, modMetaStore } from '@/lib/store/mod_meta';
+import { isSeparator } from '@/lib/store/mod_separator';
 import { toastError } from '@/lib/utils';
-import { isSeparator } from '@/modlist/utils';
 
 function BulkCategoryUpdateDialog() {
 	const [modsToChange, setModsToChange] = useState<ModItem[]>([]);

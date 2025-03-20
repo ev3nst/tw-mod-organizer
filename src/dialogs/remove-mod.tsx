@@ -20,9 +20,9 @@ import {
 } from '@/lib/store/mod_activation';
 import { ModOrderModel, modOrderStore } from '@/lib/store/mod_order';
 import { ModMetaModel, modMetaStore } from '@/lib/store/mod_meta';
+import { isSeparator } from '@/lib/store/mod_separator';
 
 import { toastError } from '@/lib/utils';
-import { isSeparator } from '@/modlist/utils';
 
 function RemoveModDialog() {
 	const loading = settingStore(state => state.loading);

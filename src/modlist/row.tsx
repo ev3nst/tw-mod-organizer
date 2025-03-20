@@ -7,6 +7,7 @@ import { TableCell, TableRow } from '@/components/table';
 
 import type { ModItem, ModItemSeparatorUnion } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
+import { isSeparator } from '@/lib/store/mod_separator';
 
 import { Selection } from './cells/selection';
 import { Title } from './cells/title';
@@ -16,7 +17,6 @@ import { Version } from './cells/version';
 import { Creator } from './cells/creator';
 import { Actions } from './cells/actions';
 import { Order } from './cells/order';
-import { isSeparator } from './utils';
 
 type RowProps = {
 	mod: ModItemSeparatorUnion;

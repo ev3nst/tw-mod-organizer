@@ -19,17 +19,16 @@ import { Table, TableBody } from '@/components/table';
 import { modsStore } from '@/lib/store/mods';
 import { modOrderStore } from '@/lib/store/mod_order';
 import { modActivationStore } from '@/lib/store/mod_activation';
-import { modSeparatorStore, isCollapsed } from '@/lib/store/mod_separator';
+import {
+	modSeparatorStore,
+	isCollapsed,
+	isSeparator,
+} from '@/lib/store/mod_separator';
 import { filterMods, modMetaStore } from '@/lib/store/mod_meta';
 
 import type { ModItemSeparatorUnion } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
-import {
-	sortMods,
-	sortCollapsedSection,
-	isSeparator,
-	sortGroup,
-} from '@/modlist/utils';
+import { sortMods, sortCollapsedSection, sortGroup } from '@/modlist/utils';
 
 import { Header } from './header';
 import { Row } from './row';

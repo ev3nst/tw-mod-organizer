@@ -2,7 +2,7 @@ import { TableCell } from '@/components/table';
 
 import type { ModItemSeparatorUnion } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
-import { isSeparator } from '@/modlist/utils';
+import { isSeparator } from '@/lib/store/mod_separator';
 
 export const Creator = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 	if (isSeparator(mod)) return;

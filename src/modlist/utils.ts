@@ -1,6 +1,7 @@
 import type { Active, Over } from '@dnd-kit/core';
 
 import type { ModItemSeparatorUnion } from '@/lib/api';
+import { isSeparator } from '@/lib/store/mod_separator';
 
 export function sortCollapsedSection(
 	items: ModItemSeparatorUnion[],
@@ -114,6 +115,3 @@ export function sortGroup(
 		modOrder,
 	};
 }
-
-export const isSeparator = (mod: ModItemSeparatorUnion): boolean =>
-	!('item_type' in mod);

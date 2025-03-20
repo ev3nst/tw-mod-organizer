@@ -1,10 +1,10 @@
 import { CheckIcon, MinusIcon, XIcon } from 'lucide-react';
 
+import { ModItem, ModItemSeparatorUnion } from '@/lib/api';
 import { ModOrderItem } from '@/lib/store/mod_order';
 import { ModActivationItem } from '@/lib/store/mod_activation';
+import { isSeparator } from '@/lib/store/mod_separator';
 import { SaveFileLoadOrderData } from '@/lib/store/save_files';
-import { ModItem, ModItemSeparatorUnion } from '@/lib/api';
-import { isSeparator } from '@/modlist/utils';
 
 type SaveFileModComponentProps = {
 	mod: ModItemSeparatorUnion;

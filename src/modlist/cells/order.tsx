@@ -4,7 +4,7 @@ import { TableCell } from '@/components/table';
 
 import { ModItemSeparatorUnion } from '@/lib/api';
 import { modSeparatorStore, isCollapsed } from '@/lib/store/mod_separator';
-import { isSeparator } from '@/modlist/utils';
+import { isSeparator } from '@/lib/store/mod_separator';
 
 export const Order = ({
 	mod,

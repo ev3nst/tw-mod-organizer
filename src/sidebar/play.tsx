@@ -13,10 +13,10 @@ import {
 	ModActivationItem,
 	modActivationStore,
 } from '@/lib/store/mod_activation';
+import { modOrderStore } from '@/lib/store/mod_order';
+import { isSeparator } from '@/lib/store/mod_separator';
 import { saveFilesStore } from '@/lib/store/save_files';
 import { toastError } from '@/lib/utils';
-import { isSeparator } from '@/modlist/utils';
-import { modOrderStore } from '@/lib/store/mod_order';
 
 export async function startGame(
 	app_id: number,

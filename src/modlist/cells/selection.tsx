@@ -5,7 +5,8 @@ import type { ModItem, ModItemSeparatorUnion } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 import { modsStore } from '@/lib/store/mods';
 import { modActivationStore } from '@/lib/store/mod_activation';
-import { isSeparator } from '@/modlist/utils';
+import { findSeparatorPositions } from '@/lib/store/mod_separator';
+import { isSeparator } from '@/lib/store/mod_separator';
 
 const getChildMods = (
 	items: ModItemSeparatorUnion[],
@@ -26,15 +27,6 @@ const getChildMods = (
 	}
 	return children;
 };
-
-const findSeparatorPositions = (
-	mods: ModItemSeparatorUnion[],
-): { id: string; index: number }[] =>
-	mods
-		.map((mod, index) =>
-			isSeparator(mod) ? { id: mod.identifier, index } : null,
-		)
-		.filter(Boolean) as { id: string; index: number }[];
 
 export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 	const dependency_confirmation = settingStore(

@@ -18,10 +18,10 @@ import { ModMetaModel, modMetaStore } from '@/lib/store/mod_meta';
 import { conflictsStore } from '@/lib/store/conflict';
 
 import api, { ModItem, ModItemSeparatorUnion } from '@/lib/api';
+import { isSeparator } from '@/lib/store/mod_separator';
 import { normalizeOrder, toastError } from '@/lib/utils';
 
 import { ModListTable } from './table';
-import { isSeparator } from './utils';
 
 export const ModList = () => {
 	const [fetchModsLoading, setFetchModsLoading] = useState(false);

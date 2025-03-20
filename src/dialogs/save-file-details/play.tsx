@@ -4,12 +4,12 @@ import { startGame } from '@/sidebar/play';
 
 import { settingStore } from '@/lib/store/setting';
 import { saveFilesStore } from '@/lib/store/save_files';
-import { modActivationStore } from '@/lib/store/mod_activation';
 import { modsStore } from '@/lib/store/mods';
+import { modActivationStore } from '@/lib/store/mod_activation';
+import { isSeparator } from '@/lib/store/mod_separator';
 
 import { ModItem, ModItemSeparatorUnion } from '@/lib/api';
 import { toastError } from '@/lib/utils';
-import { isSeparator } from '@/modlist/utils';
 
 export const Play = () => {
 	const setIsGameLoading = settingStore(state => state.setIsGameLoading);

@@ -7,13 +7,13 @@ import {
 	DialogHeader,
 } from '@/components/dialog';
 import { Button } from '@/components/button';
+import { Loading } from '@/components/loading';
 
 import api, { ModItem } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 import { modsStore } from '@/lib/store/mods';
+import { isSeparator } from '@/lib/store/mod_separator';
 import { toastError } from '@/lib/utils';
-import { Loading } from '@/components/loading';
-import { isSeparator } from '@/modlist/utils';
 
 export function UpdateMods() {
 	const [loading, setLoading] = useState(false);

@@ -4,7 +4,7 @@ import type { ModItemSeparatorUnion } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 import { conflictsStore } from '@/lib/store/conflict';
 import { modOrderStore } from '@/lib/store/mod_order';
-import { isSeparator } from '@/modlist/utils';
+import { isSeparator } from '@/lib/store/mod_separator';
 
 export const Conflict = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 	if (isSeparator(mod)) return;

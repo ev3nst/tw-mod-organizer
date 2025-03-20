@@ -7,8 +7,8 @@ import {
 } from '@/lib/store/mod_generic';
 import { SettingModel } from '@/lib/store/setting';
 import { ModActivationItem } from '@/lib/store/mod_activation';
+import { isSeparator } from '@/lib/store/mod_separator';
 import { debounceCallback } from '@/lib/utils';
-import { isSeparator } from '@/modlist/utils';
 
 export type ModMetaItem = {
 	mod_id: string;

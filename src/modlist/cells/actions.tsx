@@ -21,7 +21,7 @@ import {
 import { settingStore } from '@/lib/store/setting';
 import { modsStore } from '@/lib/store/mods';
 import { modOrderStore } from '@/lib/store/mod_order';
-import { modSeparatorStore } from '@/lib/store/mod_separator';
+import { modSeparatorStore, isSeparator } from '@/lib/store/mod_separator';
 import { modMetaStore } from '@/lib/store/mod_meta';
 
 import api, {
@@ -30,7 +30,6 @@ import api, {
 	ModSeparatorItem,
 } from '@/lib/api';
 import { toastError } from '@/lib/utils';
-import { isSeparator } from '@/modlist/utils';
 
 function determineModUrl(
 	mod: ModItemSeparatorUnion,

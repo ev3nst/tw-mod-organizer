@@ -1,4 +1,4 @@
-import { ModSeparatorItem } from '@/lib/api';
+import { ModItemSeparatorUnion, ModSeparatorItem } from '@/lib/api';
 import {
 	createStore,
 	ModGenericModel,
@@ -58,3 +58,15 @@ export function isCollapsed(data: ModSeparatorItem[], separatorId: string) {
 		? data[findIndex].collapsed
 		: false;
 }
+
+export const isSeparator = (mod: ModItemSeparatorUnion): boolean =>
+	!('item_type' in mod);
+
+export const findSeparatorPositions = (
+	mods: ModItemSeparatorUnion[],
+): { id: string; index: number }[] =>
+	mods
+		.map((mod, index) =>
+			isSeparator(mod) ? { id: mod.identifier, index } : null,
+		)
+		.filter(Boolean) as { id: string; index: number }[];
