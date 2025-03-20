@@ -13,7 +13,7 @@ Requires Windows 10, Steam, 7z (for local mod installation).
 -   Import & Export Mod Lists — to share your entire mod profile
 -   Drag-and-drop mod reordering
 -   Custom category and title assignment
--   Save game mod tracking — to freely experiment with mods
+-   Save game mod compatibility — to freely experiment with mods
 -   View mod conflicts to spot compatibility issues
 -   Use separators to group mods for better organization
 -   Fast and smart filtering to quickly find your mods
