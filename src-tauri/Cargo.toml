@@ -1,6 +1,6 @@
 [package]
 name = "tw-mod-organizer"
-version = "0.4.2"
+version = "0.5.0"
 description = "TW Mod Organizer"
 authors = ["Burak Kartal"]
 edition = "2021"
