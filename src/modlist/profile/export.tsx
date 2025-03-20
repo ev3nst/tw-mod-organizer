@@ -10,14 +10,19 @@ import { profileStore } from '@/lib/store/profile';
 import { modsStore } from '@/lib/store/mods';
 import { modOrderStore } from '@/lib/store/mod_order';
 import { modActivationStore } from '@/lib/store/mod_activation';
-import { modSeparatorStore } from '@/lib/store/mod_separator';
+import {
+	findSeparatorPositions,
+	modSeparatorStore,
+} from '@/lib/store/mod_separator';
 import { modMetaStore } from '@/lib/store/mod_meta';
 
-import api from '@/lib/api';
+import api, { ModItem } from '@/lib/api';
 import { toastError } from '@/lib/utils';
-import { isSeparator } from '@/modlist/utils';
+import { isSeparator } from '@/lib/store/mod_separator';
+import { Checkbox } from '@/components/checkbox';
 
 export const ExportProfile = () => {
+	const [onlyActiveMods, setOnlyActiveMods] = useState(false);
 	const [exportLoading, setExportLoading] = useState(false);
 	const [exportPath, setExportPath] = useState('');
 
@@ -37,14 +42,72 @@ export const ExportProfile = () => {
 
 		setExportLoading(true);
 		try {
+			let modsToExport = mods.filter(mod => !isSeparator(mod));
+			let modOrderDataToExport = modOrderData;
+			let modActivationDataToExport = modActivationData;
+			let modMetaToExport = modMetaData;
+			let separatorsToExport = modSeparatorData;
+			if (onlyActiveMods) {
+				modsToExport = modsToExport.filter(
+					mod =>
+						modActivationData.find(
+							ma => ma.mod_id === mod.identifier,
+						)?.is_active,
+				);
+
+				modMetaToExport = modMetaToExport.filter(
+					mt =>
+						modActivationData.find(ma => ma.mod_id === mt.mod_id)
+							?.is_active,
+				);
+
+				separatorsToExport = separatorsToExport.filter(mod => {
+					const currentIndex = mods.findIndex(
+						m => m.identifier === mod.identifier,
+					);
+					const separatorPositions = findSeparatorPositions(mods);
+					const nextSeparator = separatorPositions.find(
+						sp =>
+							sp.id !== mod.identifier && sp.index > currentIndex,
+					);
+					const nextSeparatorIndex = nextSeparator
+						? nextSeparator.index
+						: mods.length;
+					const sectionItems = (
+						mods.slice(
+							currentIndex + 1,
+							nextSeparatorIndex,
+						) as ModItem[]
+					).filter(m =>
+						modActivationData.find(
+							ma => ma.mod_id === m.identifier && ma.is_active,
+						),
+					);
+					return sectionItems.length > 0;
+				});
+
+				modOrderDataToExport = modOrderData.filter(
+					mr =>
+						modActivationData.find(ma => ma.mod_id === mr.mod_id)
+							?.is_active ||
+						separatorsToExport.find(
+							ss => ss.identifier === mr.mod_id,
+						),
+				);
+
+				modActivationDataToExport = modActivationData.filter(
+					ma => ma.is_active,
+				);
+			}
+
 			const exportData = {
 				app_id: selectedGame!.steam_id,
 				name: profile.name,
-				mods: mods.filter(mod => !isSeparator(mod)),
-				mod_order: modOrderData,
-				mod_activation: modActivationData,
-				mod_meta: modMetaData,
-				mod_separators: modSeparatorData,
+				mods: modsToExport,
+				mod_order: modOrderDataToExport,
+				mod_activation: modActivationDataToExport,
+				mod_meta: modMetaToExport,
+				mod_separators: separatorsToExport,
 			};
 			const export_file_path = await api.export_profile(
 				selectedGame!.steam_id,
@@ -89,6 +152,23 @@ export const ExportProfile = () => {
 					View
 				</Button>
 			</div>
+
+			<div className="flex items-center space-x-2">
+				<Checkbox
+					id="onlyActiveMods"
+					checked={onlyActiveMods}
+					onCheckedChange={isChecked =>
+						setOnlyActiveMods(isChecked as any)
+					}
+				/>
+				<label
+					htmlFor="onlyActiveMods"
+					className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+				>
+					Ignore Passive Mods
+				</label>
+			</div>
+
 			{profile.name === 'Default' && (
 				<p className="text-red-500">
 					Default profile cannot be exported. You may create a

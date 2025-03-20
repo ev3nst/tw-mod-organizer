@@ -97,11 +97,13 @@ export const ImportProfile = () => {
 				}
 			}
 
+			const newProfileName =
+				importProfileName !== ''
+					? importProfileName
+					: profileExportData.name.trim();
 			const profiles = await ProfileModel.all(profileExportData.app_id);
 			const existing = profiles.find(
-				p =>
-					p.name.toLowerCase() ===
-					profileExportData.name.trim().toLowerCase(),
+				p => p.name.toLowerCase() === newProfileName.toLowerCase(),
 			);
 			if (existing) {
 				await existing.delete();
@@ -109,7 +111,7 @@ export const ImportProfile = () => {
 
 			const newProfile = new ProfileModel({
 				id: undefined as any,
-				name: profileExportData.name.trim(),
+				name: newProfileName,
 				app_id: profileExportData.app_id,
 				is_active: false,
 			});
