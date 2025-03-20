@@ -24,6 +24,9 @@ type RowProps = {
 	id: string;
 	isSelected?: boolean;
 	onSelect?: (id: string, ctrlKey: boolean) => void;
+	selectRange?: (startId: string, endId: string) => void;
+	lastSelectedId?: string | null;
+	setLastSelectedId?: (id: string | null) => void;
 };
 
 const RowComponent = ({
@@ -32,6 +35,9 @@ const RowComponent = ({
 	id,
 	isSelected = false,
 	onSelect,
+	selectRange,
+	lastSelectedId,
+	setLastSelectedId,
 }: RowProps) => {
 	const sort_by = settingStore(state => state.sort_by);
 	const isSortingEnabled = sort_by === 'load_order';
@@ -60,7 +66,19 @@ const RowComponent = ({
 
 	const handleRowClick = (e: React.MouseEvent) => {
 		if (sort_by === 'load_order' && onSelect && !isSeparator(mod)) {
-			onSelect(id, e.ctrlKey);
+			if (
+				e.shiftKey &&
+				lastSelectedId &&
+				selectRange &&
+				setLastSelectedId
+			) {
+				selectRange(lastSelectedId, id);
+			} else {
+				onSelect(id, e.ctrlKey);
+				if (setLastSelectedId) {
+					setLastSelectedId(id);
+				}
+			}
 		}
 	};
 

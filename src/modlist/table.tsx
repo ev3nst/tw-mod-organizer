@@ -43,6 +43,7 @@ export const ModListTable = () => {
 
 	const sort_by = settingStore(state => state.sort_by);
 
+	const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
 	const mods = modsStore(state => state.mods);
 	const setMods = modsStore(state => state.setMods);
 
@@ -55,6 +56,31 @@ export const ModListTable = () => {
 	const separators = modSeparatorStore(state => state.data);
 	const metaData = modMetaStore(state => state.data);
 	const modActiveData = modActivationStore(state => state.data);
+
+	const selectRange = useCallback(
+		(startId: string, endId: string) => {
+			const startIndex = mods.findIndex(
+				mod => mod.identifier === startId,
+			);
+			const endIndex = mods.findIndex(mod => mod.identifier === endId);
+
+			if (startIndex === -1 || endIndex === -1) return;
+
+			const minIndex = Math.min(startIndex, endIndex);
+			const maxIndex = Math.max(startIndex, endIndex);
+
+			const newSelectedRows = new Set<string>();
+			for (let i = minIndex; i <= maxIndex; i++) {
+				const mod = mods[i];
+				if (!isSeparator(mod)) {
+					newSelectedRows.add(mod.identifier);
+				}
+			}
+
+			modOrderStore.setState({ selectedRows: newSelectedRows });
+		},
+		[mods],
+	);
 
 	const handleEscKey = (event: KeyboardEvent) => {
 		if (event.key === 'Escape') {
@@ -202,6 +228,9 @@ export const ModListTable = () => {
 						modIndices={modIndices}
 						selectedRows={selectedRows}
 						toggleRow={toggleRow}
+						selectRange={selectRange}
+						lastSelectedId={lastSelectedId}
+						setLastSelectedId={setLastSelectedId}
 					/>
 				</div>
 
@@ -247,10 +276,22 @@ interface ModTableProps {
 	modIndices: Map<string, number>;
 	selectedRows: Set<string>;
 	toggleRow: (modId: string, ctrlKey: boolean) => void;
+	selectRange: (startId: string, endId: string) => void;
+	lastSelectedId: string | null;
+	setLastSelectedId: (id: string | null) => void;
 }
 
 const ModTable: React.FC<ModTableProps> = memo(
-	({ totalMods, modsResolved, modIndices, selectedRows, toggleRow }) => {
+	({
+		totalMods,
+		modsResolved,
+		modIndices,
+		selectedRows,
+		toggleRow,
+		selectRange,
+		lastSelectedId,
+		setLastSelectedId,
+	}) => {
 		return (
 			<Table className="w-full">
 				<Header />
@@ -267,6 +308,9 @@ const ModTable: React.FC<ModTableProps> = memo(
 								id={mod.identifier}
 								isSelected={selectedRows.has(mod.identifier)}
 								onSelect={toggleRow}
+								selectRange={selectRange}
+								lastSelectedId={lastSelectedId}
+								setLastSelectedId={setLastSelectedId}
 							/>
 						))}
 					</SortableContext>

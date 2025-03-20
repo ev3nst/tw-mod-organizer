@@ -44,7 +44,7 @@ export const Title = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 		}
 
 		return (
-			<TableCell>
+			<TableCell className="select-none">
 				<div className="flex items-center gap-2">
 					{imgSrc && (
 						<img
