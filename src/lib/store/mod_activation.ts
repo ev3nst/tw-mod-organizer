@@ -1,4 +1,4 @@
-import { ModItem } from '@/lib/api';
+import type { ModItem, SaveFile } from '@/lib/api';
 import {
 	ModGenericModel,
 	ModGenericProps,
@@ -27,8 +27,8 @@ export const modActivationStore = createStore<
 	ModActivationModel,
 	ModActivationItem,
 	{
-		saveFilePath?: string;
-		setSaveFilePath: (saveFilePath?: string) => void;
+		saveFile?: SaveFile;
+		setSaveFile: (saveFile?: SaveFile) => void;
 		requiredItemsModal: boolean;
 		setRequiredItemsModal: (requiredItemsModal: boolean) => void;
 		requiredItemsMod?: ModItem;
@@ -42,9 +42,9 @@ export const modActivationStore = createStore<
 	>,
 	initialState: [],
 	extend: set => ({
-		saveFilePath: '',
-		setSaveFilePath: saveFilePath => {
-			set({ saveFilePath });
+		saveFilePath: undefined,
+		setSaveFile: saveFile => {
+			set({ saveFile });
 		},
 
 		requiredItemsModal: false,

@@ -1,4 +1,7 @@
-use std::sync::Arc;
+use std::{
+    path::PathBuf,
+    sync::{atomic::AtomicBool, Arc},
+};
 use tauri::{Emitter, Manager};
 use tokio::sync::Mutex;
 
@@ -23,6 +26,8 @@ pub struct AppState {
     download_manager: Arc<Mutex<download::manager::DownloadManager>>,
     nexus_auth: nexus::auth_init::NexusAuthState,
     steam_state: steam::client::SteamState,
+    save_watcher_running: Arc<AtomicBool>,
+    save_folder_path: Arc<Mutex<PathBuf>>,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -54,6 +59,8 @@ pub fn run() {
                 ws_connected: Arc::new(Mutex::new(false)),
             },
             steam_state: steam::client::SteamState::new(),
+            save_watcher_running: Arc::new(AtomicBool::new(false)),
+            save_folder_path: Arc::new(Mutex::new(PathBuf::from(""))),
         })
         .on_window_event(|window, event| match event {
             tauri::WindowEvent::Destroyed { .. } => {
@@ -74,6 +81,10 @@ pub fn run() {
             r#mod::delete::delete_mod,
             game::save_files::save_files,
             game::delete_save_file::delete_save_file,
+            game::set_watch_save_folder::set_watch_save_folder,
+            game::save_folder_watch::save_folder_watch,
+            game::upsert_save_file_meta::upsert_save_file_meta,
+            game::fetch_save_file_meta::fetch_save_file_meta,
             game::start::start_game,
             game::is_running::is_game_running,
             sevenz::zip_contents::zip_contents,

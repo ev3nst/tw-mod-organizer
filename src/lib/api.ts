@@ -4,6 +4,7 @@ import { SettingModel } from '@/lib/store/setting';
 import type { ModOrderItem } from '@/lib/store/mod_order';
 import type { ModActivationItem } from '@/lib/store/mod_activation';
 import type { ModMetaItem } from '@/lib/store/mod_meta';
+import type { SaveFileLoadOrderData } from '@/lib/store/save_files';
 
 export type IGameMeta = {
 	name: string;
@@ -72,6 +73,7 @@ export type SaveFile = {
 	filesize: number;
 	date: number;
 	path: string;
+	meta_exists: boolean;
 };
 
 export type ZipItemInfo = {
@@ -256,6 +258,40 @@ class API {
 		return invoke('delete_save_file', {
 			app_id,
 			filename,
+		});
+	}
+
+	async save_folder_watch(app_id: number): Promise<void> {
+		await invoke('set_watch_save_folder', { app_id });
+		return invoke('save_folder_watch');
+	}
+
+	async upsert_save_file_meta(
+		app_id: number,
+		save_file_name: string,
+		save_file_size: number,
+		mod_order_data: SaveFileLoadOrderData[],
+	): Promise<void> {
+		return invoke('upsert_save_file_meta', {
+			app_id,
+			save_file_name,
+			save_file_size,
+			mod_order_data,
+		});
+	}
+
+	async fetch_save_file_meta(
+		app_id: number,
+		save_file_name: string,
+	): Promise<{
+		save_file_name: string;
+		save_file_size: number;
+		mod_order_data: SaveFileLoadOrderData[];
+		created_at: number;
+	}> {
+		return invoke('fetch_save_file_meta', {
+			app_id,
+			save_file_name,
 		});
 	}
 

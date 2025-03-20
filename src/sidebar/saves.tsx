@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ArrowDownUpIcon, XIcon } from 'lucide-react';
+import { ArrowDownUpIcon, InfoIcon, XIcon } from 'lucide-react';
+
+import { listen } from '@tauri-apps/api/event';
 
 import { SidebarInput } from '@/components/sidebar';
 import { PaginationControls } from '@/components/pagination-controls';
@@ -9,6 +11,7 @@ import api, { SaveFile } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 import { modActivationStore } from '@/lib/store/mod_activation';
 import { formatFileSize, toastError } from '@/lib/utils';
+import { saveFilesStore } from '@/lib/store/save_files';
 
 export const Saves = () => {
 	const [saveFiles, setSaveFiles] = useState<SaveFile[]>([]);
@@ -17,9 +20,20 @@ export const Saves = () => {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [perPage, setPerPage] = useState(5);
 
-	const saveFilePath = modActivationStore(state => state.saveFilePath);
-	const setSaveFilePath = modActivationStore(state => state.setSaveFilePath);
+	const setSaveFileDialogOpen = saveFilesStore(
+		state => state.setSaveFileDialogOpen,
+	);
+	const setSelectedSaveFile = saveFilesStore(
+		state => state.setSelectedSaveFile,
+	);
+	const currentlyRunningMods = saveFilesStore(
+		state => state.currentlyRunningMods,
+	);
 
+	const saveFile = modActivationStore(state => state.saveFile);
+	const setSaveFile = modActivationStore(state => state.setSaveFile);
+
+	const isGameRunning = settingStore(state => state.isGameRunning);
 	const selectedGame = settingStore(state => state.selectedGame);
 
 	useEffect(() => {
@@ -35,7 +49,7 @@ export const Saves = () => {
 			}
 		};
 
-		setSaveFilePath('');
+		setSaveFile(undefined);
 		initializeSaveFiles();
 	}, [selectedGame!.steam_id]);
 
@@ -54,6 +68,58 @@ export const Saves = () => {
 		setCurrentPage(1);
 	}, [searchQuery, saveFiles]);
 
+	useEffect(() => {
+		const setupSaveFileWatcher = async () => {
+			await api.save_folder_watch(selectedGame!.steam_id);
+			const unlisten = await listen<{
+				date: number;
+				filename: string;
+				filesize: number;
+				path: string;
+				event_type: 'created' | 'modified';
+			}>('save-file', async ({ payload }) => {
+				if (!isGameRunning || payload.filesize === 0) return;
+				await api.upsert_save_file_meta(
+					selectedGame!.steam_id,
+					payload.filename,
+					payload.filesize,
+					currentlyRunningMods,
+				);
+				setSaveFiles(prev => {
+					const existingIndex = prev.findIndex(
+						file => file.path === payload.path,
+					);
+
+					if (existingIndex !== -1) {
+						return prev.map((file, index) =>
+							index === existingIndex
+								? { ...file, ...payload, meta_exists: true }
+								: file,
+						);
+					} else {
+						return [
+							...prev,
+							{
+								filename: payload.filename,
+								filesize: payload.filesize,
+								path: payload.path,
+								date: payload.date,
+								meta_exists: true,
+							},
+						];
+					}
+				});
+			});
+
+			return () => unlisten();
+		};
+
+		const cleanup = setupSaveFileWatcher();
+		return () => {
+			cleanup.then((fn: any) => fn());
+		};
+	}, [selectedGame!.steam_id, isGameRunning, currentlyRunningMods]);
+
 	const totalItems = filteredSaveFiles.length;
 	const paginatedFiles = filteredSaveFiles.slice(
 		(currentPage - 1) * perPage,
@@ -65,19 +131,48 @@ export const Saves = () => {
 	};
 
 	const handleDeleteFile = async (
-		e: React.MouseEvent,
-		saveFile: SaveFile,
+		event: React.MouseEvent,
+		deleteSaveFile: SaveFile,
 	) => {
-		e.stopPropagation();
-		await api.delete_save_file(selectedGame!.steam_id, saveFile.filename);
+		try {
+			event.stopPropagation();
+			await api.delete_save_file(
+				selectedGame!.steam_id,
+				deleteSaveFile.filename,
+			);
 
-		const newSaveFiles = saveFiles.filter(
-			file => file.filename !== saveFile.filename,
-		);
-		setSaveFiles(newSaveFiles);
+			const newSaveFiles = saveFiles.filter(
+				file => file.filename !== deleteSaveFile.filename,
+			);
+			setSaveFiles(newSaveFiles);
 
-		if (saveFilePath === saveFile.path) {
-			setSaveFilePath(undefined);
+			if (saveFile?.path === deleteSaveFile.path) {
+				setSaveFile(undefined);
+			}
+		} catch (error) {
+			toastError(error);
+		}
+	};
+
+	const handleSaveFileMeta = async (
+		event: React.MouseEvent,
+		sf: SaveFile,
+	) => {
+		try {
+			event.stopPropagation();
+			const save_meta_data = await api.fetch_save_file_meta(
+				selectedGame!.steam_id,
+				sf.filename,
+			);
+			setSelectedSaveFile({
+				filename: sf.filename,
+				filesize: sf.filesize,
+				path: sf.path,
+				load_order_data: save_meta_data.mod_order_data,
+			});
+			setSaveFileDialogOpen(true);
+		} catch (error) {
+			toastError(error);
 		}
 	};
 
@@ -114,21 +209,23 @@ export const Saves = () => {
 				paginatedFiles.map((sf, sfi) => (
 					<div
 						key={`save_${sf.date}_${sfi}`}
-						className={`p-3 hover:cursor-pointer hover:bg-black/90 relative ${
-							saveFilePath === sf.path ? 'bg-black/90' : ''
+						className={`p-2 hover:cursor-pointer hover:bg-black/90 relative ${
+							saveFile?.path === sf.path ? 'bg-black/90' : ''
 						}`}
 						onClick={() => {
-							setSaveFilePath(
-								saveFilePath === sf.path ? undefined : sf.path,
+							setSaveFile(
+								saveFile?.path === sf.path ? undefined : sf,
 							);
 						}}
 					>
 						<div
-							className={`text-xs font-medium leading-none ${
-								saveFilePath === sf.path ? 'text-green-500' : ''
+							className={`flex flex-col justify-between text-xs font-medium leading-none ${
+								saveFile?.path === sf.path
+									? 'text-green-500'
+									: ''
 							}`}
 						>
-							<span>{sf.filename}</span>
+							<div>{sf.filename}</div>
 							<div className="text-xs text-muted-foreground mt-1.5 flex justify-between">
 								<span>
 									{new Date(sf.date).toLocaleDateString(
@@ -142,14 +239,26 @@ export const Saves = () => {
 								<span>{formatFileSize(sf.filesize)}</span>
 							</div>
 						</div>
-						<Button
-							className="hover:text-red-500 h-6 w-6 absolute right-3 top-0 [&_svg]:size-3"
-							variant="ghost"
-							size="icon"
-							onClick={e => handleDeleteFile(e, sf)}
-						>
-							<XIcon />
-						</Button>
+						<div className="absolute right-1 top-0 flex gap-0">
+							{sf.meta_exists && (
+								<Button
+									className="hover:text-blue-500 h-5 w-5 [&_svg]:size-3"
+									variant="ghost"
+									size="icon"
+									onClick={e => handleSaveFileMeta(e, sf)}
+								>
+									<InfoIcon />
+								</Button>
+							)}
+							<Button
+								className="hover:text-red-500 h-5 w-5 [&_svg]:size-3"
+								variant="ghost"
+								size="icon"
+								onClick={e => handleDeleteFile(e, sf)}
+							>
+								<XIcon />
+							</Button>
+						</div>
 					</div>
 				))
 			) : (

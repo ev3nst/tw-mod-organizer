@@ -251,6 +251,9 @@ type SettingStore = {
 	sort_by: 'load_order' | 'title' | 'version';
 	setSortBy: (sort_by: 'load_order' | 'title' | 'version') => void;
 
+	isGameLoading: boolean;
+	setIsGameLoading: (isGameLoading: boolean) => void;
+
 	isGameRunning: boolean;
 	setIsGameRunning: (isGameRunning: boolean) => void;
 
@@ -357,10 +360,11 @@ export const settingStore = create<SettingStore>(set => ({
 		debounceCallback(syncSetting);
 	},
 
+	isGameLoading: false,
+	setIsGameLoading: (isGameLoading: boolean) => set({ isGameLoading }),
+
 	isGameRunning: false,
-	setIsGameRunning: isGameRunning => {
-		set({ isGameRunning });
-	},
+	setIsGameRunning: isGameRunning => set({ isGameRunning }),
 
 	shouldLockScreen: false,
 	setLockScreen: shouldLockScreen => set({ shouldLockScreen }),

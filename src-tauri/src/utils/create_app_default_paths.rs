@@ -23,5 +23,12 @@ pub fn create_app_default_paths(handle: tauri::AppHandle) -> Result<(), String> 
     create_dir_all(default_exports_path)
         .map_err(|e| format!("Failed to create default exports directory: {}", e))?;
 
+    let default_save_file_meta_folder_path = handle
+        .path()
+        .resolve("save_file_meta".to_string(), BaseDirectory::AppConfig)
+        .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?;
+    create_dir_all(default_save_file_meta_folder_path)
+        .map_err(|e| format!("Failed to create default save file meta directory: {}", e))?;
+
     Ok(())
 }

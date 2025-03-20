@@ -18,6 +18,7 @@ const BulkCategoryUpdateDialog = lazy(
 	() => import('@/dialogs/bulk-category-update'),
 );
 const RequiredItemsDialog = lazy(() => import('@/dialogs/required-items'));
+const SaveFileDetailsDialog = lazy(() => import('@/dialogs/save-file-details'));
 
 import { Header } from './header';
 import { ModList } from './modlist';
@@ -82,6 +83,7 @@ function App() {
 								<RemoveModDialog />
 								<BulkCategoryUpdateDialog />
 								<RequiredItemsDialog />
+								<SaveFileDetailsDialog />
 							</Suspense>
 						</SidebarInset>
 						<AppSidebar />
