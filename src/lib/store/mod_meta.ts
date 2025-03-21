@@ -1,4 +1,3 @@
-import { ModItem, ModItemSeparatorUnion } from '@/lib/api';
 import {
 	ModGenericModel,
 	ModGenericProps,
@@ -6,8 +5,12 @@ import {
 	createStore,
 } from '@/lib/store/mod_generic';
 import { SettingModel } from '@/lib/store/setting';
-import { ModActivationItem } from '@/lib/store/mod_activation';
-import { isSeparator } from '@/lib/store/mod_separator';
+import type { ModActivationItem } from '@/lib/store/mod_activation';
+import type { ModItem } from '@/lib/store/mods';
+import {
+	isSeparator,
+	type ModItemSeparatorUnion,
+} from '@/lib/store/mod_separator';
 import { debounceCallback } from '@/lib/utils';
 
 export type ModMetaItem = {

@@ -4,6 +4,7 @@ import { Compact as ColorPicker } from '@uiw/react-color';
 import { Input } from '@/components/input';
 import { Label } from '@/components/label';
 import { Button } from '@/components/button';
+import { Loading } from '@/components/loading';
 
 interface SeparatorFormProps {
 	initialValues?: {
@@ -11,14 +12,13 @@ interface SeparatorFormProps {
 		backgroundColor?: string;
 		textColor?: string;
 	};
-	submitLabel: string;
 	onSubmit: (values: {
 		title: string;
 		backgroundColor: string;
 		textColor: string;
 	}) => void;
-	showColorFields?: boolean;
 	disabled?: boolean;
+	isLoading?: boolean;
 }
 
 export const SeparatorForm = ({
@@ -27,9 +27,9 @@ export const SeparatorForm = ({
 		backgroundColor: '#262626',
 		textColor: '#fefefe',
 	},
-	submitLabel,
 	onSubmit,
 	disabled = false,
+	isLoading = false,
 }: SeparatorFormProps) => {
 	const [title, setTitle] = useState<string>(initialValues.title || '');
 	const [backgroundColor, setBackgroundColor] = useState<string>(
@@ -117,16 +117,17 @@ export const SeparatorForm = ({
 			<div className="flex justify-end">
 				<Button
 					type="button"
-					variant={
-						submitLabel.toLowerCase().includes('save')
-							? 'info'
-							: 'secondary'
+					variant="info"
+					disabled={!isFormValid() || disabled || isLoading}
+					className={
+						!isFormValid() || disabled || isLoading
+							? 'disabled'
+							: ''
 					}
-					disabled={!isFormValid() || disabled}
-					className={!isFormValid() || disabled ? 'disabled' : ''}
 					onClick={handleSubmit}
 				>
-					{submitLabel}
+					Save
+					{isLoading && <Loading />}
 				</Button>
 			</div>
 		</div>

@@ -2,7 +2,7 @@ import { TableCell, TableFooter, TableRow } from '@/components/table';
 
 import { settingStore } from '@/lib/store/setting';
 
-export const Footer = ({ length }: { length: number }) => {
+export const Footer = ({ modCount }: { modCount: number }) => {
 	const toggle_category = settingStore(state => state.toggle_category);
 	const toggle_conflict = settingStore(state => state.toggle_conflict);
 	const toggle_version = settingStore(state => state.toggle_version);
@@ -17,7 +17,7 @@ export const Footer = ({ length }: { length: number }) => {
 		<TableFooter>
 			<TableRow>
 				<TableCell colSpan={colSpan}>Mod Count</TableCell>
-				<TableCell className="text-center">{length}</TableCell>
+				<TableCell className="text-center">{modCount}</TableCell>
 			</TableRow>
 		</TableFooter>
 	);

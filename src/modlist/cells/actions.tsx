@@ -18,36 +18,26 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/dropdown-menu';
 
+import api from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
-import { modsStore } from '@/lib/store/mods';
+import { modsStore, type ModItem } from '@/lib/store/mods';
 import { modOrderStore } from '@/lib/store/mod_order';
-import { modSeparatorStore, isSeparator } from '@/lib/store/mod_separator';
+import {
+	modSeparatorStore,
+	isSeparator,
+	type ModSeparatorItem,
+	type ModItemSeparatorUnion,
+} from '@/lib/store/mod_separator';
 import { modMetaStore } from '@/lib/store/mod_meta';
-
-import api, {
-	ModItem,
-	ModItemSeparatorUnion,
-	ModSeparatorItem,
-} from '@/lib/api';
 import { toastError } from '@/lib/utils';
 
-function determineModUrl(
-	mod: ModItemSeparatorUnion,
-	inSteamClient: boolean = false,
-) {
-	let modUrl = 'url' in mod ? mod.url : undefined;
-	const itemType = 'item_type' in mod ? mod.item_type : 'separator';
-
-	if (!modUrl && itemType === 'steam_mod') {
-		modUrl = `https://steamcommunity.com/sharedfiles/filedetails/?id=${mod.identifier}`;
-
-		if (inSteamClient) {
-			return `steam://openurl/${modUrl}`;
-		}
+export const Actions = ({ mod }: { mod: ModItemSeparatorUnion }) => {
+	if (isSeparator(mod)) {
+		return <SeparatorActions mod={mod as ModSeparatorItem} />;
 	}
 
-	return modUrl;
-}
+	return <ModActions mod={mod as ModItem} />;
+};
 
 const SeparatorActions = ({ mod }: { mod: ModSeparatorItem }) => {
 	const { init_reload, setInitReload } = settingStore();
@@ -124,7 +114,16 @@ const ModActions = ({ mod }: { mod: ModItem }) => {
 
 	const handleOpenModUrl = useCallback(
 		async (inSteamClient: boolean = false) => {
-			const modUrl = determineModUrl(mod, inSteamClient);
+			let modUrl = 'url' in mod ? mod.url : undefined;
+			const itemType = 'item_type' in mod ? mod.item_type : 'separator';
+			if (!modUrl && itemType === 'steam_mod') {
+				modUrl = `https://steamcommunity.com/sharedfiles/filedetails/?id=${mod.identifier}`;
+
+				if (inSteamClient) {
+					return `steam://openurl/${modUrl}`;
+				}
+			}
+
 			if (!modUrl) return;
 			try {
 				await api.open_external_url(modUrl);
@@ -248,12 +247,4 @@ const ModActions = ({ mod }: { mod: ModItem }) => {
 			</DropdownMenu>
 		</TableCell>
 	);
-};
-
-export const Actions = ({ mod }: { mod: ModItemSeparatorUnion }) => {
-	if (isSeparator(mod)) {
-		return <SeparatorActions mod={mod as ModSeparatorItem} />;
-	}
-
-	return <ModActions mod={mod as ModItem} />;
 };

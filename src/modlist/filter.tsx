@@ -31,7 +31,7 @@ export const Filter = ({
 			<div>
 				<Select
 					value={activationFilter}
-					onValueChange={value => setActivationFilter(value)}
+					onValueChange={setActivationFilter}
 				>
 					<SelectTrigger
 						className="w-[100px] justify-center rounded-none h-full border-t-0 border-l-0 border-b-0"

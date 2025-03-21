@@ -1,32 +1,14 @@
 import { TableCell } from '@/components/table';
 import { Checkbox } from '@/components/checkbox';
 
-import type { ModItem, ModItemSeparatorUnion } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
-import { modsStore } from '@/lib/store/mods';
+import { modsStore, type ModItem } from '@/lib/store/mods';
 import { modActivationStore } from '@/lib/store/mod_activation';
-import { findSeparatorPositions } from '@/lib/store/mod_separator';
-import { isSeparator } from '@/lib/store/mod_separator';
-
-const getChildMods = (
-	items: ModItemSeparatorUnion[],
-	separatorId: string,
-): ModItem[] => {
-	let collecting = false;
-	const children: ModItem[] = [];
-
-	for (const item of items) {
-		if (item.identifier === separatorId) {
-			collecting = true;
-			continue;
-		}
-		if (collecting) {
-			if (isSeparator(item)) break;
-			children.push(item as ModItem);
-		}
-	}
-	return children;
-};
+import {
+	getChildMods,
+	isSeparator,
+	type ModItemSeparatorUnion,
+} from '@/lib/store/mod_separator';
 
 export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 	const dependency_confirmation = settingStore(
@@ -106,29 +88,15 @@ export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 	};
 
 	const handleSeparatorCheckedChange = () => {
-		const currentIndex = mods.findIndex(
-			m => m.identifier === mod.identifier,
-		);
-		const separatorPositions = findSeparatorPositions(mods);
-		const nextSeparator = separatorPositions.find(
-			sp => sp.id !== mod.identifier && sp.index > currentIndex,
-		);
-		const nextSeparatorIndex = nextSeparator
-			? nextSeparator.index
-			: mods.length;
-		const sectionItems = mods.slice(
-			currentIndex + 1,
-			nextSeparatorIndex,
-		) as ModItem[];
-
-		const shouldActivate = sectionItems.some(item =>
+		const childMods = getChildMods(mods, mod.identifier);
+		const shouldActivate = childMods.some(item =>
 			modActivation.find(
 				ma => ma.mod_id === item.identifier && !ma.is_active,
 			),
 		);
 
 		let updatedModActivation = [...modActivation];
-		sectionItems.forEach(item => {
+		childMods.forEach(item => {
 			updatedModActivation = updatedModActivation.map(activation =>
 				activation.mod_id === item.identifier
 					? { ...activation, is_active: shouldActivate }
@@ -136,7 +104,7 @@ export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 			);
 		});
 
-		sectionItems.forEach(item => {
+		childMods.forEach(item => {
 			updatedModActivation = processDependencies(
 				item.identifier,
 				shouldActivate,

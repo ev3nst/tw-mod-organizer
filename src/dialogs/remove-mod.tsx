@@ -10,10 +10,10 @@ import {
 } from '@/components/dialog';
 import { Button } from '@/components/button';
 
-import api, { ModItem } from '@/lib/api';
+import api from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 import { ProfileModel } from '@/lib/store/profile';
-import { modsStore } from '@/lib/store/mods';
+import { modsStore, type ModItem } from '@/lib/store/mods';
 import {
 	ModActivationModel,
 	modActivationStore,

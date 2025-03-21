@@ -6,16 +6,19 @@ import { Loading } from '@/components/loading';
 
 import { invoke } from '@tauri-apps/api/core';
 
-import api, { ModItem, ModItemSeparatorUnion, SaveFile } from '@/lib/api';
+import api from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
-import { modsStore } from '@/lib/store/mods';
+import { modsStore, type ModItem } from '@/lib/store/mods';
 import {
 	ModActivationItem,
 	modActivationStore,
 } from '@/lib/store/mod_activation';
 import { modOrderStore } from '@/lib/store/mod_order';
-import { isSeparator } from '@/lib/store/mod_separator';
-import { saveFilesStore } from '@/lib/store/save_files';
+import {
+	isSeparator,
+	type ModItemSeparatorUnion,
+} from '@/lib/store/mod_separator';
+import { saveFilesStore, type SaveFile } from '@/lib/store/save_files';
 import { toastError } from '@/lib/utils';
 
 export async function startGame(

@@ -2,9 +2,12 @@ import { MinusIcon, PlusIcon } from 'lucide-react';
 
 import { TableCell } from '@/components/table';
 
-import { ModItemSeparatorUnion } from '@/lib/api';
-import { modSeparatorStore, isCollapsed } from '@/lib/store/mod_separator';
-import { isSeparator } from '@/lib/store/mod_separator';
+import {
+	modSeparatorStore,
+	isCollapsed,
+	isSeparator,
+	type ModItemSeparatorUnion,
+} from '@/lib/store/mod_separator';
 
 export const Order = ({
 	mod,

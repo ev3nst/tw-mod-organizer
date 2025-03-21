@@ -1,8 +1,10 @@
 import { TableCell } from '@/components/table';
 
-import type { ModItemSeparatorUnion } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
-import { isSeparator } from '@/lib/store/mod_separator';
+import {
+	isSeparator,
+	type ModItemSeparatorUnion,
+} from '@/lib/store/mod_separator';
 
 export const Version = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 	if (isSeparator(mod)) return;

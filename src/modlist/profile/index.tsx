@@ -16,20 +16,20 @@ export const ProfileSwitcher = () => {
 	const profile = profileStore(state => state.profile);
 	const profiles = profileStore(state => state.profiles);
 
+	const onGameChange = async (value: string) => {
+		const findProfile = profiles.find(f => f.name === value);
+		if (findProfile) {
+			await findProfile.setActive();
+			window.location.reload();
+		}
+	};
+
 	return (
 		<TableHead>
 			<div className="flex justify-between gap-2 text-white">
 				<Select
 					defaultValue={profile.name}
-					onValueChange={async value => {
-						const findProfile = profiles.find(
-							f => f.name === value,
-						);
-						if (findProfile) {
-							await findProfile.setActive();
-							window.location.reload();
-						}
-					}}
+					onValueChange={onGameChange}
 				>
 					<SelectTrigger
 						className="clickable-content border-0 flex-grow"

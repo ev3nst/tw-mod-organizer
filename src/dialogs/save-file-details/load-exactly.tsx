@@ -6,8 +6,9 @@ import { saveFilesStore } from '@/lib/store/save_files';
 
 import { startGame } from '@/sidebar/play';
 
-import { ModItem, ModItemSeparatorUnion } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
+import type { ModItem } from '@/lib/store/mods';
+import type { ModItemSeparatorUnion } from '@/lib/store/mod_separator';
 import { toastError } from '@/lib/utils';
 
 export const LoadExactly = () => {

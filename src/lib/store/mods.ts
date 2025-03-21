@@ -1,6 +1,27 @@
 import { create } from 'zustand';
 
-import type { ModItem, ModItemSeparatorUnion } from '@/lib/api';
+import type { ModItemSeparatorUnion } from '@/lib/store/mod_separator';
+
+export type ModItem = {
+	identifier: string;
+	title: string;
+	description: string;
+	created_at: number;
+	categories: string;
+	version: string | number;
+	creator_id: string | null;
+	creator_name: string | null;
+	required_items: string[];
+	item_type: string; // steam_mod, local_mod
+	url?: string;
+	preview_url?: string | null;
+	pack_file: string;
+	pack_file_path: string;
+	preview_local: string;
+	// separator type workaround to supress error
+	background_color?: string;
+	text_color?: string;
+};
 
 type PartialModFileMeta = {
 	mod_file_path?: string;

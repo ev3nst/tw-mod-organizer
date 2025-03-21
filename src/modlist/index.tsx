@@ -5,23 +5,20 @@ import { Loading } from '@/components/loading';
 import { settingStore } from '@/lib/store/setting';
 import { profileStore } from '@/lib/store/profile';
 import { modsStore } from '@/lib/store/mods';
-import { ModOrderModel, modOrderStore } from '@/lib/store/mod_order';
+import { modOrderStore } from '@/lib/store/mod_order';
+import { modActivationStore } from '@/lib/store/mod_activation';
 import {
-	ModActivationModel,
-	modActivationStore,
-} from '@/lib/store/mod_activation';
-import {
-	ModSeparatorModel,
 	modSeparatorStore,
+	type ModItemSeparatorUnion,
 } from '@/lib/store/mod_separator';
-import { ModMetaModel, modMetaStore } from '@/lib/store/mod_meta';
+import { modMetaStore } from '@/lib/store/mod_meta';
 import { conflictsStore } from '@/lib/store/conflict';
 
-import api, { ModItem, ModItemSeparatorUnion } from '@/lib/api';
-import { isSeparator } from '@/lib/store/mod_separator';
-import { normalizeOrder, toastError } from '@/lib/utils';
+import api from '@/lib/api';
+import { toastError } from '@/lib/utils';
 
 import { ModListTable } from './table';
+import { initActivation, initMeta, initOrder, initSeparator } from './utils';
 
 export const ModList = () => {
 	const [fetchModsLoading, setFetchModsLoading] = useState(false);
@@ -46,208 +43,14 @@ export const ModList = () => {
 	const sort_by = settingStore(state => state.sort_by);
 
 	const init = useCallback(async () => {
-		const resolveOrder = async (mods: ModItemSeparatorUnion[]) => {
-			const modOrder = await ModOrderModel.retrieve(profile.id);
-			if (typeof modOrder !== 'undefined' && modOrder.data !== null) {
-				let updatedOrder = [];
-				const toAdd = [];
-				for (let mi = 0; mi < mods.length; mi++) {
-					const mod = mods[mi];
-					const currentOrder = modOrder.data.find(
-						f => f.mod_id === mod.identifier,
-					);
-
-					if (currentOrder) {
-						updatedOrder.push({
-							mod_id: mod.identifier,
-							order: currentOrder.order,
-							pack_file_path:
-								'pack_file_path' in mod
-									? mod.pack_file_path
-									: undefined,
-							title: mod.title,
-						});
-					} else {
-						toAdd.push({
-							mod_id: mod.identifier,
-							order: 0,
-							pack_file_path:
-								'pack_file_path' in mod
-									? mod.pack_file_path
-									: undefined,
-							title: mod.title,
-						});
-					}
-				}
-
-				updatedOrder = normalizeOrder(updatedOrder);
-				let updatedOrderLength = updatedOrder.length;
-				for (let tai = 0; tai < toAdd.length; tai++) {
-					updatedOrderLength++;
-					toAdd[tai].order = updatedOrderLength;
-				}
-
-				updatedOrder = normalizeOrder([...updatedOrder, ...toAdd]);
-				return updatedOrder;
-			} else {
-				const newOrder = [];
-				for (let mi = 0; mi < mods.length; mi++) {
-					const mod = mods[mi];
-					newOrder.push({
-						mod_id: mod.identifier,
-						order: mi + 1,
-						pack_file_path:
-							'pack_file_path' in mod
-								? mod.pack_file_path
-								: undefined,
-						title: mod.title,
-					});
-				}
-				const newModOrder = new ModOrderModel({
-					id: null as any,
-					profile_id: profile.id,
-					app_id: selectedGame!.steam_id,
-					data: newOrder,
-				});
-				await newModOrder.save();
-				return newOrder;
-			}
-		};
-
-		const resolveActivation = async (mods: ModItemSeparatorUnion[]) => {
-			const modActivation = await ModActivationModel.retrieve(profile.id);
-			if (
-				typeof modActivation !== 'undefined' &&
-				modActivation.data !== null
-			) {
-				let updatedActivation = [];
-				const toAdd = [];
-				for (let mi = 0; mi < mods.length; mi++) {
-					const mod = mods[mi];
-					const currentActivation = modActivation.data.find(
-						f => f.mod_id === mod.identifier,
-					);
-					if (currentActivation) {
-						updatedActivation.push({
-							mod_id: mod.identifier,
-							is_active: currentActivation.is_active,
-							title: mod.title,
-						});
-					} else {
-						toAdd.push({
-							mod_id: mod.identifier,
-							is_active: false,
-							title: mod.title,
-						});
-					}
-				}
-
-				for (let tai = 0; tai < toAdd.length; tai++) {
-					toAdd[tai].is_active = false;
-				}
-
-				updatedActivation = [...updatedActivation, ...toAdd];
-				return updatedActivation;
-			} else {
-				const newActivation = [];
-				for (let mi = 0; mi < mods.length; mi++) {
-					const mod = mods[mi];
-					newActivation.push({
-						mod_id: mod.identifier,
-						is_active: true,
-						title: mod.title,
-					});
-				}
-				const newModActivation = new ModActivationModel({
-					id: null as any,
-					profile_id: profile.id,
-					app_id: selectedGame!.steam_id,
-					data: newActivation,
-				});
-				await newModActivation.save();
-				return newActivation;
-			}
-		};
-
-		const resolveSeparator = async () => {
-			const modSeparator = await ModSeparatorModel.retrieve(profile.id);
-			if (
-				typeof modSeparator !== 'undefined' &&
-				modSeparator.data !== null
-			) {
-				return modSeparator.data;
-			} else {
-				const newModSeparator = new ModSeparatorModel({
-					id: null as any,
-					profile_id: profile.id,
-					app_id: selectedGame!.steam_id,
-					data: [],
-				});
-				await newModSeparator.save();
-				return [];
-			}
-		};
-
-		const resolveMeta = async (mods: ModItemSeparatorUnion[]) => {
-			const modMeta = await ModMetaModel.retrieve(
-				undefined,
-				selectedGame!.steam_id,
-			);
-			if (typeof modMeta !== 'undefined' && modMeta.data !== null) {
-				let updatedMeta = [];
-				for (let mi = 0; mi < mods.length; mi++) {
-					const mod = mods[mi] as ModItem;
-					if (isSeparator(mod)) continue;
-
-					const currentMeta = modMeta.data.find(
-						f => f.mod_id === mod.identifier,
-					);
-					if (currentMeta) {
-						updatedMeta.push({
-							mod_id: mod.identifier,
-							title: currentMeta.title,
-							categories: currentMeta.categories,
-							version: currentMeta.version,
-						});
-					} else {
-						updatedMeta.push({
-							mod_id: mod.identifier,
-							title: '',
-							categories: '',
-							version: '',
-						});
-					}
-				}
-
-				return updatedMeta;
-			} else {
-				const newMeta = [];
-				for (let mi = 0; mi < mods.length; mi++) {
-					const mod = mods[mi] as ModItem;
-					if (isSeparator(mod)) continue;
-
-					newMeta.push({
-						mod_id: mod.identifier,
-						title: '',
-						categories: '',
-						version: '',
-					});
-				}
-				const newModMeta = new ModMetaModel({
-					id: null as any,
-					app_id: selectedGame!.steam_id,
-					data: newMeta,
-				});
-				await newModMeta.save();
-				return newMeta;
-			}
-		};
-
 		try {
 			setFetchModsLoading(true);
 			setLoading(true);
 			let mods = await api.get_mods(selectedGame!.steam_id);
-			const separators = await resolveSeparator();
+			const separators = await initSeparator(
+				profile.id,
+				selectedGame!.steam_id,
+			);
 			setSeparators(separators);
 			const modsWithSeparators = [...mods, ...separators];
 
@@ -262,7 +65,11 @@ export const ModList = () => {
 			);
 			setConflicts(conflicts);
 
-			const modOrder = await resolveOrder(modsWithSeparators);
+			const modOrder = await initOrder(
+				modsWithSeparators,
+				profile.id,
+				selectedGame!.steam_id,
+			);
 			setModOrder(modOrder);
 
 			let sortedMods: ModItemSeparatorUnion[] = [];
@@ -307,10 +114,17 @@ export const ModList = () => {
 			}
 
 			setMods(sortedMods);
-			const modActivations = await resolveActivation(sortedMods);
+			const modActivations = await initActivation(
+				sortedMods,
+				profile.id,
+				selectedGame!.steam_id,
+			);
 			setModActivation(modActivations);
 
-			const modMetaData = await resolveMeta(sortedMods);
+			const modMetaData = await initMeta(
+				sortedMods,
+				selectedGame!.steam_id,
+			);
 			setMetas(modMetaData);
 		} catch (error) {
 			toastError(error);

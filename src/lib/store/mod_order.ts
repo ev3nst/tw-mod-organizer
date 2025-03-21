@@ -1,9 +1,9 @@
-import { ModItem } from '@/lib/api';
 import {
 	ModGenericModel,
 	ModGenericProps,
 	createStore,
 } from '@/lib/store/mod_generic';
+import type { ModItem } from '@/lib/store/mods';
 import { profileStore } from '@/lib/store/profile';
 import { SettingModel } from '@/lib/store/setting';
 

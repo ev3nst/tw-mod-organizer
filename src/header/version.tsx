@@ -68,9 +68,9 @@ export const Version = () => {
 						</DialogHeader>
 						<div className="flex flex-col gap-4">
 							<p>
-								New version {newVersion} is available. To
-								download, you may visit the GitHub releases
-								page.
+								New version {currentVersion} -&gt; {newVersion}{' '}
+								is available. To download, you may visit the
+								GitHub releases page.
 							</p>
 							<p
 								className="text-blue-500 hover:cursor-pointer"

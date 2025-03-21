@@ -9,8 +9,7 @@ import {
 } from '@/components/dialog';
 import { Button } from '@/components/button';
 
-import { ModItem } from '@/lib/api';
-import { modsStore } from '@/lib/store/mods';
+import { modsStore, type ModItem } from '@/lib/store/mods';
 import { modActivationStore } from '@/lib/store/mod_activation';
 import { isSeparator } from '@/lib/store/mod_separator';
 import { Separator } from '@/components/separator';

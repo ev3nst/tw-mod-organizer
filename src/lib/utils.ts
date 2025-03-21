@@ -13,7 +13,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 let timeout: NodeJS.Timeout;
-export const debounceCallback = (cb: () => Promise<void>, timeoutMs = 250) => {
+export const debounceCallback = (cb: () => Promise<void>, timeoutMs = 100) => {
 	clearTimeout(timeout);
 	timeout = setTimeout(() => {
 		cb().catch(e => toastError(e));

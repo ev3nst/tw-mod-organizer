@@ -11,10 +11,10 @@ import { Separator } from '@/components/separator';
 import { Loading } from '@/components/loading';
 
 import api from '@/lib/api';
+import { settingStore } from '@/lib/store/setting';
 import { modsStore } from '@/lib/store/mods';
 import { modSeparatorStore } from '@/lib/store/mod_separator';
 import { toastError } from '@/lib/utils';
-import { settingStore } from '@/lib/store/setting';
 
 export const InstallMod = () => {
 	const [loading, setLoading] = useState(false);

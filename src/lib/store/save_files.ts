@@ -1,5 +1,13 @@
 import { create } from 'zustand';
 
+export type SaveFile = {
+	filename: string;
+	filesize: number;
+	date: number;
+	path: string;
+	meta_exists: boolean;
+};
+
 export type SaveFileLoadOrderData = {
 	identifier: string;
 	title: string;

@@ -26,8 +26,8 @@ import {
 } from '@/lib/store/mod_separator';
 import { filterMods, modMetaStore } from '@/lib/store/mod_meta';
 
-import type { ModItemSeparatorUnion } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
+import type { ModItemSeparatorUnion } from '@/lib/store/mod_separator';
 import { sortMods, sortCollapsedSection, sortGroup } from '@/modlist/utils';
 
 import { Header } from './header';
@@ -314,7 +314,7 @@ const ModTable: React.FC<ModTableProps> = memo(
 						))}
 					</SortableContext>
 				</TableBody>
-				<Footer length={totalMods} />
+				<Footer modCount={totalMods} />
 			</Table>
 		);
 	},

@@ -9,12 +9,12 @@ import {
 	DialogFooter,
 	DialogHeader,
 } from '@/components/dialog';
+import { Checkbox } from '@/components/checkbox';
 import { Button } from '@/components/button';
 import { Separator } from '@/components/separator';
 
 import api from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
-import { Checkbox } from '@/components/checkbox';
 
 export function Settings() {
 	const [installPath, setInstallPath] = useState('');
@@ -35,7 +35,7 @@ export function Settings() {
 		state => state.setDependencyConfirmation,
 	);
 
-	const handleButtonClick = async (type: 'install' | 'download') => {
+	const handleFolderSelection = async (type: 'install' | 'download') => {
 		const openFolderDialogConfig: OpenDialogOptions = {
 			title: 'Select Folder',
 			multiple: false,
@@ -73,7 +73,7 @@ export function Settings() {
 		}
 	};
 
-	function handleSubmit() {
+	const handleSubmit = () => {
 		if (installPath) {
 			setModInstallationPath(installPath);
 		}
@@ -83,7 +83,7 @@ export function Settings() {
 		}
 
 		toast.success('Changes are saved.');
-	}
+	};
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -122,7 +122,7 @@ export function Settings() {
 						size="sm"
 						variant="info-outline"
 						type="button"
-						onClick={() => handleButtonClick('install')}
+						onClick={() => handleFolderSelection('install')}
 					>
 						<FolderIcon />
 						Choose which path for mods to be installed
@@ -167,7 +167,7 @@ export function Settings() {
 						size="sm"
 						variant="info-outline"
 						type="button"
-						onClick={() => handleButtonClick('download')}
+						onClick={() => handleFolderSelection('download')}
 					>
 						<FolderIcon />
 						Choose which path for archives to be downloaded

@@ -1,11 +1,21 @@
-import { ModItemSeparatorUnion, ModSeparatorItem } from '@/lib/api';
 import {
 	createStore,
 	ModGenericModel,
 	ModGenericProps,
 } from '@/lib/store/mod_generic';
+import type { ModItem } from '@/lib/store/mods';
 import { debounceCallback } from '@/lib/utils';
 
+export type ModSeparatorItem = {
+	identifier: string;
+	title: string;
+	order: number;
+	background_color: string;
+	text_color: string;
+	collapsed: boolean;
+};
+
+export type ModItemSeparatorUnion = ModSeparatorItem | ModItem;
 export type ModSeparator = ModGenericProps<ModSeparatorItem>;
 export class ModSeparatorModel extends ModGenericModel<
 	ModSeparator,
@@ -70,3 +80,23 @@ export const findSeparatorPositions = (
 			isSeparator(mod) ? { id: mod.identifier, index } : null,
 		)
 		.filter(Boolean) as { id: string; index: number }[];
+
+export const getChildMods = (
+	items: ModItemSeparatorUnion[],
+	separatorId: string,
+): ModItem[] => {
+	let collecting = false;
+	const children: ModItem[] = [];
+
+	for (const item of items) {
+		if (item.identifier === separatorId) {
+			collecting = true;
+			continue;
+		}
+		if (collecting) {
+			if (isSeparator(item)) break;
+			children.push(item as ModItem);
+		}
+	}
+	return children;
+};

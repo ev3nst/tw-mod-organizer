@@ -1,9 +1,11 @@
 import { TableCell } from '@/components/table';
 
-import type { ModItemSeparatorUnion } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 import { modMetaStore } from '@/lib/store/mod_meta';
-import { isSeparator } from '@/lib/store/mod_separator';
+import {
+	isSeparator,
+	type ModItemSeparatorUnion,
+} from '@/lib/store/mod_separator';
 
 export const Title = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 	const { title, background_color, text_color } = mod;

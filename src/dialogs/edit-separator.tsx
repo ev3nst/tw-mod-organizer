@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -7,7 +8,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/dialog';
-
 import { SeparatorForm } from '@/components/separator-form';
 
 import { settingStore } from '@/lib/store/setting';
@@ -15,6 +15,8 @@ import { modSeparatorStore } from '@/lib/store/mod_separator';
 import { toastError } from '@/lib/utils';
 
 function EditSeparatorDialog() {
+	const [isLoading, setIsLoading] = useState(false);
+
 	const init_reload = settingStore(state => state.init_reload);
 	const setInitReload = settingStore(state => state.setInitReload);
 
@@ -51,6 +53,7 @@ function EditSeparatorDialog() {
 		backgroundColor: string;
 		textColor: string;
 	}) => {
+		setIsLoading(true);
 		try {
 			setSeparators(
 				separators.map(m => {
@@ -76,6 +79,8 @@ function EditSeparatorDialog() {
 			setInitReload(!init_reload);
 		} catch (error) {
 			toastError(error);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -104,8 +109,8 @@ function EditSeparatorDialog() {
 							selectedSeparatorMeta?.background_color,
 						textColor: selectedSeparatorMeta?.text_color,
 					}}
-					submitLabel="Save"
 					onSubmit={handleSubmit}
+					isLoading={isLoading}
 				/>
 			</DialogContent>
 		</Dialog>

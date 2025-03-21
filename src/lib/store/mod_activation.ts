@@ -1,10 +1,11 @@
-import type { ModItem, SaveFile } from '@/lib/api';
 import {
 	ModGenericModel,
 	ModGenericProps,
 	ModelConstructor,
 	createStore,
 } from '@/lib/store/mod_generic';
+import type { ModItem } from '@/lib/store/mods';
+import { SaveFile } from '@/lib/store/save_files';
 
 export type ModActivationItem = {
 	mod_id: string;

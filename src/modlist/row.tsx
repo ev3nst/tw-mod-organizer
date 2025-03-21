@@ -5,9 +5,12 @@ import { GripVerticalIcon } from 'lucide-react';
 
 import { TableCell, TableRow } from '@/components/table';
 
-import type { ModItem, ModItemSeparatorUnion } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
-import { isSeparator } from '@/lib/store/mod_separator';
+import type { ModItem } from '@/lib/store/mods';
+import {
+	isSeparator,
+	type ModItemSeparatorUnion,
+} from '@/lib/store/mod_separator';
 
 import { Selection } from './cells/selection';
 import { Title } from './cells/title';

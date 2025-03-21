@@ -15,8 +15,8 @@ import {
 } from '@/components/alert-dialog';
 import { Button } from '@/components/button';
 
-import { SettingModel, settingStore } from '@/lib/store/setting';
 import api from '@/lib/api';
+import { SettingModel, settingStore } from '@/lib/store/setting';
 
 export const Nexus = () => {
 	const isGameRunning = settingStore(state => state.isGameRunning);

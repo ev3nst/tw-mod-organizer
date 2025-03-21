@@ -8,13 +8,10 @@ import { Button } from '@/components/button';
 import { Checkbox } from '@/components/checkbox';
 
 import { settingStore } from '@/lib/store/setting';
-import { ProfileModel } from '@/lib/store/profile';
-
+import { ProfileModel, profileStore } from '@/lib/store/profile';
 import { ModOrderModel } from '@/lib/store/mod_order';
 import { ModActivationModel } from '@/lib/store/mod_activation';
 import { ModSeparatorModel } from '@/lib/store/mod_separator';
-import { profileStore } from '@/lib/store/profile';
-
 import { toastError } from '@/lib/utils';
 
 export const AddProfile = () => {
@@ -106,13 +103,7 @@ export const AddProfile = () => {
 				setProfile(newProfile);
 			}
 
-			if (!copyModListStructure) {
-				window.location.reload();
-			}
-
 			toast.success('Profile creation successful.');
-			setProfileName('');
-
 			setTimeout(() => {
 				window.location.reload();
 			}, 150);
@@ -122,6 +113,9 @@ export const AddProfile = () => {
 			setProcessLoading(false);
 		}
 	};
+
+	const shouldDisableSubmit =
+		processLoading || profileName === null || profileName.trim() === '';
 
 	return (
 		<div>
@@ -176,18 +170,8 @@ export const AddProfile = () => {
 				<Button
 					type="button"
 					variant="info"
-					className={
-						processLoading ||
-						profileName === null ||
-						profileName.trim() === ''
-							? 'disabled'
-							: ''
-					}
-					disabled={
-						processLoading ||
-						profileName === null ||
-						profileName.trim() === ''
-					}
+					className={shouldDisableSubmit ? 'disabled' : ''}
+					disabled={shouldDisableSubmit}
 					onClick={handleSubmit}
 				>
 					Save

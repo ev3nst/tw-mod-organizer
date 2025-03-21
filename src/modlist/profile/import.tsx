@@ -16,14 +16,18 @@ import { Separator } from '@/components/separator';
 import { Loading } from '@/components/loading';
 
 import { settingStore } from '@/lib/store/setting';
-import { ProfileModel, profileStore } from '@/lib/store/profile';
-import { modsStore } from '@/lib/store/mods';
+import {
+	ProfileModel,
+	profileStore,
+	type ProfileExportData,
+} from '@/lib/store/profile';
+import { modsStore, type ModItem } from '@/lib/store/mods';
 import { ModOrderModel } from '@/lib/store/mod_order';
 import { ModActivationModel } from '@/lib/store/mod_activation';
 import { ModSeparatorModel, isSeparator } from '@/lib/store/mod_separator';
 import { ModMetaItem } from '@/lib/store/mod_meta';
 
-import api, { ModItem, ProfileExportData } from '@/lib/api';
+import api from '@/lib/api';
 import { toastError } from '@/lib/utils';
 
 export const ImportProfile = () => {

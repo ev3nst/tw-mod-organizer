@@ -87,7 +87,7 @@ export const Header = () => {
 				{toggle_category && (
 					<TableHead
 						className="hover:cursor-pointer hover:brightness-125"
-						onClick={() => toggleBulkCategory()}
+						onClick={toggleBulkCategory}
 					>
 						CATEGORY
 					</TableHead>

@@ -3,8 +3,19 @@ import { create } from 'zustand';
 import { appConfigDir } from '@tauri-apps/api/path';
 
 import { dbWrapper } from '@/lib/db';
-import type { IGameMeta, SteamLibraryPaths } from '@/lib/api';
 import { debounceCallback } from '@/lib/utils';
+
+export type IGameMeta = {
+	name: string;
+	slug: string;
+	save_path_folder: string;
+	exe_name: string;
+	steam_id: number;
+	steam_folder_name: string;
+	nexus_slug: string;
+	schema_name: string;
+	game_path_exists: boolean;
+};
 
 export type ModListColumnVisibility = {
 	category: boolean;
@@ -28,6 +39,12 @@ export type Setting = {
 	nexus_api_key: string | null;
 	dependency_confirmation: 1 | 0;
 	sort_by: 'load_order' | 'title' | 'version';
+};
+
+export type SteamLibraryPaths = {
+	library_folder_paths: string[];
+	game_install_paths: { [app_id: string]: string };
+	game_workshop_paths: { [app_id: string]: string };
 };
 
 export class SettingModel {
@@ -374,55 +391,46 @@ export const settingStore = create<SettingStore>(set => ({
 }));
 
 const syncSetting = async () => {
-	const {
-		selectedGame,
-		mod_installation_path,
-		mod_download_path,
-		nexus_api_key,
-		nexus_auth_params,
-		toggle_category,
-		toggle_conflict,
-		toggle_version,
-		toggle_creator,
-		dependency_confirmation,
-		sort_by,
-	} = settingStore.getState();
+	const state = settingStore.getState();
 	const setting = await SettingModel.retrieve();
 
 	let changed = false;
-	if (setting.selected_game != selectedGame?.steam_id) {
-		setting.selected_game = selectedGame?.steam_id ?? null;
+
+	if (setting.selected_game != state.selectedGame?.steam_id) {
+		setting.selected_game = state.selectedGame?.steam_id ?? null;
 		changed = true;
 	}
 
 	if (
-		typeof mod_download_path !== 'undefined' &&
-		mod_download_path !== null
+		typeof state.mod_download_path !== 'undefined' &&
+		state.mod_download_path !== null
 	) {
-		setting.mod_download_path = mod_download_path;
+		setting.mod_download_path = state.mod_download_path;
 		changed = true;
 	}
 
 	if (
-		typeof mod_installation_path !== 'undefined' &&
-		mod_installation_path !== null
+		typeof state.mod_installation_path !== 'undefined' &&
+		state.mod_installation_path !== null
 	) {
-		setting.mod_installation_path = mod_installation_path;
+		setting.mod_installation_path = state.mod_installation_path;
 		changed = true;
 	}
 
-	if (setting.nexus_api_key !== nexus_api_key) {
-		setting.nexus_api_key = nexus_api_key;
+	if (setting.nexus_api_key !== state.nexus_api_key) {
+		setting.nexus_api_key = state.nexus_api_key;
 		changed = true;
 	}
 
 	if (
-		(setting.nexus_auth_params === null && nexus_auth_params !== null) ||
-		(setting.nexus_auth_params !== null && nexus_auth_params === null) ||
-		(setting.nexus_auth_params.id !== nexus_auth_params.id &&
-			setting.nexus_auth_params.token !== nexus_auth_params.token)
+		(setting.nexus_auth_params === null &&
+			state.nexus_auth_params !== null) ||
+		(setting.nexus_auth_params !== null &&
+			state.nexus_auth_params === null) ||
+		(setting.nexus_auth_params.id !== state.nexus_auth_params.id &&
+			setting.nexus_auth_params.token !== state.nexus_auth_params.token)
 	) {
-		setting.nexus_auth_params = nexus_auth_params ?? {
+		setting.nexus_auth_params = state.nexus_auth_params ?? {
 			id: null,
 			token: null,
 		};
@@ -430,27 +438,27 @@ const syncSetting = async () => {
 	}
 
 	if (
-		setting.column_selections.category !== toggle_category ||
-		setting.column_selections.conflict !== toggle_conflict ||
-		setting.column_selections.version !== toggle_version ||
-		setting.column_selections.creator !== toggle_creator
+		setting.column_selections.category !== state.toggle_category ||
+		setting.column_selections.conflict !== state.toggle_conflict ||
+		setting.column_selections.version !== state.toggle_version ||
+		setting.column_selections.creator !== state.toggle_creator
 	) {
 		setting.column_selections = {
-			category: toggle_category,
-			conflict: toggle_conflict,
-			version: toggle_version,
-			creator: toggle_creator,
+			category: state.toggle_category,
+			conflict: state.toggle_conflict,
+			version: state.toggle_version,
+			creator: state.toggle_creator,
 		};
 		changed = true;
 	}
 
-	if (setting.dependency_confirmation !== dependency_confirmation) {
-		setting.dependency_confirmation = dependency_confirmation;
+	if (setting.dependency_confirmation !== state.dependency_confirmation) {
+		setting.dependency_confirmation = state.dependency_confirmation;
 		changed = true;
 	}
 
-	if (setting.sort_by !== sort_by) {
-		setting.sort_by = sort_by;
+	if (setting.sort_by !== state.sort_by) {
+		setting.sort_by = state.sort_by;
 		changed = true;
 	}
 

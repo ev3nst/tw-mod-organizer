@@ -9,9 +9,9 @@ import {
 import { Button } from '@/components/button';
 import { Loading } from '@/components/loading';
 
-import api, { ModItem } from '@/lib/api';
+import api from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
-import { modsStore } from '@/lib/store/mods';
+import { modsStore, type ModItem } from '@/lib/store/mods';
 import { isSeparator } from '@/lib/store/mod_separator';
 import { toastError } from '@/lib/utils';
 
@@ -34,7 +34,7 @@ export function UpdateMods() {
 				);
 			}
 
-			toast.success('Process complete');
+			toast.success('Process complete.');
 		} catch (error) {
 			toastError(error);
 		} finally {

@@ -7,11 +7,11 @@ import { SidebarInput } from '@/components/sidebar';
 import { PaginationControls } from '@/components/pagination-controls';
 import { Button } from '@/components/button';
 
-import api, { SaveFile } from '@/lib/api';
+import api from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 import { modActivationStore } from '@/lib/store/mod_activation';
 import { formatFileSize, toastError } from '@/lib/utils';
-import { saveFilesStore } from '@/lib/store/save_files';
+import { saveFilesStore, type SaveFile } from '@/lib/store/save_files';
 
 export const Saves = () => {
 	const [saveFiles, setSaveFiles] = useState<SaveFile[]>([]);

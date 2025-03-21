@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/button';
 import { Loading } from '@/components/loading';
+import { Checkbox } from '@/components/checkbox';
 
 import { settingStore } from '@/lib/store/setting';
 import { profileStore } from '@/lib/store/profile';
@@ -11,15 +12,14 @@ import { modsStore } from '@/lib/store/mods';
 import { modOrderStore } from '@/lib/store/mod_order';
 import { modActivationStore } from '@/lib/store/mod_activation';
 import {
-	findSeparatorPositions,
 	modSeparatorStore,
+	isSeparator,
+	getChildMods,
 } from '@/lib/store/mod_separator';
 import { modMetaStore } from '@/lib/store/mod_meta';
 
-import api, { ModItem } from '@/lib/api';
+import api from '@/lib/api';
 import { toastError } from '@/lib/utils';
-import { isSeparator } from '@/lib/store/mod_separator';
-import { Checkbox } from '@/components/checkbox';
 
 export const ExportProfile = () => {
 	const [onlyActiveMods, setOnlyActiveMods] = useState(false);
@@ -62,28 +62,14 @@ export const ExportProfile = () => {
 				);
 
 				separatorsToExport = separatorsToExport.filter(mod => {
-					const currentIndex = mods.findIndex(
-						m => m.identifier === mod.identifier,
+					const childMods = getChildMods(mods, mod.identifier).filter(
+						m =>
+							modActivationData.find(
+								ma =>
+									ma.mod_id === m.identifier && ma.is_active,
+							),
 					);
-					const separatorPositions = findSeparatorPositions(mods);
-					const nextSeparator = separatorPositions.find(
-						sp =>
-							sp.id !== mod.identifier && sp.index > currentIndex,
-					);
-					const nextSeparatorIndex = nextSeparator
-						? nextSeparator.index
-						: mods.length;
-					const sectionItems = (
-						mods.slice(
-							currentIndex + 1,
-							nextSeparatorIndex,
-						) as ModItem[]
-					).filter(m =>
-						modActivationData.find(
-							ma => ma.mod_id === m.identifier && ma.is_active,
-						),
-					);
-					return sectionItems.length > 0;
+					return childMods.length > 0;
 				});
 
 				modOrderDataToExport = modOrderData.filter(

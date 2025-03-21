@@ -1,14 +1,30 @@
 import { create } from 'zustand';
 
 import { dbWrapper } from '@/lib/db';
-import { ModOrderModel } from '@/lib/store/mod_order';
-import { ModActivationModel } from '@/lib/store/mod_activation';
+import type { ModItem } from '@/lib/store/mods';
+import { ModOrderModel, type ModOrderItem } from '@/lib/store/mod_order';
+import {
+	ModActivationModel,
+	type ModActivationItem,
+} from '@/lib/store/mod_activation';
+import type { ModMetaItem } from '@/lib/store/mod_meta';
+import type { ModSeparatorItem } from '@/lib/store/mod_separator';
 
 export type Profile = {
 	id: number;
 	app_id: number;
 	name: string;
 	is_active: boolean;
+};
+
+export type ProfileExportData = {
+	app_id: number;
+	name: string;
+	mods: ModItem[];
+	mod_order: ModOrderItem[];
+	mod_activation: ModActivationItem[];
+	mod_meta: ModMetaItem[];
+	mod_separators: ModSeparatorItem[];
 };
 
 export class ProfileModel {

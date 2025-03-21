@@ -8,7 +8,8 @@ import { modsStore } from '@/lib/store/mods';
 import { modActivationStore } from '@/lib/store/mod_activation';
 import { isSeparator } from '@/lib/store/mod_separator';
 
-import { ModItem, ModItemSeparatorUnion } from '@/lib/api';
+import type { ModItem } from '@/lib/store/mods';
+import type { ModItemSeparatorUnion } from '@/lib/store/mod_separator';
 import { toastError } from '@/lib/utils';
 
 export const Play = () => {

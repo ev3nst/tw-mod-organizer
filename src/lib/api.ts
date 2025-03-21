@@ -1,63 +1,13 @@
 import { convertFileSrc, invoke } from '@tauri-apps/api/core';
 import { SettingModel } from '@/lib/store/setting';
 
-import type { ModOrderItem } from '@/lib/store/mod_order';
-import type { ModActivationItem } from '@/lib/store/mod_activation';
-import type { ModMetaItem } from '@/lib/store/mod_meta';
-import type { SaveFileLoadOrderData } from '@/lib/store/save_files';
-
-export type IGameMeta = {
-	name: string;
-	slug: string;
-	save_path_folder: string;
-	exe_name: string;
-	steam_id: number;
-	steam_folder_name: string;
-	nexus_slug: string;
-	schema_name: string;
-	game_path_exists: boolean;
-};
-
-export type ModItem = {
-	identifier: string;
-	title: string;
-	description: string;
-	created_at: number;
-	categories: string;
-	version: string | number;
-	creator_id: string | null;
-	creator_name: string | null;
-	required_items: string[];
-	item_type: string; // steam_mod, local_mod
-	url?: string;
-	preview_url?: string | null;
-	pack_file: string;
-	pack_file_path: string;
-	preview_local: string;
-	// separator type workaround to supress error
-	background_color?: string;
-	text_color?: string;
-};
-
-export type ModSeparatorItem = {
-	identifier: string;
-	title: string;
-	order: number;
-	background_color: string;
-	text_color: string;
-	collapsed: boolean;
-};
-
-export type ModItemSeparatorUnion = ModSeparatorItem | ModItem;
+import type { IGameMeta, SteamLibraryPaths } from '@/lib/store/setting';
+import type { ProfileExportData } from '@/lib/store/profile';
+import type { ModItem } from '@/lib/store/mods';
+import type { SaveFile, SaveFileLoadOrderData } from '@/lib/store/save_files';
 
 export type PackConflicts = {
 	[pack_file_path: string]: Array<string[]>;
-};
-
-export type SteamLibraryPaths = {
-	library_folder_paths: string[];
-	game_install_paths: { [app_id: string]: string };
-	game_workshop_paths: { [app_id: string]: string };
 };
 
 export type NexusDownloadLinkRequest = {
@@ -68,25 +18,17 @@ export type NexusDownloadLinkRequest = {
 	download_expires: number;
 };
 
-export type SaveFile = {
-	filename: string;
-	filesize: number;
-	date: number;
-	path: string;
-	meta_exists: boolean;
-};
-
-export type ZipItemInfo = {
-	filename: string;
-	filesize: number;
-};
-
 export type NexusDownloadResponse = {
 	download_url: string;
 	file_size: number;
 	preview_url: string;
 	version: string;
 	mod_url: string;
+};
+
+export type ZipItemInfo = {
+	filename: string;
+	filesize: number;
 };
 
 type ModMigrationResponse = {
@@ -106,16 +48,6 @@ type ModMigrationResponse = {
 			}[];
 		}[]
 	>;
-};
-
-export type ProfileExportData = {
-	app_id: number;
-	name: string;
-	mods: ModItem[];
-	mod_order: ModOrderItem[];
-	mod_activation: ModActivationItem[];
-	mod_meta: ModMetaItem[];
-	mod_separators: ModSeparatorItem[];
 };
 
 class API {
