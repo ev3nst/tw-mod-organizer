@@ -1,9 +1,10 @@
-import { dbWrapper } from '@/lib/db';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, UnlistenFn } from '@tauri-apps/api/event';
-import { SettingModel } from './setting';
-import { toastError } from '../utils';
-import { NexusDownloadResponse } from '../api';
+
+import { dbWrapper } from '@/lib/db';
+import { NexusDownloadResponse } from '@/lib/api';
+import { SettingModel } from '@/lib/store/setting';
+import { toastError } from '@/lib/utils';
 
 export interface DownloadRecord {
 	id: number;
