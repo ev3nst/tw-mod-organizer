@@ -25,11 +25,11 @@ type RowProps = {
 	mod: ModItemSeparatorUnion;
 	modIndex: number;
 	id: string;
-	isSelected?: boolean;
-	onSelect?: (id: string, ctrlKey: boolean) => void;
-	selectRange?: (startId: string, endId: string) => void;
-	lastSelectedId?: string | null;
-	setLastSelectedId?: (id: string | null) => void;
+	isSelected: boolean;
+	onSelect: (id: string, ctrlKey: boolean) => void;
+	selectRange: (startId: string, endId: string) => void;
+	lastSelectedId: string | null;
+	setLastSelectedId: (id: string | null) => void;
 };
 
 const RowComponent = ({
@@ -69,12 +69,7 @@ const RowComponent = ({
 
 	const handleRowClick = (e: React.MouseEvent) => {
 		if (sort_by === 'load_order' && onSelect && !isSeparator(mod)) {
-			if (
-				e.shiftKey &&
-				lastSelectedId &&
-				selectRange &&
-				setLastSelectedId
-			) {
+			if (e.shiftKey && lastSelectedId) {
 				selectRange(lastSelectedId, id);
 			} else {
 				onSelect(id, e.ctrlKey);
@@ -132,6 +127,7 @@ export const Row = memo(RowComponent, (prevProps, nextProps) => {
 	return (
 		prevProps.mod.identifier === nextProps.mod.identifier &&
 		prevProps.modIndex === nextProps.modIndex &&
-		prevProps.isSelected === nextProps.isSelected
+		prevProps.isSelected === nextProps.isSelected &&
+		prevProps.lastSelectedId === nextProps.lastSelectedId
 	);
 });
