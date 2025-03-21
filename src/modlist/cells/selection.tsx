@@ -1,9 +1,12 @@
 import { TableCell } from '@/components/table';
 import { Checkbox } from '@/components/checkbox';
 
-import { settingStore } from '@/lib/store/setting';
-import { modsStore, type ModItem } from '@/lib/store/mods';
-import { modActivationStore } from '@/lib/store/mod_activation';
+import { ModItem, modsStore } from '@/lib/store/mods';
+import {
+	modActivationStore,
+	toggleModActivation,
+	toggleSeparatorActivation,
+} from '@/lib/store/mod_activation';
 import {
 	getChildMods,
 	isSeparator,
@@ -11,193 +14,11 @@ import {
 } from '@/lib/store/mod_separator';
 
 export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
-	const dependency_confirmation = settingStore(
-		state => state.dependency_confirmation,
-	);
 	const mods = modsStore(state => state.mods);
 	const modActivation = modActivationStore(state => state.data);
-	const setModActivation = modActivationStore(state => state.setData);
 	const currentSelection = modActivation.find(
 		ma => ma.mod_id === mod.identifier,
 	);
-
-	const setRequiredItemsModal = modActivationStore(
-		state => state.setRequiredItemsModal,
-	);
-	const setRequiredItemsMod = modActivationStore(
-		state => state.setRequiredItemsMod,
-	);
-
-	const processDependencies = (
-		modId: string,
-		shouldActivate: boolean,
-		updatedActivation: typeof modActivation,
-	) => {
-		const currentMod = mods.find(m => m.identifier === modId) as ModItem;
-		if (!currentMod || isSeparator(currentMod)) return updatedActivation;
-
-		let result = [...updatedActivation];
-
-		if (!shouldActivate && currentMod.item_type === 'steam_mod') {
-			const dependentMods = mods.filter(
-				otherMod =>
-					!isSeparator(otherMod) &&
-					(otherMod as ModItem).required_items.includes(modId) &&
-					result.some(
-						ma =>
-							ma.is_active === true &&
-							ma.mod_id === otherMod.identifier,
-					),
-			) as ModItem[];
-
-			if (dependentMods.length > 0) {
-				const dependentModIds = dependentMods.map(dm => dm.identifier);
-				result = result.map(item => {
-					if (dependentModIds.includes(item.mod_id)) {
-						return { ...item, is_active: false };
-					}
-					return item;
-				});
-			}
-		}
-
-		if (
-			shouldActivate &&
-			currentMod.item_type === 'steam_mod' &&
-			currentMod.required_items.length > 0
-		) {
-			const missingDependencies = currentMod.required_items.filter(
-				requiredId =>
-					result.some(
-						ma =>
-							ma.mod_id === requiredId && ma.is_active === false,
-					),
-			);
-
-			if (missingDependencies.length > 0) {
-				result = result.map(item => {
-					if (missingDependencies.includes(item.mod_id)) {
-						return { ...item, is_active: true };
-					}
-					return item;
-				});
-			}
-		}
-
-		return result;
-	};
-
-	const handleSeparatorCheckedChange = () => {
-		const childMods = getChildMods(mods, mod.identifier);
-		const shouldActivate = childMods.some(item =>
-			modActivation.find(
-				ma => ma.mod_id === item.identifier && !ma.is_active,
-			),
-		);
-
-		let updatedModActivation = [...modActivation];
-		childMods.forEach(item => {
-			updatedModActivation = updatedModActivation.map(activation =>
-				activation.mod_id === item.identifier
-					? { ...activation, is_active: shouldActivate }
-					: activation,
-			);
-		});
-
-		childMods.forEach(item => {
-			updatedModActivation = processDependencies(
-				item.identifier,
-				shouldActivate,
-				updatedModActivation,
-			);
-		});
-
-		setModActivation(updatedModActivation);
-	};
-
-	const handleCheckedChange = (checked: boolean) => {
-		const updatedModActivation = modActivation.map(item =>
-			item.mod_id === mod.identifier
-				? { ...item, is_active: checked }
-				: item,
-		);
-
-		setModActivation(updatedModActivation);
-
-		let currentMod = mod as ModItem;
-		if (!checked && currentMod.item_type === 'steam_mod') {
-			const dependentMods = mods.filter(
-				otherMod =>
-					!isSeparator(otherMod) &&
-					(otherMod as ModItem).required_items.includes(
-						mod.identifier,
-					) &&
-					updatedModActivation.some(
-						ma =>
-							ma.is_active === true &&
-							ma.mod_id === otherMod.identifier,
-					),
-			) as ModItem[];
-
-			const hasDependentMods = dependentMods.length > 0;
-			if (hasDependentMods) {
-				if (dependency_confirmation) {
-					setRequiredItemsModal(true);
-					setRequiredItemsMod(currentMod);
-					return;
-				} else {
-					const dependentModIds = dependentMods.map(
-						dm => dm.identifier,
-					);
-					const dependencyResolved = updatedModActivation.map(
-						item => {
-							if (dependentModIds.includes(item.mod_id)) {
-								return { ...item, is_active: false };
-							}
-							return item;
-						},
-					);
-
-					setModActivation(dependencyResolved);
-					return;
-				}
-			}
-		}
-
-		if (
-			checked &&
-			currentMod.item_type === 'steam_mod' &&
-			currentMod.required_items.length > 0
-		) {
-			const missingDependencies = currentMod.required_items.filter(
-				requiredId =>
-					updatedModActivation.some(
-						ma =>
-							ma.mod_id === requiredId && ma.is_active === false,
-					),
-			);
-
-			if (missingDependencies.length > 0) {
-				if (dependency_confirmation) {
-					setRequiredItemsModal(true);
-					setRequiredItemsMod(currentMod);
-					return;
-				} else {
-					const dependencyResolved = updatedModActivation.map(
-						item => {
-							if (missingDependencies.includes(item.mod_id)) {
-								return { ...item, is_active: true };
-							}
-							return item;
-						},
-					);
-
-					setModActivation(dependencyResolved);
-					return;
-				}
-			}
-		}
-	};
 
 	const cellStyle = {
 		backgroundColor: mod.background_color,
@@ -225,7 +46,7 @@ export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 				<Checkbox
 					className={checkboxClass}
 					checked={allActive}
-					onCheckedChange={handleSeparatorCheckedChange}
+					onCheckedChange={() => toggleSeparatorActivation(mod)}
 				/>
 			</TableCell>
 		);
@@ -235,7 +56,9 @@ export const Selection = ({ mod }: { mod: ModItemSeparatorUnion }) => {
 				<Checkbox
 					className={checkboxClass}
 					checked={currentSelection?.is_active}
-					onCheckedChange={handleCheckedChange}
+					onCheckedChange={checked =>
+						toggleModActivation(checked as boolean, mod as ModItem)
+					}
 				/>
 			</TableCell>
 		);

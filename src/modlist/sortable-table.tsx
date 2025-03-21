@@ -10,9 +10,12 @@ import {
 	DragOverlay,
 } from '@dnd-kit/core';
 
-import { modsStore } from '@/lib/store/mods';
+import { modsStore, type ModItem } from '@/lib/store/mods';
 import { modOrderStore } from '@/lib/store/mod_order';
-import { modActivationStore } from '@/lib/store/mod_activation';
+import {
+	modActivationStore,
+	toggleModActivation,
+} from '@/lib/store/mod_activation';
 import {
 	modSeparatorStore,
 	isCollapsed,
@@ -72,6 +75,35 @@ export const ModListSortableTable = () => {
 		[mods],
 	);
 
+	const handleSpaceBar = (event: KeyboardEvent) => {
+		if (event.key === ' ' && selectedRows.size > 0) {
+			event.preventDefault();
+			const selectedMods = mods.filter(
+				f => !isSeparator(f) && selectedRows.has(f.identifier),
+			) as ModItem[];
+			const shouldActivate = selectedMods.some(item =>
+				modActiveData.some(
+					ma => ma.mod_id === item.identifier && !ma.is_active,
+				),
+			);
+			for (let mi = 0; mi < selectedMods.length; mi++) {
+				const mod = selectedMods[mi];
+				toggleModActivation(
+					shouldActivate,
+					mod,
+					selectedMods.length > 1 ? false : true,
+				);
+			}
+		}
+	};
+
+	useEffect(() => {
+		window.addEventListener('keydown', handleSpaceBar);
+		return () => {
+			window.removeEventListener('keydown', handleSpaceBar);
+		};
+	}, [modActiveData, selectedRows]);
+
 	const handleEscKey = (event: KeyboardEvent) => {
 		if (event.key === 'Escape') {
 			clearSelection();
@@ -80,13 +112,15 @@ export const ModListSortableTable = () => {
 
 	useEffect(() => {
 		window.addEventListener('keydown', handleEscKey);
-		if (sort_by !== 'load_order') {
-			clearSelection();
-		}
-
 		return () => {
 			window.removeEventListener('keydown', handleEscKey);
 		};
+	}, []);
+
+	useEffect(() => {
+		if (sort_by !== 'load_order') {
+			clearSelection();
+		}
 	}, [sort_by]);
 
 	const filteredMods = useMemo(() => {
