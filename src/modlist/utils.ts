@@ -125,9 +125,9 @@ export function sortCollapsedSection(
 }
 
 export const initOrder = async (
-	mods: ModItemSeparatorUnion[],
-	profileId: number,
 	steamId: number,
+	profileId: number,
+	mods: ModItemSeparatorUnion[],
 ) => {
 	const modOrder = await ModOrderModel.retrieve(profileId);
 	if (typeof modOrder !== 'undefined' && modOrder.data !== null) {
@@ -195,9 +195,9 @@ export const initOrder = async (
 };
 
 export const initActivation = async (
-	mods: ModItemSeparatorUnion[],
-	profileId: number,
 	steamId: number,
+	profileId: number,
+	mods: ModItemSeparatorUnion[],
 ) => {
 	const modActivation = await ModActivationModel.retrieve(profileId);
 	if (typeof modActivation !== 'undefined' && modActivation.data !== null) {
@@ -250,7 +250,7 @@ export const initActivation = async (
 	}
 };
 
-export const initSeparator = async (profileId: number, steamId: number) => {
+export const initSeparator = async (steamId: number, profileId: number) => {
 	const modSeparator = await ModSeparatorModel.retrieve(profileId);
 	if (typeof modSeparator !== 'undefined' && modSeparator.data !== null) {
 		return modSeparator.data;
@@ -267,8 +267,8 @@ export const initSeparator = async (profileId: number, steamId: number) => {
 };
 
 export const initMeta = async (
-	mods: ModItemSeparatorUnion[],
 	steamId: number,
+	mods: ModItemSeparatorUnion[],
 ) => {
 	const modMeta = await ModMetaModel.retrieve(undefined, steamId);
 	if (typeof modMeta !== 'undefined' && modMeta.data !== null) {

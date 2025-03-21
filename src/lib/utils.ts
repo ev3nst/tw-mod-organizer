@@ -5,8 +5,17 @@ import { twMerge } from 'tailwind-merge';
 
 import { convertFileSrc } from '@tauri-apps/api/core';
 
-import type { ModOrderItem } from '@/lib/store/mod_order';
 import type { FileMeta } from '@/components/native-file-input';
+
+import api from '@/lib/api';
+import type { ModItem } from '@/lib/store/mods';
+import type { ModOrderItem } from '@/lib/store/mod_order';
+import {
+	isSeparator,
+	type ModItemSeparatorUnion,
+} from '@/lib/store/mod_separator';
+import type { ModActivationItem } from '@/lib/store/mod_activation';
+import { type SaveFile } from '@/lib/store/save_files';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -85,6 +94,44 @@ export function determineErrorMessage(error: unknown) {
 	}
 
 	return errorMessage;
+}
+
+export async function startGame(
+	app_id: number,
+	mods: ModItemSeparatorUnion[],
+	modActivationData: ModActivationItem[],
+	saveFile?: SaveFile,
+) {
+	const reverseLoadOrder = [...mods].slice().reverse();
+	let addDirectoryTxt = '';
+	let usedModsTxt = '';
+	for (let ri = 0; ri < reverseLoadOrder.length; ri++) {
+		if (isSeparator(reverseLoadOrder[ri])) continue;
+
+		const mod = reverseLoadOrder[ri] as ModItem;
+		const isActive = modActivationData.some(
+			a => a.is_active === true && a.mod_id === mod.identifier,
+		);
+		if (!isActive) continue;
+
+		const cleanedPackPath = mod.pack_file_path.replace(/\\/g, '/');
+		const packFileName = cleanedPackPath.split('/').pop();
+		const packFolder = cleanedPackPath.replace('/' + packFileName, '');
+		addDirectoryTxt += `add_working_directory "${packFolder}";\n`;
+		usedModsTxt += `mod "${packFileName}";\n`;
+	}
+
+	let save_game: string | undefined = '';
+	if (
+		typeof saveFile?.path !== 'undefined' &&
+		saveFile?.path !== null &&
+		saveFile?.path !== '' &&
+		saveFile?.path.includes('\\')
+	) {
+		save_game = saveFile.path.split('\\').pop();
+	}
+
+	await api.start_game(app_id, addDirectoryTxt, usedModsTxt, save_game);
 }
 
 export const buttonVariants = cva(

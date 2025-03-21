@@ -4,12 +4,10 @@ import { Button } from '@/components/button';
 import { modsStore } from '@/lib/store/mods';
 import { saveFilesStore } from '@/lib/store/save_files';
 
-import { startGame } from '@/sidebar/play';
-
 import { settingStore } from '@/lib/store/setting';
 import type { ModItem } from '@/lib/store/mods';
 import type { ModItemSeparatorUnion } from '@/lib/store/mod_separator';
-import { toastError } from '@/lib/utils';
+import { startGame, toastError } from '@/lib/utils';
 
 export const LoadExactly = () => {
 	const setIsGameLoading = settingStore(state => state.setIsGameLoading);

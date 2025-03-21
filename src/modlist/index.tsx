@@ -17,7 +17,7 @@ import { conflictsStore } from '@/lib/store/conflict';
 import api from '@/lib/api';
 import { toastError } from '@/lib/utils';
 
-import { ModListTable } from './table';
+import { ModListSortableTable } from './sortable-table';
 import { initActivation, initMeta, initOrder, initSeparator } from './utils';
 
 export const ModList = () => {
@@ -46,10 +46,10 @@ export const ModList = () => {
 		try {
 			setFetchModsLoading(true);
 			setLoading(true);
-			let mods = await api.get_mods(selectedGame!.steam_id);
+			const mods = await api.get_mods(selectedGame!.steam_id);
 			const separators = await initSeparator(
-				profile.id,
 				selectedGame!.steam_id,
+				profile.id,
 			);
 			setSeparators(separators);
 			const modsWithSeparators = [...mods, ...separators];
@@ -66,9 +66,9 @@ export const ModList = () => {
 			setConflicts(conflicts);
 
 			const modOrder = await initOrder(
-				modsWithSeparators,
-				profile.id,
 				selectedGame!.steam_id,
+				profile.id,
+				modsWithSeparators,
 			);
 			setModOrder(modOrder);
 
@@ -115,15 +115,15 @@ export const ModList = () => {
 
 			setMods(sortedMods);
 			const modActivations = await initActivation(
-				sortedMods,
-				profile.id,
 				selectedGame!.steam_id,
+				profile.id,
+				sortedMods,
 			);
 			setModActivation(modActivations);
 
 			const modMetaData = await initMeta(
-				sortedMods,
 				selectedGame!.steam_id,
+				sortedMods,
 			);
 			setMetas(modMetaData);
 		} catch (error) {
@@ -140,5 +140,5 @@ export const ModList = () => {
 
 	if (fetchModsLoading) return <Loading />;
 
-	return <ModListTable />;
+	return <ModListSortableTable />;
 };

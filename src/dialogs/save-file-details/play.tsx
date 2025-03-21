@@ -1,6 +1,5 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/tooltip';
 import { Button } from '@/components/button';
-import { startGame } from '@/sidebar/play';
 
 import { settingStore } from '@/lib/store/setting';
 import { saveFilesStore } from '@/lib/store/save_files';
@@ -10,7 +9,7 @@ import { isSeparator } from '@/lib/store/mod_separator';
 
 import type { ModItem } from '@/lib/store/mods';
 import type { ModItemSeparatorUnion } from '@/lib/store/mod_separator';
-import { toastError } from '@/lib/utils';
+import { startGame, toastError } from '@/lib/utils';
 
 export const Play = () => {
 	const setIsGameLoading = settingStore(state => state.setIsGameLoading);
@@ -24,8 +23,8 @@ export const Play = () => {
 		state => state.setCurrentlyRunningMods,
 	);
 
-	const modActivationData = modActivationStore(state => state.data);
 	const mods = modsStore(state => state.mods);
+	const modActivationData = modActivationStore(state => state.data);
 
 	const missingMods = selectedSaveFile
 		? selectedSaveFile.load_order_data.filter(
