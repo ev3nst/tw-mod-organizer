@@ -5,7 +5,8 @@ import { TooltipProvider } from '@/components/tooltip';
 import { Loading } from '@/components/loading';
 
 import { settingStore } from '@/lib/store/setting';
-import { ProfileModel, profileStore } from '@/lib/store/profile';
+import { profileStore } from '@/lib/store/profile';
+import { ProfileModel } from '@/lib/store/profile-model';
 
 import { toastError } from '@/lib/utils';
 

@@ -2,7 +2,7 @@ import { convertFileSrc, invoke } from '@tauri-apps/api/core';
 import { SettingModel } from '@/lib/store/setting';
 
 import type { IGameMeta, SteamLibraryPaths } from '@/lib/store/setting';
-import type { ProfileExportData } from '@/lib/store/profile';
+import type { ProfileExportData } from '@/lib/store/profile-model';
 import type { ModItem } from '@/lib/store/mods';
 import type { SaveFile, SaveFileLoadOrderData } from '@/lib/store/save_files';
 

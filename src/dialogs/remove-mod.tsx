@@ -12,7 +12,7 @@ import { Button } from '@/components/button';
 
 import api from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
-import { ProfileModel } from '@/lib/store/profile';
+import { ProfileModel } from '@/lib/store/profile-model';
 import { modsStore, type ModItem } from '@/lib/store/mods';
 import {
 	ModActivationModel,

@@ -7,7 +7,8 @@ import { Button } from '@/components/button';
 import { Loading } from '@/components/loading';
 
 import { settingStore } from '@/lib/store/setting';
-import { ProfileModel, profileStore } from '@/lib/store/profile';
+import { profileStore } from '@/lib/store/profile';
+import { ProfileModel } from '@/lib/store/profile-model';
 import { ModOrderModel } from '@/lib/store/mod_order';
 import { ModActivationModel } from '@/lib/store/mod_activation';
 import { ModMetaModel } from '@/lib/store/mod_meta';

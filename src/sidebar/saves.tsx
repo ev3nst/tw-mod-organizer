@@ -212,9 +212,11 @@ export const Saves = () => {
 						className={`p-2 hover:cursor-pointer hover:bg-black/90 relative ${
 							saveFile?.path === sf.path ? 'bg-black/90' : ''
 						}`}
-						onClick={() => setSaveFile(
-							saveFile?.path === sf.path ? undefined : sf,
-						)}
+						onClick={() =>
+							setSaveFile(
+								saveFile?.path === sf.path ? undefined : sf,
+							)
+						}
 					>
 						<div
 							className={`flex flex-col justify-between text-xs font-medium leading-none ${

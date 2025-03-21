@@ -16,11 +16,11 @@ import { Separator } from '@/components/separator';
 import { Loading } from '@/components/loading';
 
 import { settingStore } from '@/lib/store/setting';
+import { profileStore } from '@/lib/store/profile';
 import {
 	ProfileModel,
-	profileStore,
 	type ProfileExportData,
-} from '@/lib/store/profile';
+} from '@/lib/store/profile-model';
 import { modsStore, type ModItem } from '@/lib/store/mods';
 import { ModOrderModel } from '@/lib/store/mod_order';
 import { ModActivationModel } from '@/lib/store/mod_activation';

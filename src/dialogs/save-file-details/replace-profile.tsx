@@ -14,7 +14,8 @@ import {
 import { Button } from '@/components/button';
 
 import { settingStore } from '@/lib/store/setting';
-import { ProfileModel, profileStore } from '@/lib/store/profile';
+import { profileStore } from '@/lib/store/profile';
+import { ProfileModel } from '@/lib/store/profile-model';
 import { modsStore } from '@/lib/store/mods';
 import { ModActivationModel } from '@/lib/store/mod_activation';
 import { ModOrderModel } from '@/lib/store/mod_order';
