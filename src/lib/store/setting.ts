@@ -42,6 +42,7 @@ export type Setting = {
 	nexus_api_key: string | null;
 	dependency_confirmation: 1 | 0;
 	sort_by: 'load_order' | 'title' | 'version';
+	include_hidden_downloads: 1 | 0;
 };
 
 export type SteamLibraryPaths = {
@@ -114,6 +115,7 @@ export class SettingModel {
 					nexus_api_key: null,
 					dependency_confirmation: 1,
 					sort_by: 'load_order',
+					include_hidden_downloads: 0,
 				});
 			} else {
 				throw new Error('Error while initiating the settings record');
@@ -231,6 +233,15 @@ export class SettingModel {
 	set sort_by(value: 'load_order' | 'title' | 'version') {
 		this.props.sort_by = value;
 	}
+
+	// Include Hidden Downloads
+	get include_hidden_downloads(): 1 | 0 {
+		return this.props.include_hidden_downloads;
+	}
+
+	set include_hidden_downloads(value: 1 | 0) {
+		this.props.include_hidden_downloads = value;
+	}
 }
 
 type SettingStore = {
@@ -283,6 +294,9 @@ type SettingStore = {
 
 	sort_by: 'load_order' | 'title' | 'version';
 	setSortBy: (sort_by: 'load_order' | 'title' | 'version') => void;
+
+	include_hidden_downloads: 1 | 0;
+	setIncludeHiddenDownloads: (include_hidden_downloads: 1 | 0) => void;
 
 	isGameLoading: boolean;
 	setIsGameLoading: (isGameLoading: boolean) => void;
@@ -397,6 +411,12 @@ export const settingStore = create<SettingStore>(set => ({
 		debounceCallback(syncSetting);
 	},
 
+	include_hidden_downloads: 0,
+	setIncludeHiddenDownloads: include_hidden_downloads => {
+		set({ include_hidden_downloads });
+		debounceCallback(syncSetting);
+	},
+
 	isGameLoading: false,
 	setIsGameLoading: (isGameLoading: boolean) => set({ isGameLoading }),
 
@@ -483,6 +503,13 @@ const syncSetting = async () => {
 
 	if (setting.sort_by !== state.sort_by) {
 		setting.sort_by = state.sort_by;
+		changed = true;
+	}
+
+	if (setting.include_hidden_downloads !== state.include_hidden_downloads) {
+		setting.include_hidden_downloads = state.include_hidden_downloads
+			? 1
+			: 0;
 		changed = true;
 	}
 

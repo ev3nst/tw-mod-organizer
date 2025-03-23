@@ -89,7 +89,7 @@ export function AppSidebar() {
 								<Saves />
 							</AccordionContent>
 						</AccordionItem>
-						<AccordionItem value="downloads">
+						<AccordionItem value="downloads" className="relative">
 							<AccordionTrigger className="text-base font-medium text-foreground px-3 py-2 sticky top-0 bg-background z-10">
 								Downloads
 							</AccordionTrigger>

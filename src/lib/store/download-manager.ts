@@ -49,11 +49,12 @@ class DownloadManager {
 
 	public async retrieve(
 		app_id: number,
-		includeHidden: boolean = false,
+		includeHidden: 1 | 0 = 0,
 	): Promise<DownloadRecord[]> {
-		const query = includeHidden
-			? 'SELECT * FROM downloads WHERE app_id = ? AND hidden = 0 ORDER BY id'
-			: 'SELECT * FROM downloads WHERE app_id = ? ORDER BY id';
+		const query =
+			includeHidden === 1
+				? 'SELECT * FROM downloads WHERE app_id = ? ORDER BY id'
+				: 'SELECT * FROM downloads WHERE app_id = ? AND hidden = 1 ORDER BY id';
 
 		const results: any = await dbWrapper.db.select(query, [app_id]);
 
@@ -188,6 +189,22 @@ class DownloadManager {
 		await dbWrapper.db.execute('DELETE FROM downloads WHERE id = ?', [
 			downloadId,
 		]);
+	}
+
+	public async hideToggle(downloadId: number): Promise<void> {
+		const result: any = await dbWrapper.db.select(
+			`SELECT * FROM downloads WHERE id = ?`,
+			[downloadId],
+		);
+		if (!result || !result[0]) {
+			throw new Error('Download record could not be found.');
+		}
+
+		const downloadRecord = result[0];
+		await dbWrapper.db.execute(
+			'UPDATE downloads SET hidden = ? WHERE id = ?',
+			[downloadRecord.hidden ? 0 : 1, downloadId],
+		);
 	}
 
 	public onProgress(callback: ProgressCallback): void {

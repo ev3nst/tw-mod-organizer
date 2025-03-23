@@ -163,5 +163,13 @@ pub fn get_migrations() -> Vec<Migration> {
 			"#,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 11,
+            description: "add_include_hidden_downloads_to_settings",
+            sql: r#"
+			ALTER TABLE settings ADD COLUMN include_hidden_downloads INTEGER DEFAULT 0 CHECK(include_hidden_downloads IN (0, 1));
+			"#,
+            kind: MigrationKind::Up,
+        },
     ]
 }

@@ -1,10 +1,25 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArchiveIcon, PauseIcon, PlayIcon, XIcon } from 'lucide-react';
+import {
+	ArchiveIcon,
+	DownloadIcon,
+	EyeIcon,
+	EyeOffIcon,
+	PauseIcon,
+	PlayIcon,
+	XIcon,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 import { listen } from '@tauri-apps/api/event';
 
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from '@/components/dropdown-menu';
 import { Button } from '@/components/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/tooltip';
 
 import api, { NexusDownloadLinkRequest } from '@/lib/api';
 import { SettingModel, settingStore } from '@/lib/store/setting';
@@ -21,6 +36,13 @@ export const Downloads = () => {
 	const games = settingStore(state => state.games);
 	const selectedGame = settingStore(state => state.selectedGame);
 	const mod_download_path = settingStore(state => state.mod_download_path);
+	const include_hidden_downloads = settingStore(
+		state => state.include_hidden_downloads,
+	);
+	const setIncludeHiddenDownloads = settingStore(
+		state => state.setIncludeHiddenDownloads,
+	);
+
 	const setDownloadedArchivePath = modsStore(
 		state => state.setDownloadedArchivePath,
 	);
@@ -34,6 +56,7 @@ export const Downloads = () => {
 			const downloadManager = DownloadManager.getInstance();
 			const initialDownloads = await downloadManager.retrieve(
 				selectedGame!.steam_id,
+				include_hidden_downloads,
 			);
 			const processedDownloads = initialDownloads.map(download => ({
 				...download,
@@ -53,7 +76,7 @@ export const Downloads = () => {
 		} catch (error) {
 			toastError(error);
 		}
-	}, [selectedGame!.steam_id]);
+	}, [selectedGame!.steam_id, include_hidden_downloads]);
 
 	useEffect(() => {
 		loadDownloads();
@@ -252,18 +275,6 @@ export const Downloads = () => {
 		}
 	};
 
-	const handleRemoveAll = async () => {
-		try {
-			const downloadManager = DownloadManager.getInstance();
-			for (const download of downloads) {
-				await downloadManager.remove(download.id);
-			}
-			setDownloads([]);
-		} catch (error) {
-			toastError(error);
-		}
-	};
-
 	const handleRemoveDownload = async (downloadId: number) => {
 		try {
 			const downloadManager = DownloadManager.getInstance();
@@ -310,12 +321,13 @@ export const Downloads = () => {
 	};
 
 	const renderPauseResumeButton = () => {
-		if (!downloads.some(download => download.status !== 'completed'))
+		if (!downloads.some(download => download.status !== 'completed')) {
 			return null;
+		}
 
 		return (
 			<Button
-				className="hover:text-blue-500"
+				className="hover:text-blue-500 h-7 w-7"
 				variant="ghost"
 				size="icon"
 				onClick={handlePauseResume}
@@ -332,12 +344,53 @@ export const Downloads = () => {
 		>
 			<div className="flex items-center gap-3">
 				<div className="text-xs leading-5">
-					<div
-						className="hover:cursor-pointer hover:text-blue-500 pe-[50px]"
-						onClick={() => handleDownloadFileSelection(download)}
-					>
-						{download.filename}
-					</div>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<div
+								className={`hover:cursor-pointer hover:text-blue-500 pe-[30px] ${download.hidden === 0 ? 'text-orange-500' : ''}`}
+							>
+								{download.filename}
+							</div>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent>
+							<DropdownMenuItem
+								onClick={() =>
+									handleHighlightPath(download.filename)
+								}
+							>
+								<ArchiveIcon /> Highlight Archive
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() =>
+									handleDownloadFileSelection(download)
+								}
+							>
+								<DownloadIcon /> Install
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={async () => {
+									const downloadManager =
+										DownloadManager.getInstance();
+									await downloadManager.hideToggle(
+										download.id,
+									);
+									await loadDownloads();
+								}}
+							>
+								{download.hidden === 0 ? (
+									<div className="flex gap-2 items-center">
+										<EyeIcon className="w-4 h-4" /> Set
+										Visible
+									</div>
+								) : (
+									<div className="flex gap-2 items-center">
+										<EyeOffIcon className="w-4 h-4" /> Hide
+									</div>
+								)}
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+
 					<div className="flex justify-between text-muted-foreground">
 						<div>
 							{typeof download.progress !== 'undefined' &&
@@ -357,14 +410,6 @@ export const Downloads = () => {
 				</div>
 			</div>
 			<Button
-				className="hover:text-green-500 h-6 w-6 absolute right-10 top-2 [&_svg]:size-3"
-				variant="ghost"
-				size="icon"
-				onClick={() => handleHighlightPath(download.filename)}
-			>
-				<ArchiveIcon />
-			</Button>
-			<Button
 				className="hover:text-red-500 h-6 w-6 absolute right-3 top-2 [&_svg]:size-3"
 				variant="ghost"
 				size="icon"
@@ -377,22 +422,33 @@ export const Downloads = () => {
 
 	return (
 		<div>
-			{downloads.length > 0 ? (
-				<div className="flex items-center gap-1 px-3">
-					<div className="me-3 border-b pb-1">Bulk Action:</div>
-					{renderPauseResumeButton()}
-					<Button
-						className="hover:text-red-500"
-						variant="ghost"
-						size="icon"
-						onClick={handleRemoveAll}
-					>
-						<XIcon />
-					</Button>
-				</div>
-			) : (
-				<span className="px-3">No downloaded files at the moment.</span>
-			)}
+			<div className="absolute top-[5px] left-[110px] z-10 flex gap-2">
+				{renderPauseResumeButton()}
+
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Button
+							className="hover:text-blue-500 h-7 w-7"
+							variant="ghost"
+							size="icon"
+							onClick={() =>
+								setIncludeHiddenDownloads(
+									include_hidden_downloads === 0 ? 1 : 0,
+								)
+							}
+						>
+							{include_hidden_downloads ? (
+								<EyeOffIcon />
+							) : (
+								<EyeIcon />
+							)}
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent>
+						<p>Toggle hidden downloads</p>
+					</TooltipContent>
+				</Tooltip>
+			</div>
 			{downloads.map(renderDownloadItem)}
 		</div>
 	);

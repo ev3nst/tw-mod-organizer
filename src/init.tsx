@@ -30,6 +30,9 @@ function Init() {
 	const setNexusAuthParams = settingStore(state => state.setNexusAuthParams);
 	const setColumnSelection = settingStore(state => state.setColumnSelection);
 	const setSortBy = settingStore(state => state.setSortBy);
+	const setIncludeHiddenDownloads = settingStore(
+		state => state.setIncludeHiddenDownloads,
+	);
 
 	const init = useCallback(async () => {
 		setInitLoading(true);
@@ -45,6 +48,7 @@ function Init() {
 		setColumnSelection('version', setting.column_selections.version);
 		setColumnSelection('creator', setting.column_selections.creator);
 		setSortBy(setting.sort_by);
+		setIncludeHiddenDownloads(setting.include_hidden_downloads);
 		setNexusAuthApi(setting.nexus_api_key ?? null);
 		setNexusAuthParams(
 			setting.nexus_auth_params ?? {
