@@ -175,9 +175,9 @@ pub fn get_migrations() -> Vec<Migration> {
             version: 12,
             description: "add_updated_at_to_downloads",
             sql: r#"
-			ALTER TABLE downloads ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-
-			-- Trigger to update the updated_at column whenever a row is updated
+			ALTER TABLE downloads ADD COLUMN updated_at TIMESTAMP;
+			UPDATE downloads SET updated_at = CURRENT_TIMESTAMP;
+		
 			CREATE TRIGGER update_downloads_updated_at
 			AFTER UPDATE ON downloads
 			FOR EACH ROW
