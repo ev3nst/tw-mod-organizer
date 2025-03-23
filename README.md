@@ -1,8 +1,6 @@
-# Modulus
+# Modulus - _Mod Organizer Application_
 
-#### _Mod Organizer Application_
-
-## Supported Games
+### Supported Games
 
 -   Total War: Warhammer 2
 -   Total War: Warhammer 3

@@ -91,7 +91,9 @@ pub async fn save_folder_watch(
                 notify::recommended_watcher(move |res: Result<Event, _>| {
                     if let Ok(event) = res {
                         if let Some(path) = event.paths.first() {
-                            if path.extension().and_then(|s| s.to_str()) == Some("save") {
+                            if path.extension().and_then(|s| s.to_str())
+                                == Some(game.save_file_extension)
+                            {
                                 let event_type = match event.kind {
                                     EventKind::Create(_) => "created",
                                     EventKind::Modify(_) => "modified",

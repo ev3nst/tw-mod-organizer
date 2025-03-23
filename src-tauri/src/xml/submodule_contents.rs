@@ -17,7 +17,6 @@ pub struct SubModuleContents {
     pub module_type: Option<String>,
     pub depended_modules: Option<Vec<DependentModule>>,
     pub modules_to_load_after_this: Option<Vec<DependentModule>>,
-    pub path: String,
 }
 
 pub fn submodule_contents(dir_path: &Path) -> Option<SubModuleContents> {
@@ -31,8 +30,6 @@ pub fn submodule_contents(dir_path: &Path) -> Option<SubModuleContents> {
     }
 
     let file = File::open(&submodule_path);
-    let mod_file_path = submodule_path.to_string_lossy().to_string();
-
     match file {
         Ok(mut f) => {
             let mut content = String::new();
@@ -175,7 +172,6 @@ pub fn submodule_contents(dir_path: &Path) -> Option<SubModuleContents> {
                     } else {
                         Some(modules_to_load_after_this)
                     },
-                    path: mod_file_path,
                 });
             }
         }
