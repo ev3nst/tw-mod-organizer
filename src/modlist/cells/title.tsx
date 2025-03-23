@@ -84,6 +84,7 @@ export const Title = memo(
 	}) => {
 		const { title, background_color, text_color } = mod;
 
+		const toggle_type = settingStore(state => state.toggle_type);
 		const toggle_category = settingStore(state => state.toggle_category);
 		const toggle_conflict = settingStore(state => state.toggle_conflict);
 		const toggle_version = settingStore(state => state.toggle_version);
@@ -121,7 +122,8 @@ export const Title = memo(
 				color: text_color,
 			};
 
-			let separatorColSpan = 6;
+			let separatorColSpan = 7;
+			if (!toggle_type) separatorColSpan--;
 			if (!toggle_category) separatorColSpan--;
 			if (!toggle_conflict) separatorColSpan--;
 			if (!toggle_version) separatorColSpan--;

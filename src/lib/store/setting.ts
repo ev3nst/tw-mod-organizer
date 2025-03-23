@@ -19,6 +19,7 @@ export type IGameMeta = {
 };
 
 export type ModListColumnVisibility = {
+	type: boolean;
 	category: boolean;
 	conflict: boolean;
 	version: boolean;
@@ -73,9 +74,12 @@ export class SettingModel {
 		} else {
 			const appConfigPath = await appConfigDir();
 			const column_selections = {
+				type: true,
 				category: true,
 				conflict: true,
 				version: true,
+				creator: false,
+				created_at: false,
 			};
 			const mod_installation_path = `${appConfigPath}\\mods`;
 			const mod_download_path = `${appConfigPath}\\downloads`;
@@ -94,6 +98,7 @@ export class SettingModel {
 					id: result.lastInsertId,
 					selected_game: null,
 					column_selections: {
+						type: true,
 						category: true,
 						conflict: true,
 						version: true,
@@ -256,13 +261,20 @@ type SettingStore = {
 	nexus_auth_params: NexusAuthParams;
 	setNexusAuthParams: (nexus_auth_params: NexusAuthParams) => void;
 
+	toggle_type: boolean;
 	toggle_category: boolean;
 	toggle_conflict: boolean;
 	toggle_version: boolean;
 	toggle_creator: boolean;
 	toggle_created_at: boolean;
 	setColumnSelection: (
-		column: 'category' | 'conflict' | 'version' | 'creator' | 'created_at',
+		column:
+			| 'type'
+			| 'category'
+			| 'conflict'
+			| 'version'
+			| 'creator'
+			| 'created_at',
 		value: boolean,
 	) => void;
 
@@ -350,6 +362,7 @@ export const settingStore = create<SettingStore>(set => ({
 		debounceCallback(syncSetting);
 	},
 
+	toggle_type: true,
 	toggle_category: true,
 	toggle_conflict: true,
 	toggle_version: true,
@@ -359,6 +372,7 @@ export const settingStore = create<SettingStore>(set => ({
 	setColumnSelection: (key, value) => {
 		const keyStr = `toggle_${key}`;
 		const columns = [
+			'toggle_type',
 			'toggle_category',
 			'toggle_conflict',
 			'toggle_version',
@@ -444,6 +458,7 @@ const syncSetting = async () => {
 	}
 
 	if (
+		setting.column_selections.type !== state.toggle_type ||
 		setting.column_selections.category !== state.toggle_category ||
 		setting.column_selections.conflict !== state.toggle_conflict ||
 		setting.column_selections.version !== state.toggle_version ||
@@ -451,6 +466,7 @@ const syncSetting = async () => {
 		setting.column_selections.version !== state.toggle_created_at
 	) {
 		setting.column_selections = {
+			type: state.toggle_type,
 			category: state.toggle_category,
 			conflict: state.toggle_conflict,
 			version: state.toggle_version,

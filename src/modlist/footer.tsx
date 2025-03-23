@@ -3,13 +3,15 @@ import { TableCell, TableFooter, TableRow } from '@/components/table';
 import { settingStore } from '@/lib/store/setting';
 
 export const Footer = ({ modCount }: { modCount: number }) => {
+	const toggle_type = settingStore(state => state.toggle_type);
 	const toggle_category = settingStore(state => state.toggle_category);
 	const toggle_conflict = settingStore(state => state.toggle_conflict);
 	const toggle_version = settingStore(state => state.toggle_version);
 	const toggle_creator = settingStore(state => state.toggle_creator);
 	const toggle_created_at = settingStore(state => state.toggle_created_at);
 
-	let colSpan = 9;
+	let colSpan = 10;
+	if (!toggle_type) colSpan--;
 	if (!toggle_category) colSpan--;
 	if (!toggle_conflict) colSpan--;
 	if (!toggle_version) colSpan--;

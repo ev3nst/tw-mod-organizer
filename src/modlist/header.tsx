@@ -56,6 +56,7 @@ const SortByIndicator = ({
 };
 
 export const Header = () => {
+	const toggle_type = settingStore(state => state.toggle_type);
 	const toggle_category = settingStore(state => state.toggle_category);
 	const toggle_conflict = settingStore(state => state.toggle_conflict);
 	const toggle_version = settingStore(state => state.toggle_version);
@@ -195,6 +196,9 @@ export const Header = () => {
 					{orderByText}
 				</TableHead>
 				<ToggleAll />
+				{toggle_type && (
+					<TableHead className="text-center w-[40px]">TYPE</TableHead>
+				)}
 				<ProfileSwitcher />
 				{toggle_category && (
 					<TableHead
@@ -222,6 +226,14 @@ export const Header = () => {
 						<DropdownMenuContent>
 							<DropdownMenuLabel>Columns</DropdownMenuLabel>
 							<DropdownMenuSeparator />
+							<DropdownMenuCheckboxItem
+								checked={toggle_type}
+								onCheckedChange={isChecked =>
+									setColumnSelection('type', isChecked)
+								}
+							>
+								Type
+							</DropdownMenuCheckboxItem>
 							<DropdownMenuCheckboxItem
 								checked={toggle_category}
 								onCheckedChange={isChecked =>
@@ -264,6 +276,7 @@ export const Header = () => {
 							</DropdownMenuCheckboxItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuLabel>Sort By</DropdownMenuLabel>
+							<DropdownMenuSeparator />
 							<DropdownMenuCheckboxItem
 								checked={sort_by === 'load_order'}
 								onCheckedChange={() => setSortBy('load_order')}

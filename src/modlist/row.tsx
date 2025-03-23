@@ -13,6 +13,7 @@ import {
 } from '@/lib/store/mod_separator';
 
 import { Selection } from './cells/selection';
+import { Type } from './cells/type';
 import { Title } from './cells/title';
 import { Category } from './cells/category';
 import { Conflict } from './cells/conflict';
@@ -125,6 +126,7 @@ const RowComponent = ({
 			</TableCell>
 			<Order mod={mod} modIndex={modIndex} />
 			<Selection mod={mod} />
+			<Type mod={mod} />
 			<Title
 				mod={mod}
 				hasViolation={showViolation}
