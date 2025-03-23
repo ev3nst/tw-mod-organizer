@@ -16,6 +16,7 @@ import { UpdateMods } from './update-mods';
 import { ImportData } from './import-data';
 
 export function Preferences() {
+	const selectedGame = settingStore(state => state.selectedGame);
 	const isGameRunning = settingStore(state => state.isGameRunning);
 	const shouldLockScreen = settingStore(state => state.shouldLockScreen);
 
@@ -46,9 +47,11 @@ export function Preferences() {
 						<TabsTrigger value="update_mods">
 							Update Mods
 						</TabsTrigger>
-						<TabsTrigger value="import_data">
-							WH3 Mod Manager
-						</TabsTrigger>
+						{selectedGame!.type === 'totalwar' && (
+							<TabsTrigger value="import_data">
+								WH3 Mod Manager
+							</TabsTrigger>
+						)}
 					</TabsList>
 					<TabsContent value="settings">
 						<Settings />
@@ -56,9 +59,11 @@ export function Preferences() {
 					<TabsContent value="update_mods">
 						<UpdateMods />
 					</TabsContent>
-					<TabsContent value="import_data">
-						<ImportData />
-					</TabsContent>
+					{selectedGame!.type === 'totalwar' && (
+						<TabsContent value="import_data">
+							<ImportData />
+						</TabsContent>
+					)}
 				</Tabs>
 			</DialogContent>
 		</Dialog>

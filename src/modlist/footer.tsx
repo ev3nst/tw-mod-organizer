@@ -7,12 +7,14 @@ export const Footer = ({ modCount }: { modCount: number }) => {
 	const toggle_conflict = settingStore(state => state.toggle_conflict);
 	const toggle_version = settingStore(state => state.toggle_version);
 	const toggle_creator = settingStore(state => state.toggle_creator);
+	const toggle_created_at = settingStore(state => state.toggle_created_at);
 
-	let colSpan = 8;
+	let colSpan = 9;
 	if (!toggle_category) colSpan--;
 	if (!toggle_conflict) colSpan--;
 	if (!toggle_version) colSpan--;
 	if (!toggle_creator) colSpan--;
+	if (!toggle_created_at) colSpan--;
 	return (
 		<TableFooter>
 			<TableRow>

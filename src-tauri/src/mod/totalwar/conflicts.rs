@@ -1,6 +1,5 @@
 use rayon::prelude::*;
 use rpfm_lib::files::pack::Pack;
-use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -9,23 +8,11 @@ use tauri::path::BaseDirectory;
 use tauri::Manager;
 use tokio::task;
 
-#[derive(Serialize, Deserialize)]
-struct CacheEntry {
-    file_paths: Vec<String>,
-    file_metadata: HashMap<String, FileMetadata>,
-    conflicts: HashMap<String, HashMap<String, Vec<String>>>,
-}
+use crate::r#mod::conflicts::{CacheEntry, FileMetadata};
 
-#[derive(Serialize, Deserialize, PartialEq, Eq)]
-struct FileMetadata {
-    size: u64,
-    modified: u64,
-}
-
-#[tauri::command(rename_all = "snake_case")]
-pub async fn pack_conflicts(
+pub async fn conflicts(
     handle: tauri::AppHandle,
-    app_id: u64,
+    app_id: u32,
     folder_paths: Vec<String>,
 ) -> Result<HashMap<String, HashMap<String, Vec<String>>>, String> {
     let app_cache_dir = handle
@@ -38,8 +25,9 @@ pub async fn pack_conflicts(
             .map_err(|e| format!("Failed to create cache directory: {}", e))?;
     }
 
-    let cache_json_filename = format!("pack_conflicts_{}_cache.json", app_id.to_string());
+    let cache_json_filename = format!("mod_conflicts_{}_cache.json", app_id.to_string());
     let cache_file = app_cache_dir.join(cache_json_filename);
+
     let files_vec: Vec<PathBuf> = folder_paths
         .par_iter()
         .flat_map(|folder_path| {
@@ -126,38 +114,38 @@ pub async fn pack_conflicts(
     }
 
     let conflicts_result = task::spawn_blocking(move || {
-        let pack_files: HashMap<String, HashSet<String>> = files_vec
+        let mod_files: HashMap<String, HashSet<String>> = files_vec
             .par_iter()
-            .filter_map(|pack_file_path| {
+            .filter_map(|mod_file_path| {
                 let packfile =
-                    Pack::read_and_merge(&[pack_file_path.clone()], true, false, false).ok()?;
+                    Pack::read_and_merge(&[mod_file_path.clone()], true, false, false).ok()?;
                 let paths = packfile
                     .paths()
                     .keys()
                     .filter(|path| !path.ends_with("/version.txt") && *path != "version.txt")
                     .cloned()
                     .collect::<HashSet<_>>();
-                Some((pack_file_path.to_string_lossy().to_string(), paths))
+                Some((mod_file_path.to_string_lossy().to_string(), paths))
             })
             .collect();
 
-        let conflicts_by_pack: HashMap<_, _> = pack_files
+        let conflicts_by_pack: HashMap<_, _> = mod_files
             .par_iter()
-            .filter_map(|(pack_file, paths)| {
-                let pack_conflicts: HashMap<_, _> = pack_files
+            .filter_map(|(mod_file, paths)| {
+                let mod_conflicts: HashMap<_, _> = mod_files
                     .par_iter()
-                    .filter_map(|(other_pack_file, other_paths)| {
-                        (pack_file != other_pack_file)
+                    .filter_map(|(other_mod_file, other_paths)| {
+                        (mod_file != other_mod_file)
                             .then(|| {
                                 let shared_paths =
                                     paths.intersection(other_paths).cloned().collect::<Vec<_>>();
                                 (!shared_paths.is_empty())
-                                    .then(|| (other_pack_file.clone(), shared_paths))
+                                    .then(|| (other_mod_file.clone(), shared_paths))
                             })
                             .flatten()
                     })
                     .collect();
-                (!pack_conflicts.is_empty()).then(|| (pack_file.clone(), pack_conflicts))
+                (!mod_conflicts.is_empty()).then(|| (mod_file.clone(), mod_conflicts))
             })
             .collect();
 

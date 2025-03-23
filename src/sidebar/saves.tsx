@@ -55,7 +55,9 @@ export const Saves = () => {
 
 	useEffect(() => {
 		const filtered = saveFiles.filter(({ filename }) => {
-			const nameWithoutSuffix = filename.endsWith('.save')
+			const nameWithoutSuffix = filename.endsWith(
+				'.' + selectedGame!.save_file_extension,
+			)
 				? filename.slice(0, -5)
 				: filename;
 

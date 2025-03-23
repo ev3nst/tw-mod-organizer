@@ -3,4 +3,3 @@ pub mod highlight_path;
 pub mod open_external_url;
 pub mod protected_paths;
 pub mod roaming_folder;
-pub mod supported_games;

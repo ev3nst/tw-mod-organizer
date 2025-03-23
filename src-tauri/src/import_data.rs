@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
-use crate::migrate_local_mod::migrate_local_mod;
+use crate::game::supported_games::SUPPORTED_GAMES;
+use crate::pack::migrate_local_mod::migrate_local_mod;
 use crate::utils::create_app_default_paths::create_app_default_paths;
 use crate::utils::protected_paths::PROTECTED_PATHS;
-use crate::utils::supported_games::SUPPORTED_GAMES;
 
 #[derive(Deserialize)]
 struct InputMod {
@@ -53,7 +53,7 @@ struct OutputModInfo {
 struct OutputModActive {
     identifier: String,
     title: String,
-    pack_file_path: String,
+    mod_file_path: String,
     is_active: bool,
 }
 
@@ -72,9 +72,18 @@ pub struct OutputData {
 #[tauri::command(rename_all = "snake_case")]
 pub async fn import_data(
     handle: tauri::AppHandle,
+    app_id: u32,
     json_file_path: String,
     mod_installation_path: String,
 ) -> Result<OutputData, String> {
+    let game = SUPPORTED_GAMES
+        .iter()
+        .find(|game| game.steam_id == app_id)
+        .ok_or_else(|| format!("Given app_id {} is not supported", app_id))?;
+    if game.r#type != "totalwar" {
+        return Err("This game type is not supported for this function".to_string());
+    }
+
     let _ = create_app_default_paths(handle.clone());
 
     // json validation
@@ -109,9 +118,7 @@ pub async fn import_data(
 
     let mut local_mod_lookup: HashMap<String, String> = HashMap::new();
     for (game_key, game_mods) in &input_data.game_to_current_preset {
-        let game_info = SUPPORTED_GAMES
-            .iter()
-            .find(|game| game.schema_name == game_key);
+        let game_info = SUPPORTED_GAMES.iter().find(|game| game.slug == game_key);
         if game_info.is_none() {
             continue;
         }
@@ -157,10 +164,7 @@ pub async fn import_data(
     }
 
     for (game_key, presets) in &input_data.game_to_presets {
-        if !SUPPORTED_GAMES
-            .iter()
-            .any(|game| game.schema_name == game_key)
-        {
+        if !SUPPORTED_GAMES.iter().any(|game| game.slug == game_key) {
             continue;
         }
 
@@ -189,7 +193,7 @@ pub async fn import_data(
                 mods.push(OutputModActive {
                     identifier,
                     title: title.to_string(),
-                    pack_file_path: m.path.clone(),
+                    mod_file_path: m.path.clone(),
                     is_active: m.is_enabled,
                 });
             }

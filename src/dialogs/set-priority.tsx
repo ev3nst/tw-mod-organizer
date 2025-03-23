@@ -62,8 +62,8 @@ function SetPriorityDialog() {
 				mod_id: na.identifier,
 				order: ni + 1,
 				title: na.title,
-				pack_file_path:
-					'pack_file_path' in na ? na.pack_file_path : undefined,
+				mod_file_path:
+					'mod_file_path' in na ? na.mod_file_path : undefined,
 			})),
 		);
 		toggleSetPriority();
@@ -83,7 +83,7 @@ function SetPriorityDialog() {
 						</div>
 					</DialogTitle>
 					<DialogDescription className="text-xs mt-1 break-all">
-						{selectedMod?.pack_file}
+						{selectedMod?.mod_file}
 					</DialogDescription>
 				</DialogHeader>
 				<div className="flex justify-between items-end gap-4">

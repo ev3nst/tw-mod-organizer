@@ -38,7 +38,7 @@ function SaveFileDetailsDialog() {
 				lr =>
 					!mods.some(m => m.identifier === lr.identifier) &&
 					lr.is_active === true &&
-					lr.pack_file !== null, // Ignore separators
+					lr.mod_file !== null, // Ignore separators
 			)
 		: [];
 

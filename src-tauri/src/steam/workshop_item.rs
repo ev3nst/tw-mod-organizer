@@ -20,7 +20,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-// Modified by Burak Kartal on [17/03/2025]
+// Modified by Burak Kartal on [22/03/2025]
+
+use std::collections::HashSet;
+
+use regex::Regex;
 
 fn capitalize(s: String) -> String {
     let mut chars = s.chars();
@@ -30,13 +34,20 @@ fn capitalize(s: String) -> String {
     }
 }
 
+fn is_filtered_tag(tag: &str) -> bool {
+    let version_regex = Regex::new(r"^[VvEe]\s*\d+(\.\d+)*(\.[Xx])?$").unwrap();
+    let excluded_tags: HashSet<&str> = ["mod", "Singleplayer", "Native"].iter().cloned().collect();
+
+    version_regex.is_match(tag) || excluded_tags.contains(tag)
+}
+
 pub mod workshop {
     use serde::Serialize;
 
     use crate::steam::localplayer::PlayerSteamId;
     use crate::steam::workshop::workshop::UgcItemVisibility;
 
-    use super::capitalize;
+    use super::{capitalize, is_filtered_tag};
 
     pub enum UGCQueryType {
         RankedByVote,
@@ -318,6 +329,7 @@ pub mod workshop {
                     .collect();
 
                 let published_file_id = u64::from(item.published_file_id.0);
+
                 Self {
                     published_file_id,
                     creator_app_id: item.creator_app_id.map(|id| id.0),
@@ -334,7 +346,7 @@ pub mod workshop {
                     tags: item
                         .tags
                         .iter()
-                        .filter(|tag| **tag != "mod")
+                        .filter(|tag| !is_filtered_tag(tag))
                         .map(|tag| capitalize(tag.clone()).replace("Ui", "UI"))
                         .collect::<Vec<String>>()
                         .join(", "),

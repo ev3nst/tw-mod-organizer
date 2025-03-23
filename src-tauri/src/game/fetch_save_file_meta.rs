@@ -1,32 +1,29 @@
-use std::fs;
-use std::path::Path;
+use std::{fs, path::PathBuf};
 use tauri::{path::BaseDirectory, Manager};
 
-use crate::utils::{
-    create_app_default_paths::create_app_default_paths, roaming_folder::roaming_folder,
-    supported_games::SUPPORTED_GAMES,
-};
+use super::supported_games::SUPPORTED_GAMES;
+use crate::utils::create_app_default_paths::create_app_default_paths;
 
 use super::upsert_save_file_meta::SaveFileMeta;
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn fetch_save_file_meta(
     handle: tauri::AppHandle,
-    app_id: u64,
+    app_id: u32,
     save_file_name: String,
 ) -> Result<SaveFileMeta, String> {
     let _ = create_app_default_paths(handle.clone());
-    let roaming_folder = roaming_folder().ok_or_else(|| "Roaming folder could not be resolved.")?;
 
     let game = SUPPORTED_GAMES
         .iter()
         .find(|game| game.steam_id == app_id)
         .ok_or_else(|| format!("Given app_id {} is not supported", app_id))?;
 
-    let save_folder = Path::new(&roaming_folder)
-        .join("The Creative Assembly")
-        .join(&game.save_path_folder)
-        .join("save_games");
+    let save_folder = PathBuf::from(
+        &game
+            .save_path_folder()
+            .map_err(|e| format!("Failed to fetch save game folder: {}", e))?,
+    );
 
     if !save_folder.exists() {
         return Err("Save folder does not exist.".to_string());
@@ -42,7 +39,9 @@ pub async fn fetch_save_file_meta(
         .resolve("save_file_meta".to_string(), BaseDirectory::AppConfig)
         .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?;
 
-    let clean_save_file_name = save_file_name.trim_end_matches(".save");
+    let clean_save_file_name =
+        save_file_name.trim_end_matches(&format!(".{}", game.save_file_extension));
+
     let meta_file_path = save_file_meta_folder.join(format!("{}.meta", clean_save_file_name));
     if !meta_file_path.exists() {
         return Err("Save Meta file does not exist.".to_string());

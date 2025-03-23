@@ -3,10 +3,10 @@ use std::{
     process::{Command, Stdio},
 };
 
-use crate::utils::supported_games::SUPPORTED_GAMES;
+use super::supported_games::SUPPORTED_GAMES;
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn is_game_running(app_id: u64) -> Result<bool, String> {
+pub async fn is_game_running(app_id: u32) -> Result<bool, String> {
     let game = SUPPORTED_GAMES
         .iter()
         .find(|game| game.steam_id == app_id)

@@ -1,6 +1,6 @@
 import Database from '@tauri-apps/plugin-sql';
 
-const sqliteDbName = 'sqlite:twmodorganizer.db';
+const sqliteDbName = 'sqlite:modulus.db';
 class DbWrapper {
 	db!: Database;
 	async initialize() {

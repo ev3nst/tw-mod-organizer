@@ -21,6 +21,7 @@ type ModTableProps = {
 	selectRange: (startId: string, endId: string) => void;
 	lastSelectedId: string | null;
 	setLastSelectedId: (id: string | null) => void;
+	dependencyViolations: Map<string, Set<string>>;
 };
 
 export const ModTable: React.FC<ModTableProps> = memo(
@@ -33,6 +34,7 @@ export const ModTable: React.FC<ModTableProps> = memo(
 		selectRange,
 		lastSelectedId,
 		setLastSelectedId,
+		dependencyViolations,
 	}) => {
 		return (
 			<Table className="w-full">
@@ -42,19 +44,33 @@ export const ModTable: React.FC<ModTableProps> = memo(
 						items={modsResolved.map(mod => mod.identifier)}
 						strategy={verticalListSortingStrategy}
 					>
-						{modsResolved.map(mod => (
-							<Row
-								key={mod.identifier}
-								mod={mod}
-								modIndex={modIndices.get(mod.identifier) ?? -1}
-								id={mod.identifier}
-								isSelected={selectedRows.has(mod.identifier)}
-								onSelect={toggleRow}
-								selectRange={selectRange}
-								lastSelectedId={lastSelectedId}
-								setLastSelectedId={setLastSelectedId}
-							/>
-						))}
+						{modsResolved.map(mod => {
+							const hasViolation = dependencyViolations.has(
+								mod.identifier,
+							);
+							const dependentMods = hasViolation
+								? dependencyViolations.get(mod.identifier)
+								: undefined;
+							return (
+								<Row
+									key={mod.identifier}
+									mod={mod}
+									modIndex={
+										modIndices.get(mod.identifier) ?? -1
+									}
+									id={mod.identifier}
+									isSelected={selectedRows.has(
+										mod.identifier,
+									)}
+									onSelect={toggleRow}
+									selectRange={selectRange}
+									lastSelectedId={lastSelectedId}
+									setLastSelectedId={setLastSelectedId}
+									hasViolation={hasViolation}
+									dependentMods={dependentMods}
+								/>
+							);
+						})}
 					</SortableContext>
 				</TableBody>
 				<Footer modCount={totalMods} />

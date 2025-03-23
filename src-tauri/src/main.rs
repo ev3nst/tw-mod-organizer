@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    tw_mod_organizer_lib::run()
+    modulus_lib::run()
 }

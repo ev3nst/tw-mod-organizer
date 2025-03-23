@@ -21,6 +21,7 @@ export function ImportData() {
 	const [configJSONPath, setConfigJSONPath] = useState('');
 
 	const games = settingStore(state => state.games);
+	const selectedGame = settingStore(state => state.selectedGame);
 	const profiles = profileStore(state => state.profiles);
 
 	async function handleSubmit() {
@@ -33,12 +34,15 @@ export function ImportData() {
 
 		setLoading(true);
 		try {
-			const result = await api.import_data(configJSONPath);
+			const result = await api.import_data(
+				selectedGame!.steam_id,
+				configJSONPath,
+			);
 
 			const metaGameKeys = Object.keys(result.mod_meta_information);
 			for (let mgki = 0; mgki < metaGameKeys.length; mgki++) {
 				const gameKey = metaGameKeys[mgki];
-				const game = games.find(g => g.schema_name === gameKey);
+				const game = games.find(g => g.slug === gameKey);
 				if (!game) continue;
 
 				let modMeta = await ModMetaModel.retrieve(
@@ -94,7 +98,7 @@ export function ImportData() {
 			const profileGameKeys = Object.keys(result.mod_profiles);
 			for (let gki = 0; gki < profileGameKeys.length; gki++) {
 				const gameKey = profileGameKeys[gki];
-				const game = games.find(g => g.schema_name === gameKey);
+				const game = games.find(g => g.slug === gameKey);
 				if (!game) continue;
 
 				for (
@@ -147,7 +151,7 @@ export function ImportData() {
 							return {
 								mod_id: pr.identifier,
 								title: pr.title,
-								pack_file_path: pr.pack_file_path,
+								mod_file_path: pr.mod_file_path,
 								order: pri + 1,
 							};
 						}),
@@ -180,7 +184,7 @@ export function ImportData() {
 			<p className="text-sm text-muted-foreground">
 				If you have any local mods installed they will be also processed
 				to be compatible with this app's structure. While doing so
-				process will copy the .pack files into the defined mods path in
+				process will copy the mod files into the defined mods path in
 				the settings so make sure you have enough space in the disk,
 				depending on how much local mods you have this might take some
 				time.

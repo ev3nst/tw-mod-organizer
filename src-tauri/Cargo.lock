@@ -2686,6 +2686,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "modulus"
+version = "0.6.0"
+dependencies = [
+ "dirs 6.0.0",
+ "futures-util",
+ "notify",
+ "open",
+ "quick-xml 0.37.2",
+ "rayon",
+ "regex",
+ "reqwest",
+ "rpfm_lib",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "steamworks",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-deep-link",
+ "tauri-plugin-dialog",
+ "tauri-plugin-opener",
+ "tauri-plugin-single-instance",
+ "tauri-plugin-sql",
+ "tokio",
+ "tokio-tungstenite",
+ "trash",
+ "uuid",
+ "winreg 0.55.0",
+ "xml",
+]
+
+[[package]]
 name = "muda"
 version = "0.15.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5997,35 +6029,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tw-mod-organizer"
-version = "0.5.0"
-dependencies = [
- "futures-util",
- "notify",
- "open",
- "rayon",
- "regex",
- "reqwest",
- "rpfm_lib",
- "serde",
- "serde_json",
- "sqlx",
- "steamworks",
- "tauri",
- "tauri-build",
- "tauri-plugin-deep-link",
- "tauri-plugin-dialog",
- "tauri-plugin-opener",
- "tauri-plugin-single-instance",
- "tauri-plugin-sql",
- "tokio",
- "tokio-tungstenite",
- "trash",
- "uuid",
- "winreg 0.55.0",
-]
-
-[[package]]
 name = "typeid"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7111,6 +7114,15 @@ checksum = "ec1cdab258fb55c0da61328dc52c8764709b249011b2cad0454c72f0bf10a1f6"
 dependencies = [
  "libc",
  "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "xml"
+version = "0.8.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ede1c99c55b4b3ad0349018ef0eccbe954ce9c342334410707ee87177fcf2ab4"
+dependencies = [
+ "xml-rs",
 ]
 
 [[package]]

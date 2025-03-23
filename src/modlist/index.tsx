@@ -59,7 +59,7 @@ export const ModList = () => {
 				steam_library_paths.game_workshop_paths[selectedGame!.slug],
 			];
 
-			const conflicts = await api.pack_conflicts(
+			const conflicts = await api.conflicts(
 				selectedGame!.steam_id,
 				modPaths,
 			);

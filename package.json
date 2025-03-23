@@ -1,8 +1,8 @@
 {
-	"name": "tw-mod-organizer",
+	"name": "modulus",
 	"private": true,
-	"version": "0.5.0",
-	"description": "Mod manager tool for Total War: Warhammer 2 & 3 & Total War: Three Kingdom",
+	"version": "0.6.0",
+	"description": "Mod manager tool for Total War: Warhammer 2 & 3 & Total War: Three Kingdom & Mount & Blade: Bannerlord",
 	"author": {
 		"name": "Burak KARTAL",
 		"email": "futuregnr@gmail.com"
@@ -14,6 +14,7 @@
 		"build": "tsc && vite build",
 		"preview": "vite preview",
 		"tauri": "tauri",
+		"lint": "tsc --noEmit",
 		"format": "bunx prettier --write '**/*.{js,jsx,ts,tsx,json,css}' --ignore-path .prettierignore"
 	},
 	"dependencies": {

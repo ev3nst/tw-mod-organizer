@@ -1,10 +1,13 @@
 use futures_util::FutureExt;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use steamworks::{Client, PublishedFileId};
 
-use crate::pack::find_pack_and_image::find_pack_and_image;
-use crate::r#mod::local_mods::{ModItem, Version};
+use crate::game::supported_games::SUPPORTED_GAMES;
+use crate::r#mod::base_mods::{ModItem, ModVersion};
+use crate::r#mod::totalwar;
 use crate::steam::workshop_item::workshop::WorkshopItemsResult;
+use crate::xml::submodule_contents::submodule_contents;
 use crate::AppState;
 
 use super::workshop_path_for_app::workshop_path_for_app;
@@ -14,6 +17,11 @@ pub async fn subscribed_mods(
     app_state: tauri::State<'_, AppState>,
     app_id: u32,
 ) -> Result<Vec<ModItem>, String> {
+    let game = SUPPORTED_GAMES
+        .iter()
+        .find(|game| game.steam_id == app_id)
+        .ok_or_else(|| format!("Given app_id {} is not supported", app_id))?;
+
     let steam_client = {
         let steam_state = &app_state.steam_state;
 
@@ -96,38 +104,108 @@ pub async fn subscribed_mods(
     let items_result = items_result.unwrap()?;
     let workshop_base_path = workshop_path_for_app(app_id);
 
-    let mut mod_items = Vec::new();
     let mut creator_ids = Vec::new();
+    let mut steam_items = Vec::new();
+    let mut mod_contents_map = HashMap::new();
 
     let steam_client_for_friends = steam_client_clone.clone();
     let (creator_tx, mut creator_rx) = tokio::sync::mpsc::channel(32);
 
-    for item in items_result.items.into_iter().flatten() {
-        if let Some(ref base_path) = workshop_base_path {
-            let item_path = PathBuf::from(base_path).join(&item.published_file_id.to_string());
-            let (pack_file, pack_file_path, preview_local) = find_pack_and_image(&item_path);
+    if let Some(ref base_path) = workshop_base_path {
+        for item in items_result.items.into_iter().flatten() {
+            creator_ids.push(item.owner.raw);
 
-            if !pack_file.is_empty() {
-                let required_items = item.required_items.clone();
-                creator_ids.push(item.owner.raw);
-                mod_items.push((
-                    item,
-                    pack_file,
-                    pack_file_path,
-                    preview_local,
-                    required_items,
-                ));
+            let item_path = PathBuf::from(base_path).join(&item.published_file_id.to_string());
+
+            match game.r#type.as_ref() {
+                "totalwar" => {
+                    let (mod_file, mod_file_path, preview_local) =
+                        totalwar::find_mod_file_and_image::find_mod_file_and_image(&item_path);
+
+                    if !mod_file.is_empty() {
+                        let required_items = item
+                            .required_items
+                            .iter()
+                            .map(|id| id.to_string())
+                            .collect();
+                        steam_items.push((
+                            String::from(""),
+                            item,
+                            mod_file,
+                            mod_file_path,
+                            preview_local,
+                            required_items,
+                            Vec::<String>::new(),
+                        ));
+                    }
+                }
+                "bannerlord" => {
+                    if let Some(submodule_info) = submodule_contents(&item_path) {
+                        mod_contents_map.insert(
+                            submodule_info.id.clone(),
+                            (submodule_info.clone(), item.published_file_id.to_string()),
+                        );
+
+                        steam_items.push((
+                            submodule_info.id,
+                            item,
+                            submodule_info.name,
+                            item_path.to_string_lossy().to_string(),
+                            String::from(""),
+                            Vec::<String>::new(),
+                            Vec::<String>::new(),
+                        ));
+                    }
+                }
+                _ => return Err(format!("Game type '{}' is not supported", game.r#type)),
+            }
+        }
+    } else {
+        return Ok(Vec::new());
+    }
+
+    if game.r#type == "bannerlord" {
+        for item_data in &mut steam_items {
+            let item_id = item_data.1.published_file_id.to_string();
+
+            if let Some(module_id) = mod_contents_map
+                .iter()
+                .find(|(_, (_, pub_id))| *pub_id == item_id)
+                .map(|(id, _)| id.clone())
+            {
+                if let Some((submodule_info, _)) = mod_contents_map.get(&module_id) {
+                    if let Some(ref depended_modules) = submodule_info.depended_modules {
+                        for dep in depended_modules {
+                            if let Some((_, pub_id)) = mod_contents_map.get(&dep.id) {
+                                item_data.5.push(pub_id.clone());
+                            } else {
+                                item_data.5.push(dep.id.clone());
+                            }
+                        }
+                    }
+
+                    if let Some(ref modules_to_load_after) =
+                        submodule_info.modules_to_load_after_this
+                    {
+                        for child in modules_to_load_after {
+                            if let Some((_, pub_id)) = mod_contents_map.get(&child.id) {
+                                item_data.6.push(pub_id.clone());
+                            } else {
+                                item_data.6.push(child.id.clone());
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
-    let creator_names = if !mod_items.is_empty() {
+    let creator_names = if !steam_items.is_empty() {
         let creator_task = tokio::task::spawn_blocking(move || {
             let friends = steam_client_for_friends.friends();
-            let mut unknown_creators = std::collections::HashSet::new();
+            let mut unknown_creators = HashSet::new();
 
-            let unique_creator_ids: std::collections::HashSet<_> =
-                creator_ids.iter().cloned().collect();
+            let unique_creator_ids: HashSet<_> = creator_ids.iter().cloned().collect();
 
             for &creator_id in &unique_creator_ids {
                 let creator = friends.get_friend(creator_id);
@@ -151,7 +229,7 @@ pub async fn subscribed_mods(
                 }
             }
 
-            let mut names = std::collections::HashMap::new();
+            let mut names = HashMap::new();
             for &id in &creator_ids {
                 let creator = friends.get_friend(id);
                 names.insert(id, creator.name());
@@ -179,17 +257,27 @@ pub async fn subscribed_mods(
 
         creator_result.unwrap()
     } else {
-        std::collections::HashMap::new()
+        HashMap::new()
     };
 
     let mut mods = Vec::new();
-    for (item, pack_file, pack_file_path, preview_local, required_items) in mod_items {
+    for (
+        game_specific_id,
+        item,
+        mod_file,
+        mod_file_path,
+        preview_local,
+        required_items,
+        child_mods,
+    ) in steam_items
+    {
         let creator_name = creator_names
             .get(&item.owner.raw)
             .cloned()
             .unwrap_or_else(|| "[unknown]".to_string());
 
         mods.push(ModItem {
+            game_specific_id,
             identifier: item.published_file_id.to_string(),
             title: item.title,
             description: Some(item.description),
@@ -197,14 +285,15 @@ pub async fn subscribed_mods(
             categories: Some(item.tags),
             url: Some(item.url),
             preview_url: item.preview_url,
-            version: Some(Version::Number(item.time_updated)),
+            version: Some(ModVersion::Number(item.time_updated)),
             item_type: "steam_mod".to_string(),
-            pack_file,
-            pack_file_path,
+            mod_file,
+            mod_file_path,
             preview_local,
             creator_id: Some(item.owner.steam_id64.to_string()),
             creator_name: Some(creator_name),
-            required_items: required_items.iter().map(|id| id.to_string()).collect(),
+            required_items,
+            child_mods,
         });
     }
 

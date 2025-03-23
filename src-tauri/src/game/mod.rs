@@ -1,3 +1,4 @@
+pub mod bannerlord;
 pub mod delete_save_file;
 pub mod fetch_save_file_meta;
 pub mod find_installation_path;
@@ -5,5 +6,6 @@ pub mod is_running;
 pub mod save_files;
 pub mod save_folder_watch;
 pub mod set_watch_save_folder;
-pub mod start;
+pub mod supported_games;
+pub mod totalwar;
 pub mod upsert_save_file_meta;

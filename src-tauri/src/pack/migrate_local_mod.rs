@@ -4,11 +4,12 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 
-use crate::r#mod::install::ModMeta;
+use crate::r#mod::base_mods::ModVersion;
+use crate::r#mod::install::InstallModMeta;
 use crate::utils::protected_paths::PROTECTED_PATHS;
 
 pub fn migrate_local_mod(
-    app_id: u64,
+    app_id: u32,
     source_path: &str,
     mod_title: &str,
     categories: Option<Vec<String>>,
@@ -22,7 +23,7 @@ pub fn migrate_local_mod(
         ));
     }
 
-    let pack_file_name = source_path
+    let mod_file_name = source_path
         .file_name()
         .and_then(|name| name.to_str())
         .ok_or_else(|| "Failed to get file name or convert to string".to_string())?;
@@ -40,7 +41,7 @@ pub fn migrate_local_mod(
             .read_dir()
             .map_err(|e| format!("Failed to read app mods directory: {}", e))?
             .filter_map(Result::ok)
-            .find(|entry| entry.path().join(pack_file_name).exists())
+            .find(|entry| entry.path().join(mod_file_name).exists())
     } else {
         create_dir_all(&app_mods_path)
             .map_err(|e| format!("Failed to create app mods directory: {}", e))?;
@@ -78,7 +79,7 @@ pub fn migrate_local_mod(
         }
     }
 
-    let dest_path = mod_folder.join(pack_file_name);
+    let dest_path = mod_folder.join(mod_file_name);
     fs::copy(source_path, &dest_path).map_err(|e| format!("Failed to copy pack file: {}", e))?;
 
     let now = SystemTime::now()
@@ -86,17 +87,18 @@ pub fn migrate_local_mod(
         .map_err(|e| format!("Time error: {}", e))?
         .as_secs();
 
-    let meta = ModMeta {
+    let meta = InstallModMeta {
         identifier: uuid.clone(),
         title: mod_title.to_string(),
-        pack_file: pack_file_name.to_owned(),
+        mod_file: mod_file_name.to_owned(),
         downloaded_url: Some("".to_string()),
         description: Some("".to_string()),
         categories: categories.map(|cats| cats.join(", ")),
         url: Some("".to_string()),
         preview_url: preview_url,
-        version: Some("".to_string()),
+        version: Some(ModVersion::Text("".to_string())),
         created_at: now,
+        r#type: "local".to_owned(),
     };
 
     let meta_path = mod_folder.join("meta.json");
@@ -111,7 +113,7 @@ pub fn migrate_local_mod(
     Ok(uuid)
 }
 
-fn validate_mod_path(path: &Path, app_id: u64, item_id: String) -> Result<(), String> {
+fn validate_mod_path(path: &Path, app_id: u32, item_id: String) -> Result<(), String> {
     let path_str = path.to_string_lossy();
     for protected in PROTECTED_PATHS {
         if path_str.starts_with(protected) {

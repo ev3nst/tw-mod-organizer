@@ -24,7 +24,12 @@ import {
 import { filterMods, modMetaStore } from '@/lib/store/mod_meta';
 
 import { settingStore } from '@/lib/store/setting';
-import { sortMods, sortCollapsedSection, sortGroup } from '@/modlist/utils';
+import {
+	sortMods,
+	sortCollapsedSection,
+	sortGroup,
+	hasCircularDependency,
+} from '@/modlist/utils';
 
 import { ModTable } from './table';
 import { Filter } from './filter';
@@ -33,6 +38,9 @@ export const ModListSortableTable = () => {
 	const [searchModText, setSearchModText] = useState<string>('');
 	const [activationFilter, setActivationFilter] = useState<string>('all');
 	const [activeId, setActiveId] = useState<string | null>(null);
+	const [dependencyViolations, setDependencyViolations] = useState<
+		Map<string, Set<string>>
+	>(new Map());
 
 	const sort_by = settingStore(state => state.sort_by);
 
@@ -43,12 +51,60 @@ export const ModListSortableTable = () => {
 	const modOrderData = modOrderStore(state => state.data);
 	const setModOrder = modOrderStore(state => state.setData);
 	const selectedRows = modOrderStore(state => state.selectedRows);
+	const setSelectedRows = modOrderStore(state => state.setSelectedRows);
 	const toggleRow = modOrderStore(state => state.toggleRow);
 	const clearSelection = modOrderStore(state => state.clearSelection);
 
 	const separators = modSeparatorStore(state => state.data);
 	const metaData = modMetaStore(state => state.data);
 	const modActiveData = modActivationStore(state => state.data);
+
+	useEffect(() => {
+		if (sort_by !== 'load_order') {
+			setDependencyViolations(new Map());
+			return;
+		}
+
+		const actualMods = mods.filter(m => !isSeparator(m)) as ModItem[];
+		const violations = new Map<string, Set<string>>();
+
+		const modPositionMap = new Map<string, number>();
+		mods.forEach((mod, index) => {
+			modPositionMap.set(mod.identifier, index);
+		});
+
+		actualMods.forEach(mod => {
+			if (
+				!mod.required_items ||
+				!Array.isArray(mod.required_items) ||
+				mod.required_items.length === 0
+			) {
+				return;
+			}
+
+			const childPosition = modPositionMap.get(mod.identifier) || 0;
+			mod.required_items.forEach(parentId => {
+				if (
+					hasCircularDependency(mod.identifier, parentId, actualMods)
+				) {
+					return;
+				}
+
+				const parentPosition = modPositionMap.get(parentId);
+				if (
+					parentPosition !== undefined &&
+					childPosition < parentPosition
+				) {
+					if (!violations.has(parentId)) {
+						violations.set(parentId, new Set<string>());
+					}
+					violations.get(parentId)?.add(mod.identifier);
+				}
+			});
+		});
+
+		setDependencyViolations(violations);
+	}, [mods, sort_by]);
 
 	const selectRange = useCallback(
 		(startId: string, endId: string) => {
@@ -70,7 +126,7 @@ export const ModListSortableTable = () => {
 				}
 			}
 
-			modOrderStore.setState({ selectedRows: newSelectedRows });
+			setSelectedRows(newSelectedRows);
 		},
 		[mods],
 	);
@@ -255,6 +311,7 @@ export const ModListSortableTable = () => {
 						selectRange={selectRange}
 						lastSelectedId={lastSelectedId}
 						setLastSelectedId={setLastSelectedId}
+						dependencyViolations={dependencyViolations}
 					/>
 				</div>
 

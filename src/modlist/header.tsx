@@ -1,4 +1,4 @@
-import { Grid2X2Icon } from 'lucide-react';
+import { Grid2X2Icon, RotateCcwIcon } from 'lucide-react';
 
 import { TableHead, TableHeader, TableRow } from '@/components/table';
 import {
@@ -9,6 +9,17 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/dropdown-menu';
+import {
+	AlertDialog,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+	AlertDialogAction,
+} from '@/components/alert-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/tooltip';
 import { Button } from '@/components/button';
 
@@ -17,6 +28,9 @@ import { ProfileSwitcher } from '@/modlist/profile';
 import { modMetaStore } from '@/lib/store/mod_meta';
 
 import { ToggleAll } from '@/modlist/toggle-all';
+import { ModItem, modsStore } from '@/lib/store/mods';
+import { modOrderStore } from '@/lib/store/mod_order';
+import { isSeparator } from '@/lib/store/mod_separator';
 
 const SortByIndicator = ({
 	title,
@@ -46,10 +60,15 @@ export const Header = () => {
 	const toggle_conflict = settingStore(state => state.toggle_conflict);
 	const toggle_version = settingStore(state => state.toggle_version);
 	const toggle_creator = settingStore(state => state.toggle_creator);
+	const toggle_created_at = settingStore(state => state.toggle_created_at);
 	const setColumnSelection = settingStore(state => state.setColumnSelection);
 	const sort_by = settingStore(state => state.sort_by);
 	const setSortBy = settingStore(state => state.setSortBy);
 
+	const mods = modsStore(state => state.mods);
+	const setMods = modsStore(state => state.setMods);
+
+	const setModOrderData = modOrderStore(state => state.setData);
 	const toggleBulkCategory = modMetaStore(state => state.toggleBulkCategory);
 	let orderByText: any = (
 		<SortByIndicator title="#" description="Sorting by load order." />
@@ -77,11 +96,104 @@ export const Header = () => {
 			break;
 	}
 
+	const handleOnResetLoadOrder = (event: React.MouseEvent) => {
+		event.stopPropagation();
+		const nonSeparatorMods = mods.filter(
+			mod => !isSeparator(mod),
+		) as ModItem[];
+		const separatorMods = mods.filter(mod => isSeparator(mod));
+
+		let sortedMods = [...nonSeparatorMods].sort(
+			(a, b) => a.created_at - b.created_at,
+		);
+
+		let iterations = 0;
+		const maxIterations = sortedMods.length;
+		let changed = true;
+
+		while (changed && iterations < maxIterations) {
+			changed = false;
+
+			for (let i = 0; i < sortedMods.length; i++) {
+				const mod = sortedMods[i];
+
+				if (mod.required_items && mod.required_items.length > 0) {
+					const maxParentIndex = Math.max(
+						...mod.required_items
+							.map(dep =>
+								sortedMods.findIndex(m => m.identifier === dep),
+							)
+							.filter(index => index !== -1),
+					);
+
+					if (maxParentIndex !== -1 && i < maxParentIndex) {
+						sortedMods.splice(i, 1);
+						sortedMods.splice(maxParentIndex, 0, mod);
+						changed = true;
+						break;
+					}
+				}
+			}
+
+			iterations++;
+		}
+
+		const newArray = [...sortedMods, ...separatorMods];
+
+		setMods(newArray);
+		setModOrderData(
+			newArray.map((na, ni) => ({
+				mod_id: na.identifier,
+				order: ni + 1,
+				title: na.title,
+				mod_file_path:
+					'mod_file_path' in na ? na.mod_file_path : undefined,
+			})),
+		);
+	};
+
 	return (
 		<TableHeader>
 			<TableRow>
-				<TableHead className="text-center">S</TableHead>
-				<TableHead className="text-center">{orderByText}</TableHead>
+				<TableHead className="flex items-center justify-center w-[40px] overflow-hidden">
+					<AlertDialog>
+						<AlertDialogTrigger asChild>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-6 w-6"
+							>
+								<RotateCcwIcon className="w-4 h-4" />
+							</Button>
+						</AlertDialogTrigger>
+						<AlertDialogContent>
+							<AlertDialogHeader>
+								<AlertDialogTitle>
+									Reset Load Order
+								</AlertDialogTitle>
+								<AlertDialogDescription>
+									This action is irreversible. You are about
+									to reset your current profile's load order.
+									Automatic sorting will make sure that
+									dependency checks are resolved and sorted by
+									their creation date afterwards.
+								</AlertDialogDescription>
+							</AlertDialogHeader>
+							<AlertDialogFooter>
+								<AlertDialogCancel>Cancel</AlertDialogCancel>
+								<AlertDialogAction
+									className="bg-red-500 text-white hover:bg-red-700"
+									onClick={handleOnResetLoadOrder}
+								>
+									Reset
+								</AlertDialogAction>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialog>
+				</TableHead>
+				<TableHead className="text-center w-[40px] overflow-hidden">
+					{orderByText}
+				</TableHead>
 				<ToggleAll />
 				<ProfileSwitcher />
 				{toggle_category && (
@@ -93,11 +205,14 @@ export const Header = () => {
 					</TableHead>
 				)}
 				{toggle_conflict && (
-					<TableHead className="text-center">CONFLICT</TableHead>
+					<TableHead className="text-center w-[80px]">
+						CONFLICT
+					</TableHead>
 				)}
 				{toggle_version && <TableHead>VERSION</TableHead>}
 				{toggle_creator && <TableHead>CREATOR</TableHead>}
-				<TableHead className="flex justify-center">
+				{toggle_created_at && <TableHead>CREATED</TableHead>}
+				<TableHead className="flex justify-center w-[40px]">
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button variant="link" size="icon">
@@ -138,6 +253,14 @@ export const Header = () => {
 								}
 							>
 								Creator
+							</DropdownMenuCheckboxItem>
+							<DropdownMenuCheckboxItem
+								checked={toggle_created_at}
+								onCheckedChange={isChecked =>
+									setColumnSelection('created_at', isChecked)
+								}
+							>
+								Created
 							</DropdownMenuCheckboxItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuLabel>Sort By</DropdownMenuLabel>

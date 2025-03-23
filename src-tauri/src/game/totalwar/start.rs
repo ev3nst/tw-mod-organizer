@@ -3,15 +3,14 @@ use std::{fs, path::Path, process::Command};
 use tokio::spawn;
 use tokio::time::{sleep, Duration};
 
-use crate::utils::supported_games::SUPPORTED_GAMES;
+use crate::game::find_installation_path::find_installation_path;
+use crate::game::supported_games::SUPPORTED_GAMES;
 use crate::AppState;
 
-use super::find_installation_path::find_installation_path;
-
 #[tauri::command(rename_all = "snake_case")]
-pub async fn start_game(
+pub async fn start_game_totalwar(
     app_state: tauri::State<'_, AppState>,
-    app_id: u64,
+    app_id: u32,
     add_directory_txt: String,
     used_mods_txt: String,
     save_game: Option<String>,
@@ -34,17 +33,25 @@ pub async fn start_game(
         }
     };
 
-    let used_mods_file_path =
-        Path::new(&game_installation_path).join("tw_mod_organizer_used_mods.txt");
+    let exe_directory = if game.exe_folder.is_empty() {
+        game_installation_path.clone()
+    } else {
+        Path::new(&game_installation_path)
+            .join(game.exe_folder.replace("\\", "/"))
+            .to_string_lossy()
+            .into_owned()
+    };
+
+    let used_mods_file_path = Path::new(&game_installation_path).join("modulus_used_mods.txt");
     fs::write(
         &used_mods_file_path,
         format!("{}{}", add_directory_txt, used_mods_txt),
     )
-    .map_err(|e| format!("Failed to write tw_mod_organizer_used_mods.txt: {}", e))?;
+    .map_err(|e| format!("Failed to write modulus_used_mods.txt: {}", e))?;
 
     let batch_content = format!(
-        "start /d \"{}\" {}.exe{}{} tw_mod_organizer_used_mods.txt;",
-        game_installation_path,
+        "start /d \"{}\" {}.exe{}{} modulus_used_mods.txt;",
+        exe_directory,
         game.exe_name,
         if let Some(save) = &save_game {
             if !save.is_empty() {
@@ -58,7 +65,7 @@ pub async fn start_game(
         ""
     );
 
-    let batch_path = Path::new(&game_installation_path).join("launch_game.bat");
+    let batch_path = Path::new(&exe_directory).join("launch_game.bat");
     fs::write(&batch_path, batch_content)
         .map_err(|e| format!("Failed to write batch file: {}", e))?;
 

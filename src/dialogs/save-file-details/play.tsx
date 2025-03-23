@@ -9,7 +9,11 @@ import { isSeparator } from '@/lib/store/mod_separator';
 
 import type { ModItem } from '@/lib/store/mods';
 import type { ModItemSeparatorUnion } from '@/lib/store/mod_separator';
-import { startGame, toastError } from '@/lib/utils';
+import {
+	startGameBannerlord,
+	startGameTotalwar,
+	toastError,
+} from '@/lib/utils';
 
 export const Play = () => {
 	const setIsGameLoading = settingStore(state => state.setIsGameLoading);
@@ -31,7 +35,7 @@ export const Play = () => {
 				lr =>
 					!mods.some(m => m.identifier === lr.identifier) &&
 					lr.is_active === true &&
-					lr.pack_file !== null, // Ignore separators
+					lr.mod_file !== null, // Ignore separators
 			)
 		: [];
 
@@ -72,8 +76,8 @@ export const Play = () => {
 						return {
 							identifier: m.identifier,
 							title: m.title,
-							pack_file: mod.pack_file,
-							pack_file_path: mod.pack_file_path,
+							mod_file: mod.mod_file,
+							mod_file_path: mod.mod_file_path,
 							is_active:
 								((saveFileMod && saveFileMod.is_active) ||
 									modActivationData.find(
@@ -104,7 +108,7 @@ export const Play = () => {
 				.map(m => {
 					const mod = m as ModItem;
 					const findMod = mods.find(
-						m => (m as ModItem).pack_file === mod.pack_file,
+						m => (m as ModItem).mod_file === mod.mod_file,
 					) as ModItem;
 					if (!findMod) {
 						console.error(mod);
@@ -115,22 +119,48 @@ export const Play = () => {
 					}
 					return findMod;
 				}) as ModItemSeparatorUnion[];
-			await startGame(
-				selectedGame!.steam_id,
-				modsFromSave,
-				modsFromSave.map(lr => {
-					return {
-						mod_id: lr.identifier,
-						is_active: true,
-						title: lr.title,
-					};
-				}),
-				{
-					...selectedSaveFile,
-					meta_exists: true,
-					date: 0,
-				},
-			);
+
+			switch (selectedGame!.type) {
+				case 'totalwar':
+					await startGameTotalwar(
+						selectedGame!.steam_id,
+						modsFromSave,
+						modsFromSave.map(lr => {
+							return {
+								mod_id: lr.identifier,
+								is_active: true,
+								title: lr.title,
+							};
+						}),
+						{
+							...selectedSaveFile,
+							meta_exists: true,
+							date: 0,
+						},
+					);
+					break;
+				case 'bannerlord':
+					await startGameBannerlord(
+						selectedGame!.steam_id,
+						modsFromSave,
+						modsFromSave.map(lr => {
+							return {
+								mod_id: lr.identifier,
+								is_active: true,
+								title: lr.title,
+							};
+						}),
+						{
+							...selectedSaveFile,
+							meta_exists: true,
+							date: 0,
+						},
+					);
+					break;
+				default:
+					throw new Error('Unsupported Game');
+					break;
+			}
 
 			setSaveFileDialogOpen(false);
 		} catch (error) {

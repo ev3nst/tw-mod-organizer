@@ -34,7 +34,7 @@ export const ReplaceProfileDialog = () => {
 				lr =>
 					!mods.some(m => m.identifier === lr.identifier) &&
 					lr.is_active === true &&
-					lr.pack_file !== null, // Ignore separators
+					lr.mod_file !== null, // Ignore separators
 			)
 		: [];
 
@@ -91,7 +91,7 @@ export const ReplaceProfileDialog = () => {
 				app_id: selectedGame!.steam_id,
 				profile_id: newProfile.id,
 				data: selectedSaveFile.load_order_data
-					.filter(lr => lr.pack_file === null)
+					.filter(lr => lr.mod_file === null)
 					.map(lr => {
 						return {
 							identifier: lr.identifier,

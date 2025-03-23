@@ -61,7 +61,7 @@ class DownloadManager {
 			.filter((record: DownloadRecord) => record.status !== 'completed')
 			.map((record: DownloadRecord) => ({
 				filename: record.filename,
-				download_path: setting.mod_download_path,
+				download_path: `${setting.mod_download_path}\\${setting.selected_game}`,
 				expected_bytes_downloaded: record.bytes_downloaded,
 				total_size: record.total_size,
 			}));
@@ -180,7 +180,7 @@ class DownloadManager {
 		const downloadRecord = result[0];
 		const setting = await SettingModel.retrieve();
 		await invoke('remove_download', {
-			download_path: setting.mod_download_path,
+			download_path: `${setting.mod_download_path}\\${setting.selected_game}`,
 			filename: downloadRecord.filename,
 		});
 
@@ -222,7 +222,7 @@ class DownloadManager {
 					total_size: download.total_size,
 					bytes_downloaded: download.bytes_downloaded,
 					status: 'in_progress',
-					download_path: setting.mod_download_path,
+					download_path: `${setting.mod_download_path}\\${setting.selected_game}`,
 				},
 			});
 		} catch (error) {

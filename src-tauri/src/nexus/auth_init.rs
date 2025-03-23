@@ -45,7 +45,7 @@ impl SettingsDatabase {
     async fn new(app_handle: AppHandle) -> Result<Self, Box<dyn Error>> {
         let sqlite_db_path = app_handle
             .path()
-            .resolve("twmodorganizer.db".to_string(), BaseDirectory::AppConfig)
+            .resolve("modulus.db".to_string(), BaseDirectory::AppConfig)
             .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?
             .into_os_string()
             .into_string()

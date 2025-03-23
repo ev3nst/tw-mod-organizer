@@ -11,7 +11,7 @@ export type ModOrderItem = {
 	mod_id: string;
 	order: number;
 	title: string;
-	pack_file_path?: string;
+	mod_file_path?: string;
 };
 
 export type ModOrder = ModGenericProps<ModOrderItem>;
@@ -43,6 +43,7 @@ export const modOrderStore = createStore<
 		toggleSetPriority: () => void;
 		setSelectedMod: (selectedMod: ModItem) => void;
 		selectedRows: Set<string>;
+		setSelectedRows: (selectedRows: Set<string>) => void;
 		toggleRow: (modId: string, ctrlKey: boolean) => void;
 		clearSelection: () => void;
 	}
@@ -54,16 +55,15 @@ export const modOrderStore = createStore<
 		priorityOpen: false,
 		selectedMod: {
 			title: '',
-			pack_file: '',
+			mod_file: '',
 		} as any,
 		toggleSetPriority: () => {
 			const priorityOpen = !get().priorityOpen;
 			set({ priorityOpen });
 		},
-		setSelectedMod: selectedMod => {
-			set({ selectedMod });
-		},
+		setSelectedMod: selectedMod => set({ selectedMod }),
 		selectedRows: new Set(),
+		setSelectedRows: selectedRows => set({ selectedRows }),
 		toggleRow: (modId: string, ctrlKey: boolean) =>
 			set((state: any) => {
 				const newSelected = new Set(state.selectedRows);

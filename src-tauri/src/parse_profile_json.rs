@@ -22,7 +22,7 @@ pub struct ModMetaData {
 pub struct ModOrder {
     mod_id: String,
     order: u32,
-    pack_file_path: Option<String>,
+    mod_file_path: Option<String>,
     title: String,
 }
 
@@ -43,8 +43,8 @@ pub struct ModEntry {
     description: Option<String>,
     identifier: String,
     item_type: Option<String>,
-    pack_file: Option<String>,
-    pack_file_path: Option<String>,
+    mod_file: Option<String>,
+    mod_file_path: Option<String>,
     preview_local: Option<String>,
     preview_url: Option<String>,
     title: String,

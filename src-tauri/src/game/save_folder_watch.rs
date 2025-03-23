@@ -12,6 +12,8 @@ use trash::delete;
 use crate::utils::create_app_default_paths::create_app_default_paths;
 use crate::AppState;
 
+use super::supported_games::SUPPORTED_GAMES;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct FileData {
     filename: String,
@@ -25,8 +27,13 @@ struct FileData {
 pub async fn save_folder_watch(
     state: tauri::State<'_, AppState>,
     handle: AppHandle,
+    app_id: u32,
 ) -> Result<(), String> {
     let _ = create_app_default_paths(handle.clone());
+    let game = SUPPORTED_GAMES
+        .iter()
+        .find(|game| game.steam_id == app_id)
+        .ok_or_else(|| format!("Given app_id {} is not supported", app_id))?;
 
     let save_watcher_running = Arc::clone(&state.save_watcher_running);
     if save_watcher_running.load(Ordering::SeqCst) {
@@ -47,11 +54,10 @@ pub async fn save_folder_watch(
         .map_err(|e| format!("Failed to read save folder: {}", e))?
         .filter_map(|entry| entry.ok())
         .filter_map(|entry| {
-            entry
-                .path()
-                .file_name()?
-                .to_str()
-                .map(|s| s.trim_end_matches(".save").to_string())
+            entry.path().file_name()?.to_str().map(|s| {
+                s.trim_end_matches(&format!(".{}", game.save_file_extension))
+                    .to_string()
+            })
         })
         .collect();
 
@@ -116,8 +122,11 @@ pub async fn save_folder_watch(
         async move {
             while let Some((path, event_type)) = rx.recv().await {
                 if let Some(extension) = path.extension() {
-                    if extension == "save" {
-                        if path.to_string_lossy().ends_with(".save.save") {
+                    if extension == game.save_file_extension {
+                        if path.to_string_lossy().ends_with(&format!(
+                            ".{}.{}",
+                            game.save_file_extension, game.save_file_extension
+                        )) {
                             continue;
                         }
 

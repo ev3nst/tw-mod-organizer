@@ -117,7 +117,7 @@ function ConflictDetailsDialog() {
 						</div>
 					</DialogTitle>
 					<DialogDescription className="text-xs mt-1 break-all">
-						{currentConflictData.mod.pack_file_path}
+						{currentConflictData.mod.mod_file_path}
 					</DialogDescription>
 				</DialogHeader>
 				<Accordion

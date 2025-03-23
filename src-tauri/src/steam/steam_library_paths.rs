@@ -2,7 +2,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs, path::Path};
 
-use crate::utils::supported_games::SUPPORTED_GAMES;
+use crate::game::supported_games::SUPPORTED_GAMES;
 
 use super::steam_paths::steam_paths;
 
@@ -56,10 +56,16 @@ pub fn steam_library_paths() -> Result<SteamPaths, String> {
             let mut game_workshop_path = String::new();
 
             for lib_path in &library_folder_paths {
-                let game_install_path = Path::new(lib_path)
+                let mut game_install_path = Path::new(lib_path)
                     .join("steamapps")
                     .join("common")
                     .join(&game.steam_folder_name);
+
+                if !game.exe_folder.is_empty() {
+                    for folder in game.exe_folder.split("\\") {
+                        game_install_path = game_install_path.join(folder);
+                    }
+                }
 
                 let exe_path = game_install_path.join(format!("{}.exe", game.exe_name));
 

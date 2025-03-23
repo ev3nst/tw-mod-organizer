@@ -20,6 +20,7 @@ import { Version } from './cells/version';
 import { Creator } from './cells/creator';
 import { Actions } from './cells/actions';
 import { Order } from './cells/order';
+import { CreatedAt } from './cells/created_at';
 
 type RowProps = {
 	mod: ModItemSeparatorUnion;
@@ -30,6 +31,8 @@ type RowProps = {
 	selectRange: (startId: string, endId: string) => void;
 	lastSelectedId: string | null;
 	setLastSelectedId: (id: string | null) => void;
+	hasViolation?: boolean;
+	dependentMods?: Set<string>;
 };
 
 const RowComponent = ({
@@ -41,6 +44,8 @@ const RowComponent = ({
 	selectRange,
 	lastSelectedId,
 	setLastSelectedId,
+	hasViolation = false,
+	dependentMods,
 }: RowProps) => {
 	const sort_by = settingStore(state => state.sort_by);
 	const isSortingEnabled = sort_by === 'load_order';
@@ -80,6 +85,8 @@ const RowComponent = ({
 		}
 	};
 
+	const showViolation = isSortingEnabled && hasViolation;
+
 	return (
 		<TableRow
 			ref={setNodeRef}
@@ -91,33 +98,48 @@ const RowComponent = ({
 			}}
 			key={mod.identifier}
 			onClick={handleRowClick}
-			className={`${
-				isSelected ? 'ring-1 ring-blue-800' : ''
+			className={`${isSelected ? 'ring-1 ring-blue-800' : ''} ${
+				showViolation
+					? 'ring-1 ring-red-500 bg-red-50 dark:bg-red-900/20'
+					: ''
 			} cursor-pointer`}
 		>
 			<TableCell
-				className={`select-none ${
+				className={`select-none w-[40px] ${
 					isSortingEnabled ? 'cursor-move' : 'cursor-default'
 				}`}
 				style={cellStyle}
 				{...(isSortingEnabled ? attributes : {})}
 				{...(isSortingEnabled ? listeners : {})}
 			>
-				<div className="flex items-center justify-center h-full">
+				<div className="flex items-center justify-center h-full relative">
 					<GripVerticalIcon
 						className={`h-4 w-4 text-muted-foreground ${
 							isSortingEnabled ? '' : 'opacity-50'
 						}`}
 					/>
+					{showViolation && (
+						<div className="absolute left-0 h-full w-1 bg-red-500"></div>
+					)}
 				</div>
 			</TableCell>
 			<Order mod={mod} modIndex={modIndex} />
 			<Selection mod={mod} />
-			<Title mod={mod} />
+			<Title
+				mod={mod}
+				hasViolation={showViolation}
+				dependentCount={dependentMods?.size}
+				dependentModIds={
+					dependentMods && dependentMods.size > 0
+						? Array.from(dependentMods)
+						: undefined
+				}
+			/>
 			<Category mod={mod} />
 			<Conflict mod={mod} />
 			<Version mod={mod} />
 			<Creator mod={mod} />
+			<CreatedAt mod={mod} />
 			<Actions mod={mod as ModItem} />
 		</TableRow>
 	);
@@ -128,6 +150,20 @@ export const Row = memo(RowComponent, (prevProps, nextProps) => {
 		prevProps.mod.identifier === nextProps.mod.identifier &&
 		prevProps.modIndex === nextProps.modIndex &&
 		prevProps.isSelected === nextProps.isSelected &&
-		prevProps.lastSelectedId === nextProps.lastSelectedId
+		prevProps.lastSelectedId === nextProps.lastSelectedId &&
+		prevProps.hasViolation === nextProps.hasViolation &&
+		areSetsSame(prevProps.dependentMods, nextProps.dependentMods)
 	);
 });
+
+function areSetsSame(a?: Set<string>, b?: Set<string>): boolean {
+	if (!a && !b) return true;
+	if (!a || !b) return false;
+	if (a.size !== b.size) return false;
+
+	for (const item of a) {
+		if (!b.has(item)) return false;
+	}
+
+	return true;
+}

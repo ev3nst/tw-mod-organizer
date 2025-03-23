@@ -21,8 +21,10 @@ export const Downloads = () => {
 	const games = settingStore(state => state.games);
 	const selectedGame = settingStore(state => state.selectedGame);
 	const mod_download_path = settingStore(state => state.mod_download_path);
-	const setModFilePath = modsStore(state => state.setModFilePath);
-	const setModFileMeta = modsStore(state => state.setModFileMeta);
+	const setDownloadedArchivePath = modsStore(
+		state => state.setDownloadedArchivePath,
+	);
+	const setDownloadedModMeta = modsStore(state => state.setDownloadedModMeta);
 	const setInstallModItemOpen = modsStore(
 		state => state.setInstallModItemOpen,
 	);
@@ -273,9 +275,9 @@ export const Downloads = () => {
 			return;
 		}
 
-		const modFilePath = `${mod_download_path}\\${download.filename}`;
-		setModFilePath(modFilePath);
-		setModFileMeta({
+		const modFilePath = `${mod_download_path}\\${selectedGame!.steam_id}\\${download.filename}`;
+		setDownloadedArchivePath(modFilePath);
+		setDownloadedModMeta({
 			mod_file_path: modFilePath,
 			mod_url: download?.mod_url,
 			preview_url: download?.preview_url,
@@ -287,7 +289,7 @@ export const Downloads = () => {
 	const handleHighlightPath = async (filename: string) => {
 		try {
 			const setting = await SettingModel.retrieve();
-			const downloadFilePath = `${setting.mod_download_path}\\${filename}`;
+			const downloadFilePath = `${setting.mod_download_path}\\${selectedGame!.steam_id}\\${filename}`;
 			api.highlight_path(downloadFilePath);
 		} catch (error) {
 			toastError(error);

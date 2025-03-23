@@ -11,8 +11,8 @@ export type SaveFile = {
 export type SaveFileLoadOrderData = {
 	identifier: string;
 	title: string;
-	pack_file?: string;
-	pack_file_path?: string;
+	mod_file?: string;
+	mod_file_path?: string;
 	is_active: boolean;
 	order_index: number;
 	background_color?: string;

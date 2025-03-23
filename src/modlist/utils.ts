@@ -28,8 +28,7 @@ export function sortMods(
 			mod_id: na.identifier,
 			order: ni + 1,
 			title: na.title,
-			pack_file_path:
-				'pack_file_path' in na ? na.pack_file_path : undefined,
+			mod_file_path: 'mod_file_path' in na ? na.mod_file_path : undefined,
 		})),
 		mods: newArray,
 	};
@@ -68,7 +67,7 @@ export function sortGroup(
 		mod_id: na.identifier,
 		order: ni + 1,
 		title: na.title,
-		pack_file_path: 'pack_file_path' in na ? na.pack_file_path : undefined,
+		mod_file_path: 'mod_file_path' in na ? na.mod_file_path : undefined,
 	}));
 
 	return {
@@ -117,12 +116,24 @@ export function sortCollapsedSection(
 			mod_id: na.identifier,
 			order: ni + 1,
 			title: na.title,
-			pack_file_path:
-				'pack_file_path' in na ? na.pack_file_path : undefined,
+			mod_file_path: 'mod_file_path' in na ? na.mod_file_path : undefined,
 		})),
 		mods: newArray,
 	};
 }
+
+export const hasCircularDependency = (
+	modId: string,
+	requiredId: string,
+	allMods: ModItem[],
+): boolean => {
+	const requiredMod = allMods.find(m => m.identifier === requiredId) as
+		| ModItem
+		| undefined;
+	if (!requiredMod || !requiredMod.required_items) return false;
+
+	return requiredMod.required_items.includes(modId);
+};
 
 export const initOrder = async (
 	steamId: number,
@@ -143,20 +154,16 @@ export const initOrder = async (
 				updatedOrder.push({
 					mod_id: mod.identifier,
 					order: currentOrder.order,
-					pack_file_path:
-						'pack_file_path' in mod
-							? mod.pack_file_path
-							: undefined,
+					mod_file_path:
+						'mod_file_path' in mod ? mod.mod_file_path : undefined,
 					title: mod.title,
 				});
 			} else {
 				toAdd.push({
 					mod_id: mod.identifier,
 					order: 0,
-					pack_file_path:
-						'pack_file_path' in mod
-							? mod.pack_file_path
-							: undefined,
+					mod_file_path:
+						'mod_file_path' in mod ? mod.mod_file_path : undefined,
 					title: mod.title,
 				});
 			}
@@ -178,8 +185,8 @@ export const initOrder = async (
 			newOrder.push({
 				mod_id: mod.identifier,
 				order: mi + 1,
-				pack_file_path:
-					'pack_file_path' in mod ? mod.pack_file_path : undefined,
+				mod_file_path:
+					'mod_file_path' in mod ? mod.mod_file_path : undefined,
 				title: mod.title,
 			});
 		}

@@ -14,7 +14,12 @@ import { isSeparator } from '@/lib/store/mod_separator';
 import { saveFilesStore } from '@/lib/store/save_files';
 
 import api from '@/lib/api';
-import { startGame, toastError } from '@/lib/utils';
+import {
+	startGameBannerlord,
+	startGameTotalwar,
+	toastError,
+} from '@/lib/utils';
+import { toast } from 'sonner';
 
 export const Play = () => {
 	const setSaveFileDialogOpen = saveFilesStore(
@@ -59,7 +64,7 @@ export const Play = () => {
 		return () => clearInterval(interval);
 	}, [isGameRunning]);
 
-	const handlePlay = async () => {
+	const saveGameCompatibilityCheck = async (): Promise<boolean> => {
 		let save_game: string | undefined = '';
 		if (
 			typeof saveFile?.path !== 'undefined' &&
@@ -68,17 +73,26 @@ export const Play = () => {
 			saveFile?.path.includes('\\')
 		) {
 			save_game = saveFile.path.split('\\').pop() as string;
-			const save_meta_data = await api.fetch_save_file_meta(
-				selectedGame!.steam_id,
-				save_game,
-			);
+			let save_meta_data: any;
+			try {
+				save_meta_data = await api.fetch_save_file_meta(
+					selectedGame!.steam_id,
+					save_game,
+				);
+			} catch (_e) {}
+			if (!save_meta_data) {
+				toast.warning(
+					'Save meta file could not be found, therefore compatibility check failed.',
+				);
+				return true;
+			}
 
 			for (
 				let smi = 0;
 				smi < save_meta_data.mod_order_data.length;
 				smi++
 			) {
-				if (save_meta_data.mod_order_data[smi].pack_file === null)
+				if (save_meta_data.mod_order_data[smi].mod_file === null)
 					continue;
 
 				const mod = mods.find(
@@ -113,13 +127,20 @@ export const Play = () => {
 						load_order_data: save_meta_data.mod_order_data,
 					});
 					setSaveFileDialogOpen(true);
-					return;
+					return false;
 				}
 			}
 		}
 
-		setIsGameLoading(true);
+		return true;
+	};
+
+	const handlePlay = async () => {
 		try {
+			const isCompatible = await saveGameCompatibilityCheck();
+			if (!isCompatible) return;
+
+			setIsGameLoading(true);
 			setCurrentlyRunningMods(
 				mods.map(m => {
 					if (isSeparator(m)) {
@@ -137,8 +158,8 @@ export const Play = () => {
 						return {
 							identifier: m.identifier,
 							title: m.title,
-							pack_file: (m as ModItem).pack_file,
-							pack_file_path: (m as ModItem).pack_file_path,
+							mod_file: (m as ModItem).mod_file,
+							mod_file_path: (m as ModItem).mod_file_path,
 							is_active: modActivationData.find(
 								r => r.mod_id === m.identifier,
 							)!.is_active,
@@ -149,12 +170,28 @@ export const Play = () => {
 					}
 				}),
 			);
-			await startGame(
-				selectedGame!.steam_id,
-				mods,
-				modActivationData,
-				saveFile,
-			);
+
+			switch (selectedGame!.type) {
+				case 'totalwar':
+					await startGameTotalwar(
+						selectedGame!.steam_id,
+						mods,
+						modActivationData,
+						saveFile,
+					);
+					break;
+				case 'bannerlord':
+					await startGameBannerlord(
+						selectedGame!.steam_id,
+						mods,
+						modActivationData,
+						saveFile,
+					);
+					break;
+				default:
+					throw new Error('Unsupported Game');
+					break;
+			}
 		} catch (error) {
 			toastError(error);
 		} finally {

@@ -6,8 +6,8 @@ import type { ProfileExportData } from '@/lib/store/profile-model';
 import type { ModItem } from '@/lib/store/mods';
 import type { SaveFile, SaveFileLoadOrderData } from '@/lib/store/save_files';
 
-export type PackConflicts = {
-	[pack_file_path: string]: Array<string[]>;
+export type ModConflicts = {
+	[mod_file_path: string]: Array<string[]>;
 };
 
 export type NexusDownloadLinkRequest = {
@@ -43,7 +43,7 @@ type ModMigrationResponse = {
 			mods: {
 				identifier: string;
 				title: string;
-				pack_file_path: string;
+				mod_file_path: string;
 				is_active: boolean;
 			}[];
 		}[]
@@ -66,6 +66,7 @@ class API {
 	}
 
 	async get_mods(app_id: number): Promise<ModItem[]> {
+		const base_mods = await this.base_mods(app_id);
 		const steam_mods = (await this.subscribed_mods(app_id)).map(sm => {
 			return {
 				...sm,
@@ -84,7 +85,31 @@ class API {
 						: '',
 			};
 		});
-		return [...steam_mods, ...local_mods];
+
+		const modsMerged = [...base_mods, ...steam_mods, ...local_mods];
+		const modMap = new Map();
+		modsMerged.forEach(mod => {
+			modMap.set(mod.identifier, mod);
+		});
+
+		for (const mod of modsMerged) {
+			if (mod.child_mods && mod.child_mods.length > 0) {
+				for (const childModId of mod.child_mods) {
+					const childMod = modMap.get(childModId);
+					if (childMod) {
+						childMod.required_items.push(mod.identifier);
+					}
+				}
+			}
+		}
+
+		return modsMerged;
+	}
+
+	private async base_mods(app_id: number): Promise<ModItem[]> {
+		return invoke('base_mods', {
+			app_id,
+		});
 	}
 
 	private async subscribed_mods(app_id: number): Promise<ModItem[]> {
@@ -134,11 +159,11 @@ class API {
 		});
 	}
 
-	async pack_conflicts(
+	async conflicts(
 		app_id: number,
 		folder_paths: string[],
-	): Promise<PackConflicts> {
-		return invoke('pack_conflicts', {
+	): Promise<ModConflicts> {
+		return invoke('conflicts', {
 			app_id,
 			folder_paths,
 		});
@@ -195,7 +220,7 @@ class API {
 
 	async save_folder_watch(app_id: number): Promise<void> {
 		await invoke('set_watch_save_folder', { app_id });
-		return invoke('save_folder_watch');
+		return invoke('save_folder_watch', { app_id });
 	}
 
 	async upsert_save_file_meta(
@@ -239,7 +264,7 @@ class API {
 			identifier: string;
 			title: string;
 			zip_file_path: string;
-			pack_file_path: string;
+			mod_file_path: string;
 			preview_url?: string;
 			image_file_path?: string;
 			downloaded_url?: string;
@@ -257,15 +282,19 @@ class API {
 		});
 	}
 
-	async import_data(json_file_path: string): Promise<ModMigrationResponse> {
+	async import_data(
+		app_id: number,
+		json_file_path: string,
+	): Promise<ModMigrationResponse> {
 		const setting = await SettingModel.retrieve();
 		return invoke('import_data', {
+			app_id,
 			json_file_path,
 			mod_installation_path: setting.mod_installation_path,
 		});
 	}
 
-	async start_game(
+	async start_game_totalwar(
 		app_id: number,
 		add_directory_txt: string,
 		used_mods_txt: string,
@@ -275,6 +304,22 @@ class API {
 			app_id,
 			add_directory_txt,
 			used_mods_txt,
+			save_game,
+		});
+	}
+
+	async start_game_bannerlord(
+		app_id: number,
+		mods: {
+			identifier: string;
+			bannerlord_id: string;
+			mod_path: string;
+		}[],
+		save_game?: string,
+	): Promise<ZipItemInfo[]> {
+		return invoke('start_game_bannerlord', {
+			app_id,
+			mods,
 			save_game,
 		});
 	}

@@ -1,20 +1,18 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::Path;
+use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{path::BaseDirectory, Manager};
 
-use crate::utils::{
-    create_app_default_paths::create_app_default_paths, roaming_folder::roaming_folder,
-    supported_games::SUPPORTED_GAMES,
-};
+use super::supported_games::SUPPORTED_GAMES;
+use crate::utils::create_app_default_paths::create_app_default_paths;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct LoadOrderData {
     identifier: String,
     title: String,
-    pack_file: Option<String>,
-    pack_file_path: Option<String>,
+    mod_file: Option<String>,
+    mod_file_path: Option<String>,
     is_active: bool,
     order_index: u64,
     background_color: Option<String>,
@@ -32,29 +30,29 @@ pub struct SaveFileMeta {
 #[tauri::command(rename_all = "snake_case")]
 pub async fn upsert_save_file_meta(
     handle: tauri::AppHandle,
-    app_id: u64,
+    app_id: u32,
     save_file_name: String,
     save_file_size: u64,
     mod_order_data: Vec<LoadOrderData>,
 ) -> Result<String, String> {
     let _ = create_app_default_paths(handle.clone());
-    let roaming_folder = roaming_folder().ok_or_else(|| "Roaming folder could not be resolved.")?;
 
     let game = SUPPORTED_GAMES
         .iter()
         .find(|game| game.steam_id == app_id)
         .ok_or_else(|| format!("Given app_id {} is not supported", app_id))?;
 
-    let save_folder = Path::new(&roaming_folder)
-        .join("The Creative Assembly")
-        .join(&game.save_path_folder)
-        .join("save_games");
+    let save_folder = PathBuf::from(
+        &game
+            .save_path_folder()
+            .map_err(|e| format!("Failed to fetch save game folder: {}", e))?,
+    );
 
     if !save_folder.exists() {
         return Err("Save folder does not exist.".to_string());
     }
 
-    if !save_file_name.ends_with(".save") {
+    if !save_file_name.ends_with(&format!(".{}", game.save_file_extension)) {
         return Err("Save files must end with .save extension.".to_string());
     }
 

@@ -13,10 +13,10 @@ mod pack;
 mod sevenz;
 mod steam;
 mod utils;
+mod xml;
 
 mod export_profile;
 mod import_data;
-mod migrate_local_mod;
 mod parse_profile_json;
 mod version_check;
 
@@ -50,7 +50,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(
             tauri_plugin_sql::Builder::new()
-                .add_migrations("sqlite:twmodorganizer.db", migrations::get_migrations())
+                .add_migrations("sqlite:modulus.db", migrations::get_migrations())
                 .build(),
         )
         .manage(AppState {
@@ -71,11 +71,12 @@ pub fn run() {
             _ => {}
         })
         .invoke_handler(tauri::generate_handler![
-            pack::conflicts::pack_conflicts,
             import_data::import_data,
             export_profile::export_profile,
             parse_profile_json::parse_profile_json,
             version_check::version_check,
+            r#mod::conflicts::conflicts,
+            r#mod::base_mods::base_mods,
             r#mod::local_mods::local_mods,
             r#mod::install::install_mod,
             r#mod::delete::delete_mod,
@@ -85,8 +86,10 @@ pub fn run() {
             game::save_folder_watch::save_folder_watch,
             game::upsert_save_file_meta::upsert_save_file_meta,
             game::fetch_save_file_meta::fetch_save_file_meta,
-            game::start::start_game,
+            game::totalwar::start::start_game_totalwar,
+            game::bannerlord::start::start_game_bannerlord,
             game::is_running::is_game_running,
+            game::supported_games::supported_games,
             sevenz::zip_contents::zip_contents,
             nexus::auth_init::nexus_auth_init,
             nexus::download_link::nexus_download_link,
@@ -101,7 +104,6 @@ pub fn run() {
             steam::subscribed_mods::subscribed_mods,
             steam::unsubscribe::unsubscribe,
             steam::update_workshop_item::update_workshop_item,
-            utils::supported_games::supported_games,
             utils::open_external_url::open_external_url,
             utils::highlight_path::highlight_path,
         ])

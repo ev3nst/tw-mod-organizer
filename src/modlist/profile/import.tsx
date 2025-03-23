@@ -128,14 +128,14 @@ export const ImportProfile = () => {
 				if (!mo_mods_mapping) return mr;
 
 				const existingLocalMod = modsOnly.find(
-					mo => mo.pack_file === mo_mods_mapping!.pack_file,
+					mo => mo.mod_file === mo_mods_mapping!.mod_file,
 				);
 				if (!existingLocalMod) return mr;
 
 				return {
 					...mr,
 					mod_id: existingLocalMod.identifier,
-					pack_file_path: existingLocalMod.pack_file_path,
+					mod_file_path: existingLocalMod.mod_file_path,
 				};
 			});
 			const newModOrder = new ModOrderModel({
@@ -154,14 +154,14 @@ export const ImportProfile = () => {
 					if (!mo_mods_mapping) return mr;
 
 					const existingLocalMod = modsOnly.find(
-						mo => mo.pack_file === mo_mods_mapping!.pack_file,
+						mo => mo.mod_file === mo_mods_mapping!.mod_file,
 					);
 					if (!existingLocalMod) return mr;
 
 					return {
 						...mr,
 						mod_id: existingLocalMod.identifier,
-						pack_file_path: existingLocalMod.pack_file_path,
+						mod_file_path: existingLocalMod.mod_file_path,
 					};
 				},
 			);
@@ -198,7 +198,7 @@ export const ImportProfile = () => {
 	}, [importFile]);
 
 	const ModItemComponent = ({ item }: { item: ModItem }) => {
-		const modExists = modsOnly.some(m => m.pack_file === item.pack_file);
+		const modExists = modsOnly.some(m => m.mod_file === item.mod_file);
 		const isLocalMod = item.item_type !== 'steam_mod';
 
 		let styleClasses = '';
@@ -226,7 +226,7 @@ export const ImportProfile = () => {
 			>
 				{item.title}
 				<em className="block text-muted-foreground text-xs">
-					{item.pack_file}
+					{item.mod_file}
 				</em>
 			</div>
 		);
@@ -281,25 +281,25 @@ export const ImportProfile = () => {
 
 		const steamModExists = profileExportData.mods.filter(
 			pm =>
-				modsOnly.some(mo => mo.pack_file === pm.pack_file) &&
+				modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
 				pm.item_type === 'steam_mod',
 		);
 
 		const steamModDontExists = profileExportData.mods.filter(
 			pm =>
-				!modsOnly.some(mo => mo.pack_file === pm.pack_file) &&
+				!modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
 				pm.item_type === 'steam_mod',
 		);
 
 		const localModsExists = profileExportData.mods.filter(
 			pm =>
-				modsOnly.some(mo => mo.pack_file === pm.pack_file) &&
+				modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
 				pm.item_type !== 'steam_mod',
 		);
 
 		const localModsDontExists = profileExportData.mods.filter(
 			pm =>
-				!modsOnly.some(mo => mo.pack_file === pm.pack_file) &&
+				!modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
 				pm.item_type !== 'steam_mod',
 		);
 

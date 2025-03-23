@@ -6,7 +6,7 @@ use crate::utils::create_app_default_paths::create_app_default_paths;
 #[tauri::command(rename_all = "snake_case")]
 pub async fn export_profile(
     handle: tauri::AppHandle,
-    app_id: u64,
+    app_id: u32,
     profile_id: u64,
     profile_name: String,
     json_string: String,

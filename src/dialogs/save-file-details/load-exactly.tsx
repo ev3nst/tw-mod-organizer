@@ -7,7 +7,11 @@ import { saveFilesStore } from '@/lib/store/save_files';
 import { settingStore } from '@/lib/store/setting';
 import type { ModItem } from '@/lib/store/mods';
 import type { ModItemSeparatorUnion } from '@/lib/store/mod_separator';
-import { startGame, toastError } from '@/lib/utils';
+import {
+	startGameBannerlord,
+	startGameTotalwar,
+	toastError,
+} from '@/lib/utils';
 
 export const LoadExactly = () => {
 	const setIsGameLoading = settingStore(state => state.setIsGameLoading);
@@ -27,7 +31,7 @@ export const LoadExactly = () => {
 				lr =>
 					!mods.some(m => m.identifier === lr.identifier) &&
 					lr.is_active === true &&
-					lr.pack_file !== null, // Ignore separators
+					lr.mod_file !== null, // Ignore separators
 			)
 		: [];
 
@@ -38,7 +42,7 @@ export const LoadExactly = () => {
 			setIsGameLoading(true);
 			setCurrentlyRunningMods(
 				selectedSaveFile.load_order_data.map(m => {
-					if (m.pack_file === null) {
+					if (m.mod_file === null) {
 						return {
 							identifier: m.identifier,
 							title: m.title,
@@ -51,8 +55,8 @@ export const LoadExactly = () => {
 						return {
 							identifier: m.identifier,
 							title: m.title,
-							pack_file: m.pack_file,
-							pack_file_path: m.pack_file_path,
+							mod_file: m.mod_file,
+							mod_file_path: m.mod_file_path,
 							is_active: m.is_active,
 							order_index: m.order_index,
 						};
@@ -61,11 +65,11 @@ export const LoadExactly = () => {
 			);
 
 			const modsFromSave = selectedSaveFile.load_order_data
-				.filter(lrf => lrf.is_active && lrf.pack_file !== null)
+				.filter(lrf => lrf.is_active && lrf.mod_file !== null)
 				.sort((a, b) => a.order_index - b.order_index)
 				.map(lr => {
 					const findMod = mods.find(
-						m => (m as ModItem).pack_file === lr.pack_file,
+						m => (m as ModItem).mod_file === lr.mod_file,
 					) as ModItem;
 					if (!findMod) {
 						console.error(lr);
@@ -76,22 +80,48 @@ export const LoadExactly = () => {
 					}
 					return findMod;
 				}) as ModItemSeparatorUnion[];
-			await startGame(
-				selectedGame!.steam_id,
-				modsFromSave,
-				selectedSaveFile.load_order_data.map(lr => {
-					return {
-						mod_id: lr.identifier,
-						is_active: lr.is_active,
-						title: lr.title,
-					};
-				}),
-				{
-					...selectedSaveFile,
-					meta_exists: true,
-					date: 0,
-				},
-			);
+
+			switch (selectedGame!.type) {
+				case 'totalwar':
+					await startGameTotalwar(
+						selectedGame!.steam_id,
+						modsFromSave,
+						selectedSaveFile.load_order_data.map(lr => {
+							return {
+								mod_id: lr.identifier,
+								is_active: lr.is_active,
+								title: lr.title,
+							};
+						}),
+						{
+							...selectedSaveFile,
+							meta_exists: true,
+							date: 0,
+						},
+					);
+					break;
+				case 'bannerlord':
+					await startGameBannerlord(
+						selectedGame!.steam_id,
+						modsFromSave,
+						selectedSaveFile.load_order_data.map(lr => {
+							return {
+								mod_id: lr.identifier,
+								is_active: lr.is_active,
+								title: lr.title,
+							};
+						}),
+						{
+							...selectedSaveFile,
+							meta_exists: true,
+							date: 0,
+						},
+					);
+					break;
+				default:
+					throw new Error('Unsupported Game');
+					break;
+			}
 
 			setSaveFileDialogOpen(false);
 		} catch (error) {

@@ -1,8 +1,8 @@
 {
 	"$schema": "https://schema.tauri.app/config/2",
-	"productName": "TW Mod Organizer",
-	"version": "0.5.0",
-	"identifier": "com.tw-mod-organizer",
+	"productName": "Modulus",
+	"version": "0.6.0",
+	"identifier": "com.modulus",
 	"build": {
 		"beforeDevCommand": "bun run dev",
 		"devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
 	"app": {
 		"windows": [
 			{
-				"title": "TW Mod Organizer",
+				"title": "Modulus",
 				"width": 1100,
 				"height": 610,
 				"minWidth": 900,

@@ -31,6 +31,7 @@ export const debounceCallback = (cb: () => Promise<void>, timeoutMs = 100) => {
 
 export function toastError(error: any) {
 	try {
+		console.log('toast?');
 		toast.error(String(error));
 	} catch (_e) {}
 	console.error(error);
@@ -51,6 +52,10 @@ export const formatFileSize = (sizeInBytes: number): string => {
 	const size = (sizeInBytes / Math.pow(1024, sizeIndex)).toFixed(2);
 	return `${size} ${units[sizeIndex]}`;
 };
+
+export function isEmptyString(str?: string): boolean {
+	return typeof str === 'undefined' || str === null || str === '';
+}
 
 export async function getFileDetailsFromPath(path: string): Promise<FileMeta> {
 	const name = path.split('\\').pop() as string;
@@ -96,7 +101,7 @@ export function determineErrorMessage(error: unknown) {
 	return errorMessage;
 }
 
-export async function startGame(
+export async function startGameTotalwar(
 	app_id: number,
 	mods: ModItemSeparatorUnion[],
 	modActivationData: ModActivationItem[],
@@ -114,11 +119,11 @@ export async function startGame(
 		);
 		if (!isActive) continue;
 
-		const cleanedPackPath = mod.pack_file_path.replace(/\\/g, '/');
-		const packFileName = cleanedPackPath.split('/').pop();
-		const packFolder = cleanedPackPath.replace('/' + packFileName, '');
-		addDirectoryTxt += `add_working_directory "${packFolder}";\n`;
-		usedModsTxt += `mod "${packFileName}";\n`;
+		const cleanedModPath = mod.mod_file_path.replace(/\\/g, '/');
+		const modFileName = cleanedModPath.split('/').pop();
+		const modFolder = cleanedModPath.replace('/' + modFileName, '');
+		addDirectoryTxt += `add_working_directory "${modFolder}";\n`;
+		usedModsTxt += `mod "${modFileName}";\n`;
 	}
 
 	let save_game: string | undefined = '';
@@ -131,7 +136,47 @@ export async function startGame(
 		save_game = saveFile.path.split('\\').pop();
 	}
 
-	await api.start_game(app_id, addDirectoryTxt, usedModsTxt, save_game);
+	await api.start_game_totalwar(
+		app_id,
+		addDirectoryTxt,
+		usedModsTxt,
+		save_game,
+	);
+}
+
+export async function startGameBannerlord(
+	app_id: number,
+	mods: ModItemSeparatorUnion[],
+	modActivationData: ModActivationItem[],
+	saveFile?: SaveFile,
+) {
+	const modsToLoad = mods
+		.filter(
+			m =>
+				!isSeparator(m) &&
+				!modActivationData.some(
+					ma => ma.mod_id === m.identifier && !ma.is_active,
+				),
+		)
+		.map(m => {
+			return {
+				identifier: m.identifier,
+				bannerlord_id: (m as ModItem).game_specific_id,
+				mod_path: (m as ModItem).mod_file_path,
+			};
+		});
+
+	let save_game: string | undefined = '';
+	if (
+		typeof saveFile?.path !== 'undefined' &&
+		saveFile?.path !== null &&
+		saveFile?.path !== '' &&
+		saveFile?.path.includes('\\')
+	) {
+		save_game = saveFile.path.split('\\').pop();
+	}
+
+	await api.start_game_bannerlord(app_id, modsToLoad, save_game);
 }
 
 export const buttonVariants = cva(

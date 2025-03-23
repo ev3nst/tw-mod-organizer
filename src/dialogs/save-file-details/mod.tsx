@@ -34,7 +34,7 @@ export const SaveFileModComponent = ({
 	let isModSeparator = isSeparator(mod);
 	if (!isModSeparator) {
 		saveFileMod = saveFileLoadOrderData.find(
-			lr => lr.pack_file === (mod as ModItem).pack_file,
+			lr => lr.mod_file === (mod as ModItem).mod_file,
 		);
 	}
 

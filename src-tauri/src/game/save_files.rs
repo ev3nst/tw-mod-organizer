@@ -1,14 +1,11 @@
-use std::fs::read_dir;
-use std::path::Path;
 use std::time::UNIX_EPOCH;
+use std::{fs::read_dir, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 use tauri::{path::BaseDirectory, Manager};
 
-use crate::utils::{
-    create_app_default_paths::create_app_default_paths, roaming_folder::roaming_folder,
-    supported_games::SUPPORTED_GAMES,
-};
+use super::supported_games::SUPPORTED_GAMES;
+use crate::utils::create_app_default_paths::create_app_default_paths;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SaveFile {
@@ -20,19 +17,18 @@ pub struct SaveFile {
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn save_files(handle: tauri::AppHandle, app_id: u64) -> Result<Vec<SaveFile>, String> {
+pub async fn save_files(handle: tauri::AppHandle, app_id: u32) -> Result<Vec<SaveFile>, String> {
     let _ = create_app_default_paths(handle.clone());
-    let roaming_folder = roaming_folder().ok_or_else(|| "Roaming folder could not be resolved.")?;
-
     let game = SUPPORTED_GAMES
         .iter()
         .find(|game| game.steam_id == app_id)
         .ok_or_else(|| format!("Given app_id {} is not supported", app_id))?;
 
-    let save_folder = Path::new(&roaming_folder)
-        .join("The Creative Assembly")
-        .join(&game.save_path_folder)
-        .join("save_games");
+    let save_folder = PathBuf::from(
+        &game
+            .save_path_folder()
+            .map_err(|e| format!("Failed to fetch save game folder: {}", e))?,
+    );
 
     if !save_folder.exists() {
         return Ok(vec![]);
@@ -50,7 +46,8 @@ pub async fn save_files(handle: tauri::AppHandle, app_id: u64) -> Result<Vec<Sav
                 match entry {
                     Ok(entry) => {
                         let path = entry.path();
-                        if path.extension() == Some(std::ffi::OsStr::new("save")) {
+                        if path.extension() == Some(std::ffi::OsStr::new(game.save_file_extension))
+                        {
                             let filename = path
                                 .file_name()
                                 .unwrap_or_default()
@@ -71,7 +68,9 @@ pub async fn save_files(handle: tauri::AppHandle, app_id: u64) -> Result<Vec<Sav
                                     Err(_) => 0,
                                 };
 
-                            let clean_save_file_name = filename.trim_end_matches(".save");
+                            let clean_save_file_name = filename
+                                .trim_end_matches(&format!(".{}", game.save_file_extension));
+
                             let meta_file_path = save_file_meta_folder
                                 .join(format!("{}.meta", clean_save_file_name));
 

@@ -143,7 +143,7 @@ function RemoveModDialog() {
 					>
 						<div>
 							{selectedRows.size === 1
-								? selectedMod?.pack_file
+								? selectedMod?.mod_file
 								: [...selectedRows].map(sr => (
 										<div
 											className="mt-1"

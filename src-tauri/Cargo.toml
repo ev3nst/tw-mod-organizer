@@ -1,7 +1,7 @@
 [package]
-name = "tw-mod-organizer"
-version = "0.5.0"
-description = "TW Mod Organizer"
+name = "modulus"
+version = "0.6.0"
+description = "Modulus"
 authors = ["Burak Kartal"]
 edition = "2021"
 
@@ -11,7 +11,7 @@ edition = "2021"
 # The `_lib` suffix may seem redundant but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
-name = "tw_mod_organizer_lib"
+name = "modulus_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
@@ -39,6 +39,9 @@ rpfm_lib = "4.3.14"
 trash = "5.2.2"
 open = "5.3.2"
 notify = "8.0.0"
+dirs = "6.0.0"
+xml = "0.8.20"
+quick-xml = "0.37.2"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-single-instance = "2"

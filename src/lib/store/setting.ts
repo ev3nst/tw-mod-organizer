@@ -9,12 +9,13 @@ export type IGameMeta = {
 	name: string;
 	slug: string;
 	save_path_folder: string;
+	save_file_extension: string;
 	exe_name: string;
 	steam_id: number;
 	steam_folder_name: string;
 	nexus_slug: string;
-	schema_name: string;
 	game_path_exists: boolean;
+	type: 'totalwar' | 'bannerlord';
 };
 
 export type ModListColumnVisibility = {
@@ -22,6 +23,7 @@ export type ModListColumnVisibility = {
 	conflict: boolean;
 	version: boolean;
 	creator: boolean;
+	created_at: boolean;
 };
 
 export type NexusAuthParams = {
@@ -96,6 +98,7 @@ export class SettingModel {
 						conflict: true,
 						version: true,
 						creator: false,
+						created_at: false,
 					},
 					mod_installation_path: null,
 					mod_download_path: null,
@@ -257,8 +260,9 @@ type SettingStore = {
 	toggle_conflict: boolean;
 	toggle_version: boolean;
 	toggle_creator: boolean;
+	toggle_created_at: boolean;
 	setColumnSelection: (
-		column: 'category' | 'conflict' | 'version' | 'creator',
+		column: 'category' | 'conflict' | 'version' | 'creator' | 'created_at',
 		value: boolean,
 	) => void;
 
@@ -350,6 +354,7 @@ export const settingStore = create<SettingStore>(set => ({
 	toggle_conflict: true,
 	toggle_version: true,
 	toggle_creator: false,
+	toggle_created_at: false,
 
 	setColumnSelection: (key, value) => {
 		const keyStr = `toggle_${key}`;
@@ -358,6 +363,7 @@ export const settingStore = create<SettingStore>(set => ({
 			'toggle_conflict',
 			'toggle_version',
 			'toggle_creator',
+			'toggle_created_at',
 		] as any;
 		if (columns.includes(keyStr)) {
 			set({ [keyStr]: value });
@@ -441,13 +447,15 @@ const syncSetting = async () => {
 		setting.column_selections.category !== state.toggle_category ||
 		setting.column_selections.conflict !== state.toggle_conflict ||
 		setting.column_selections.version !== state.toggle_version ||
-		setting.column_selections.creator !== state.toggle_creator
+		setting.column_selections.creator !== state.toggle_creator ||
+		setting.column_selections.version !== state.toggle_created_at
 	) {
 		setting.column_selections = {
 			category: state.toggle_category,
 			conflict: state.toggle_conflict,
 			version: state.toggle_version,
 			creator: state.toggle_creator,
+			created_at: state.toggle_created_at,
 		};
 		changed = true;
 	}

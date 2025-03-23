@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 
-import { PackConflicts } from '@/lib/api';
+import type { ModConflicts } from '@/lib/api';
 
 type ConflictStore = {
-	conflicts: PackConflicts;
+	conflicts: ModConflicts;
 	currentConflict?: string;
 	currentConflictData?: any;
-	setConflicts: (conflicts: PackConflicts) => void;
+	setConflicts: (conflicts: ModConflicts) => void;
 	setCurrentConflict: (
 		currentConflict?: string,
 		currentConflictData?: any,
