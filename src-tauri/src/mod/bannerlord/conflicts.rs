@@ -1,15 +1,26 @@
 use rayon::prelude::*;
-use std::collections::{HashMap, HashSet};
-use std::fs;
-use std::io::BufReader;
-use std::path::{Path, PathBuf};
-use std::time::SystemTime;
+use regex::Regex;
+use serde::{Deserialize, Serialize};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    fs,
+    io::BufReader,
+    path::{Path, PathBuf},
+    time::SystemTime,
+};
 use tauri::path::BaseDirectory;
 use tauri::Manager;
 use tokio::task;
 use xml::reader::{EventReader, XmlEvent};
 
-use crate::r#mod::conflicts::{CacheEntry, FileMetadata};
+use crate::r#mod::conflicts::FileMetadata;
+
+#[derive(Serialize, Deserialize)]
+struct CacheEntry {
+    file_paths: Vec<String>,
+    file_metadata: BTreeMap<String, FileMetadata>,
+    conflicts: BTreeMap<String, BTreeMap<String, Vec<String>>>,
+}
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -17,13 +28,19 @@ struct ElementInfo {
     element_type: String,
     id: String,
     source_file: PathBuf,
+    full_path: String,
+}
+
+fn strip_localization_tags(text: &str) -> String {
+    let re = Regex::new(r"\{=[^}]+\}").unwrap_or_else(|_| Regex::new(r"\{=[^}]*\}").unwrap());
+    re.replace_all(text, "").to_string()
 }
 
 pub async fn conflicts(
     handle: tauri::AppHandle,
     app_id: u32,
     folder_paths: Vec<String>,
-) -> Result<HashMap<String, HashMap<String, Vec<String>>>, String> {
+) -> Result<BTreeMap<String, BTreeMap<String, Vec<String>>>, String> {
     let app_cache_dir = handle
         .path()
         .resolve("cache".to_string(), BaseDirectory::AppConfig)
@@ -37,12 +54,12 @@ pub async fn conflicts(
     let cache_json_filename = format!("bannerlord_conflicts_{}_cache.json", app_id.to_string());
     let cache_file = app_cache_dir.join(cache_json_filename);
 
-    let excluded_elements: HashSet<&str> = ["LanguageData", "Module", "XmlNode", "string"]
+    let excluded_elements: BTreeSet<&str> = ["LanguageData", "Module", "XmlNode", "string"]
         .iter()
         .cloned()
         .collect();
 
-    let mut mod_folders: HashMap<PathBuf, String> = HashMap::new();
+    let mut mod_folders: BTreeMap<PathBuf, String> = BTreeMap::new();
     for folder_path in &folder_paths {
         let path = Path::new(folder_path);
         if path.is_dir() {
@@ -50,17 +67,18 @@ pub async fn conflicts(
         }
     }
 
-    let xml_files: Vec<PathBuf> = mod_folders
+    let mut xml_files: Vec<PathBuf> = mod_folders
         .keys()
         .flat_map(|mod_folder| collect_xml_files(mod_folder, 0, 4).unwrap_or_default())
         .collect();
+    xml_files.sort();
 
     let file_paths: Vec<String> = xml_files
         .iter()
         .map(|p| p.to_string_lossy().to_string())
         .collect();
 
-    let file_metadata: HashMap<String, FileMetadata> = xml_files
+    let file_metadata: BTreeMap<String, FileMetadata> = xml_files
         .par_iter()
         .filter_map(|path| {
             let metadata = fs::metadata(path).ok()?;
@@ -80,73 +98,52 @@ pub async fn conflicts(
         })
         .collect();
 
-    if cache_file.exists() {
-        let cache_content = fs::read_to_string(&cache_file).ok();
-        if let Some(content) = cache_content {
-            if let Ok(cache_entry) = serde_json::from_str::<CacheEntry>(&content) {
-                let file_paths_set: HashSet<_> = file_paths.iter().cloned().collect();
-                let cached_paths_set: HashSet<_> = cache_entry.file_paths.iter().cloned().collect();
-
-                if file_paths_set == cached_paths_set {
-                    let all_files_unchanged = file_metadata.iter().all(|(path, metadata)| {
-                        cache_entry
-                            .file_metadata
-                            .get(path)
-                            .map_or(false, |cached| cached == metadata)
-                    });
-
-                    if all_files_unchanged {
-                        return Ok(cache_entry.conflicts);
-                    }
-                }
-            }
-        }
-    }
-
     let mod_folders_clone = mod_folders.clone();
     let excluded_elements_clone = excluded_elements.clone();
     let conflicts_result = task::spawn_blocking(move || {
-        let element_map: HashMap<(String, String), Vec<(PathBuf, PathBuf)>> = xml_files
+        let element_map: BTreeMap<(String, String), Vec<(PathBuf, PathBuf, String)>> = xml_files
             .par_iter()
             .filter_map(|file_path| {
                 let mod_path = find_parent_mod(&mod_folders_clone, file_path)?;
-
-                let elements = parse_xml_file(&file_path).unwrap_or_default();
-
+                let elements = parse_xml_file_with_paths(file_path).unwrap_or_default();
                 Some((mod_path.clone(), file_path.clone(), elements))
             })
             .fold(
-                || HashMap::new(),
-                |mut acc: HashMap<(String, String), Vec<(PathBuf, PathBuf)>>,
+                || BTreeMap::new(),
+                |mut acc: BTreeMap<(String, String), Vec<(PathBuf, PathBuf, String)>>,
                  (mod_path, file_path, elements)| {
                     for element in elements {
                         if excluded_elements_clone.contains(element.element_type.as_str()) {
                             continue;
                         }
-
-                        let key = (element.element_type, element.id);
-                        acc.entry(key)
-                            .or_default()
-                            .push((mod_path.clone(), file_path.clone()));
+                        let key = (element.element_type.clone(), element.id.clone());
+                        acc.entry(key).or_default().push((
+                            mod_path.clone(),
+                            file_path.clone(),
+                            element.full_path.clone(),
+                        ));
                     }
                     acc
                 },
             )
             .reduce(
-                || HashMap::new(),
+                || BTreeMap::new(),
                 |mut a, b| {
-                    for (key, values) in b {
-                        a.entry(key).or_default().extend(values);
+                    for (key, mut values) in b {
+                        a.entry(key).or_default().append(&mut values);
                     }
                     a
                 },
             );
 
-        let mut conflicts_by_mod: HashMap<String, HashMap<String, Vec<String>>> = HashMap::new();
-        for ((element_type, id), mod_files) in element_map {
-            let mut mods_map: HashMap<PathBuf, Vec<PathBuf>> = HashMap::new();
-            for (mod_path, file_path) in mod_files {
-                mods_map.entry(mod_path).or_default().push(file_path);
+        let mut conflicts_by_mod: BTreeMap<String, BTreeMap<String, Vec<String>>> = BTreeMap::new();
+        for ((element_type, _id), mod_files) in element_map {
+            let mut mods_map: BTreeMap<PathBuf, Vec<(PathBuf, String)>> = BTreeMap::new();
+            for (mod_path, file_path, full_path) in mod_files {
+                mods_map
+                    .entry(mod_path)
+                    .or_default()
+                    .push((file_path, full_path));
             }
 
             let mod_paths: Vec<PathBuf> = mods_map.keys().cloned().collect();
@@ -160,7 +157,7 @@ pub async fn conflicts(
                             continue;
                         }
 
-                        let conflict_detail = format!("{}:{}", element_type, id);
+                        let full_path1 = &mods_map.get(mod1).unwrap()[0].1;
                         let mod1_str = mod1.to_string_lossy().to_string();
                         let mod2_str = mod2.to_string_lossy().to_string();
 
@@ -169,7 +166,7 @@ pub async fn conflicts(
                             .or_default()
                             .entry(mod2_str)
                             .or_default()
-                            .push(conflict_detail);
+                            .push(full_path1.clone());
                     }
                 }
             }
@@ -196,7 +193,7 @@ pub async fn conflicts(
 
 fn collect_mod_folders(
     dir: &Path,
-    mod_folders: &mut HashMap<PathBuf, String>,
+    mod_folders: &mut BTreeMap<PathBuf, String>,
     current_depth: u32,
     max_depth: u32,
 ) -> Result<(), String> {
@@ -294,7 +291,7 @@ fn collect_xml_files(
 }
 
 fn find_parent_mod<'a>(
-    mod_folders: &'a HashMap<PathBuf, String>,
+    mod_folders: &'a BTreeMap<PathBuf, String>,
     file_path: &Path,
 ) -> Option<&'a PathBuf> {
     for mod_path in mod_folders.keys() {
@@ -305,13 +302,13 @@ fn find_parent_mod<'a>(
     None
 }
 
-fn parse_xml_file(file_path: &Path) -> Result<Vec<ElementInfo>, String> {
+fn parse_xml_file_with_paths(file_path: &Path) -> Result<Vec<ElementInfo>, String> {
     let file = fs::File::open(file_path)
-        .map_err(|e| format!("Failed to open file {}: {}", file_path.display(), e))?;
-    let file_reader = BufReader::new(file);
-    let parser = EventReader::new(file_reader);
-
+        .map_err(|e| format!("Failed to open XML file {}: {}", file_path.display(), e))?;
+    let file = BufReader::new(file);
+    let parser = EventReader::new(file);
     let mut elements = Vec::new();
+    let mut path_stack: Vec<String> = Vec::new();
 
     for event in parser {
         match event {
@@ -319,23 +316,48 @@ fn parse_xml_file(file_path: &Path) -> Result<Vec<ElementInfo>, String> {
                 name, attributes, ..
             }) => {
                 let element_type = name.local_name;
-                let current_element = Some(element_type.clone());
+                let mut id_value = String::new();
+                let mut name_value = String::new();
 
-                for attr in attributes {
+                for attr in &attributes {
                     if attr.name.local_name == "id" {
-                        if let Some(element_type) = current_element.clone() {
-                            elements.push(ElementInfo {
-                                element_type,
-                                id: attr.value,
-                                source_file: file_path.to_path_buf(),
-                            });
-                        }
-                        break;
+                        id_value = attr.value.clone();
+                    } else if attr.name.local_name == "name" {
+                        name_value = strip_localization_tags(&attr.value);
                     }
                 }
+
+                let path_element = if !id_value.is_empty() {
+                    if !name_value.is_empty() {
+                        format!("{}:{}:{}", element_type, id_value, name_value)
+                    } else {
+                        format!("{}:{}", element_type, id_value)
+                    }
+                } else {
+                    element_type.clone()
+                };
+
+                path_stack.push(path_element);
+                if !id_value.is_empty() {
+                    let full_path = path_stack.join(" -> ");
+                    elements.push(ElementInfo {
+                        element_type,
+                        id: id_value,
+                        source_file: file_path.to_path_buf(),
+                        full_path,
+                    });
+                }
             }
-            Ok(XmlEvent::EndElement { .. }) => (),
-            Ok(XmlEvent::EndDocument) | Err(_) => break,
+            Ok(XmlEvent::EndElement { .. }) => {
+                path_stack.pop();
+            }
+            Err(e) => {
+                return Err(format!(
+                    "Error parsing XML file {}: {}",
+                    file_path.display(),
+                    e
+                ));
+            }
             _ => {}
         }
     }
