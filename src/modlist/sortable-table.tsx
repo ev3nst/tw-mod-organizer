@@ -132,7 +132,7 @@ export const ModListSortableTable = () => {
 	);
 
 	const handleSpaceBar = (event: KeyboardEvent) => {
-		if (event.key === ' ' && selectedRows.size > 0) {
+		if (event.key === ' ' && selectedRows.size > 1) {
 			event.preventDefault();
 			const selectedMods = mods.filter(
 				f => !isSeparator(f) && selectedRows.has(f.identifier),

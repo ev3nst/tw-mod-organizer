@@ -196,10 +196,6 @@ export const Downloads = () => {
 							nxmLinkResponse,
 						);
 
-						toast.info(
-							'Download started: ' + nxmLinkResponse.download_url,
-						);
-
 						const now = Date.now();
 						setDownloads(prev => [
 							...prev,

@@ -10,11 +10,14 @@ import { Button } from '@/components/button';
 import { Separator } from '@/components/separator';
 import { Loading } from '@/components/loading';
 
+import { settingStore } from '@/lib/store/setting';
+import { profileStore } from '@/lib/store/profile';
 import { ModItem, modsStore } from '@/lib/store/mods';
 import { isSeparator, modSeparatorStore } from '@/lib/store/mod_separator';
-import { isEmptyString, toastError } from '@/lib/utils';
+
 import api, { ZipItemInfo } from '@/lib/api';
-import { settingStore } from '@/lib/store/setting';
+import { isEmptyString, toastError } from '@/lib/utils';
+import { initOrder } from '@/modlist/utils';
 
 export const InstallMod = () => {
 	const [loading, setLoading] = useState(false);
@@ -29,6 +32,7 @@ export const InstallMod = () => {
 	const [archivePath, setArchivePath] = useState<string>();
 	const [modPath, setModPath] = useState<string>();
 
+	const profile = profileStore(state => state.profile);
 	const init_reload = settingStore(state => state.init_reload);
 	const setInitReload = settingStore(state => state.setInitReload);
 	const selectedGame = settingStore(state => state.selectedGame);
@@ -45,6 +49,9 @@ export const InstallMod = () => {
 	);
 	const downloadedModMeta = modsStore(state => state.downloadedModMeta);
 	const setDownloadedModMeta = modsStore(state => state.setDownloadedModMeta);
+	const setInstallModItemOpen = modsStore(
+		state => state.setInstallModItemOpen,
+	);
 	const separators = modSeparatorStore(state => state.data);
 
 	const sameNameWithMods = mods.some(
@@ -262,6 +269,8 @@ export const InstallMod = () => {
 			setModFiles([]);
 			setDownloadedArchivePath('');
 			setDownloadedModMeta({});
+			setInstallModItemOpen(false);
+			await initOrder(selectedGame!.steam_id, profile.id, mods);
 			setInitReload(!init_reload);
 		} catch (error) {
 			toastError(error);

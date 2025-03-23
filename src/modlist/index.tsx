@@ -15,7 +15,7 @@ import { modMetaStore } from '@/lib/store/mod_meta';
 import { conflictsStore } from '@/lib/store/conflict';
 
 import api from '@/lib/api';
-import { toastError } from '@/lib/utils';
+import { normalizeOrder, toastError } from '@/lib/utils';
 
 import { ModListSortableTable } from './sortable-table';
 import { initActivation, initMeta, initOrder, initSeparator } from './utils';
@@ -65,12 +65,34 @@ export const ModList = () => {
 			);
 			setConflicts(conflicts);
 
+			const currentModOrder = modOrderStore.getState().data;
 			const modOrder = await initOrder(
 				selectedGame!.steam_id,
 				profile.id,
 				modsWithSeparators,
 			);
-			setModOrder(modOrder);
+
+			const existingModIds = new Set(modOrder.map(item => item.mod_id));
+			const missingItems = currentModOrder.filter(
+				item => !existingModIds.has(item.mod_id),
+			);
+
+			let finalModOrder = modOrder;
+
+			if (missingItems.length > 0) {
+				const highestOrder = Math.max(
+					...modOrder.map(item => item.order),
+					0,
+				);
+
+				missingItems.forEach((item, idx) => {
+					item.order = highestOrder + idx + 1;
+				});
+
+				finalModOrder = normalizeOrder([...modOrder, ...missingItems]);
+			}
+
+			setModOrder(finalModOrder);
 
 			let sortedMods: ModItemSeparatorUnion[] = [];
 			switch (sort_by) {
