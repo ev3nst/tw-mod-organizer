@@ -227,7 +227,15 @@ export const Saves = () => {
 									: ''
 							}`}
 						>
-							<div>{sf.filename}</div>
+							<div
+								className={
+									!sf.meta_exists
+										? 'text-muted-foreground'
+										: ''
+								}
+							>
+								{sf.filename}
+							</div>
 							<div className="text-xs text-muted-foreground mt-1.5 flex justify-between">
 								<span>
 									{new Date(sf.date).toLocaleDateString(
