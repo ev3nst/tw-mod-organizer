@@ -19,7 +19,7 @@ pub async fn start_game_bannerlord(
     app_state: tauri::State<'_, AppState>,
     app_id: u32,
     mods: Vec<BannerlordMod>,
-    save_game: Option<String>,
+    _save_game: Option<String>,
 ) -> Result<(), String> {
     let steam_state = &app_state.steam_state;
     steam_state.drop_all_clients();
@@ -83,13 +83,7 @@ pub async fn start_game_bannerlord(
     command.creation_flags(0x08000000);
 
     if !modules_arg.is_empty() {
-        command.arg(modules_arg);
-    }
-
-    if let Some(save) = &save_game {
-        if !save.is_empty() {
-            command.arg(format!("/continuesave \"{}\"", save));
-        }
+        command.arg(&modules_arg);
     }
 
     command

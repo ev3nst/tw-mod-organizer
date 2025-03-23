@@ -64,11 +64,13 @@ function RequiredItemsDialog() {
 		? (mods.filter(
 				mf =>
 					!isSeparator(mf) &&
+					(mf as ModItem).item_type !== 'base_mod' &&
 					requiredItemsMod.required_items.includes(mf.identifier),
 			) as ModItem[])
 		: (mods.filter(
 				f =>
 					!isSeparator(f) &&
+					(f as ModItem).item_type !== 'base_mod' &&
 					(f as ModItem).required_items.includes(
 						requiredItemsMod.identifier,
 					) &&
@@ -85,9 +87,10 @@ function RequiredItemsDialog() {
 
 	const handleActivationChange = (activate: boolean) => {
 		const updatedModActivation = modActivationData.map(item => {
-			const isDependency = dependencyMods.some(
-				dm => dm.identifier === item.mod_id,
-			);
+			const isDependency =
+				dependencyMods.some(dm => dm.identifier === item.mod_id) &&
+				(mods.find(m => m.identifier === item.mod_id) as ModItem)
+					.item_type !== 'base_mod';
 
 			return isDependency ? { ...item, is_active: activate } : item;
 		});

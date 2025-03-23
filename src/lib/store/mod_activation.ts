@@ -4,6 +4,7 @@ import {
 	ModelConstructor,
 	createStore,
 } from '@/lib/store/mod_generic';
+import { profileStore } from '@/lib/store/profile';
 import { modsStore, type ModItem } from '@/lib/store/mods';
 import {
 	getChildMods,
@@ -29,6 +30,31 @@ export class ModActivationModel extends ModGenericModel<
 	}
 }
 
+const customSyncData = async (dataToSync: ModActivationItem[]) => {
+	const { profile } = profileStore.getState();
+	const instance = await ModActivationModel.retrieve(profile.id);
+	const mods = modsStore.getState().mods;
+	if (instance) {
+		instance.data = dataToSync.map(d => {
+			const mod = mods.find(m => m.identifier === d.mod_id);
+			if (!mod) return d;
+			if (isSeparator(mod)) return d;
+
+			const isBaseAndAlwaysActive =
+				(mod as ModItem).item_type === 'base_mod' &&
+				mod.identifier !== 'BirthAndDeath';
+			if (isBaseAndAlwaysActive) {
+				return {
+					...d,
+					is_active: true,
+				};
+			}
+
+			return d;
+		});
+		await instance.save();
+	}
+};
 export const modActivationStore = createStore<
 	ModActivation,
 	ModActivationModel,
@@ -48,6 +74,7 @@ export const modActivationStore = createStore<
 		ModActivationItem
 	>,
 	initialState: [],
+	customSyncData,
 	extend: set => ({
 		saveFilePath: undefined,
 		setSaveFile: saveFile => {
@@ -78,6 +105,7 @@ const processDependencies = (
 				.filter(
 					otherMod =>
 						!isSeparator(otherMod) &&
+						(otherMod as ModItem).item_type !== 'base_mod' &&
 						(otherMod as ModItem).required_items.includes(modId) &&
 						result.some(
 							ma =>
@@ -103,8 +131,13 @@ const processDependencies = (
 		currentMod.required_items.length > 0
 	) {
 		const missingDependencyIds = new Set(
-			currentMod.required_items.filter(requiredId =>
-				result.some(ma => ma.mod_id === requiredId && !ma.is_active),
+			currentMod.required_items.filter(
+				requiredId =>
+					result.some(
+						ma => ma.mod_id === requiredId && !ma.is_active,
+					) &&
+					(mods.find(m => m.identifier === requiredId) as ModItem)
+						.item_type !== 'base_mod',
 			),
 		);
 
@@ -149,6 +182,7 @@ export const toggleModActivation = (
 				.filter(
 					otherMod =>
 						!isSeparator(otherMod) &&
+						(otherMod as ModItem).item_type !== 'base_mod' &&
 						(otherMod as ModItem).required_items.includes(
 							mod.identifier,
 						) &&
@@ -187,7 +221,11 @@ export const toggleModActivation = (
 		const missingDependencyIds = new Set(
 			mod.required_items.filter(requiredId =>
 				updatedModActivation.some(
-					ma => ma.mod_id === requiredId && !ma.is_active,
+					ma =>
+						ma.mod_id === requiredId &&
+						!ma.is_active &&
+						(mods.find(m => m.identifier === requiredId) as ModItem)
+							.item_type !== 'base_mod',
 				),
 			),
 		);

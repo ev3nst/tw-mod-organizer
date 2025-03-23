@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use super::bannerlord;
 use super::totalwar;
 use crate::game::supported_games::SUPPORTED_GAMES;
 
@@ -35,17 +34,7 @@ pub async fn conflicts(
                 totalwar::conflicts::conflicts(handle, app_id, folder_paths).await?;
             Ok(conflicts_result)
         }
-        "bannerlord" => {
-            let conflicts_result =
-                bannerlord::conflicts::conflicts(handle, app_id, folder_paths).await?;
-
-            let converted_result: HashMap<String, HashMap<String, Vec<String>>> = conflicts_result
-                .into_iter()
-                .map(|(k, v)| (k, v.into_iter().collect()))
-                .collect();
-
-            Ok(converted_result)
-        }
+        "bannerlord" => Ok(HashMap::new()),
         _ => Err(format!("Game type '{}' is not supported", game.r#type)),
     }
 }

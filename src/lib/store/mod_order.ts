@@ -3,9 +3,9 @@ import {
 	ModGenericProps,
 	createStore,
 } from '@/lib/store/mod_generic';
-import type { ModItem } from '@/lib/store/mods';
-import { profileStore } from '@/lib/store/profile';
 import { SettingModel } from '@/lib/store/setting';
+import { profileStore } from '@/lib/store/profile';
+import type { ModItem } from '@/lib/store/mods';
 
 export type ModOrderItem = {
 	mod_id: string;

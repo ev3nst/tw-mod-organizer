@@ -1,4 +1,4 @@
-# Modulus - _Mod Organizer Application_
+# Modulus - Mod Organizer Application
 
 ### Supported Games
 
