@@ -20,7 +20,7 @@ pub async fn start_game_bannerlord(
     app_id: u32,
     mods: Vec<BannerlordMod>,
     _save_game: Option<String>,
-) -> Result<(), String> {
+) -> Result<String, String> {
     let steam_state = &app_state.steam_state;
     steam_state.drop_all_clients();
 
@@ -86,9 +86,15 @@ pub async fn start_game_bannerlord(
         command.arg(&modules_arg);
     }
 
+    let mut command_str = exe_path.to_string_lossy().into_owned();
+    if !modules_arg.is_empty() {
+        command_str.push_str(" ");
+        command_str.push_str(&modules_arg);
+    }
+
     command
         .spawn()
         .map_err(|e| format!("Failed to start game: {}", e))?;
 
-    Ok(())
+    Ok(command_str)
 }

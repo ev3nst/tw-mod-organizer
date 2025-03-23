@@ -299,7 +299,7 @@ class API {
 		add_directory_txt: string,
 		used_mods_txt: string,
 		save_game?: string,
-	): Promise<ZipItemInfo[]> {
+	): Promise<string> {
 		return invoke('start_game', {
 			app_id,
 			add_directory_txt,
@@ -316,7 +316,7 @@ class API {
 			mod_path: string;
 		}[],
 		save_game?: string,
-	): Promise<ZipItemInfo[]> {
+	): Promise<string> {
 		return invoke('start_game_bannerlord', {
 			app_id,
 			mods,

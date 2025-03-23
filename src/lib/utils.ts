@@ -149,13 +149,17 @@ export async function startGameBannerlord(
 	mods: ModItemSeparatorUnion[],
 	modActivationData: ModActivationItem[],
 	saveFile?: SaveFile,
-) {
+): Promise<string> {
 	const modsToLoad = mods
 		.filter(
 			m =>
 				!isSeparator(m) &&
 				!modActivationData.some(
-					ma => ma.mod_id === m.identifier && !ma.is_active,
+					ma =>
+						ma.mod_id === m.identifier &&
+						!ma.is_active &&
+						(m as ModItem).item_type !== 'base_mod' &&
+						m.identifier !== 'BirthAndDeath',
 				),
 		)
 		.map(m => {
@@ -176,7 +180,13 @@ export async function startGameBannerlord(
 		save_game = saveFile.path.split('\\').pop();
 	}
 
-	await api.start_game_bannerlord(app_id, modsToLoad, save_game);
+	const command = await api.start_game_bannerlord(
+		app_id,
+		modsToLoad,
+		save_game,
+	);
+	console.log(command, 'DEBUG: BANNERLORD START EXECUTE COMMAND');
+	return command;
 }
 
 export const buttonVariants = cva(

@@ -46,7 +46,9 @@ export class ErrorBoundary extends React.Component<
 					<div className="flex justify-between app-drag-region border-b fixed top-0 left-0 right-0 py-1">
 						<div className="flex items-center gap-4 py-1 px-3">
 							<img src="/logo.png" className="h-6 w-6" />
-							<div className="text-sm font-bold">TW Mod Organizer</div>
+							<div className="text-sm font-bold">
+								TW Mod Organizer
+							</div>
 						</div>
 						<WindowActions className="px-1" />
 					</div>
