@@ -186,6 +186,13 @@ pub async fn conflicts(
                         let mod2_str = mod2.to_string_lossy().to_string();
 
                         conflicts_by_mod
+                            .entry(mod2_str.clone())
+                            .or_default()
+                            .entry(mod1_str.clone())
+                            .or_default()
+                            .push(full_path1.clone());
+
+                        conflicts_by_mod
                             .entry(mod1_str)
                             .or_default()
                             .entry(mod2_str)
