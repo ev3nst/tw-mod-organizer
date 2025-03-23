@@ -4,6 +4,7 @@ import {
 	DownloadIcon,
 	EyeIcon,
 	EyeOffIcon,
+	LoaderIcon,
 	PauseIcon,
 	PlayIcon,
 	XIcon,
@@ -27,11 +28,11 @@ import DownloadManager, { DownloadRecord } from '@/lib/store/download-manager';
 import { modsStore } from '@/lib/store/mods';
 import { formatFileSize, toastError } from '@/lib/utils';
 
-type DownloadProgRecord = DownloadRecord & { progress?: number };
-
 export const Downloads = () => {
-	const [downloads, setDownloads] = useState<DownloadProgRecord[]>([]);
+	const [downloads, setDownloads] = useState<DownloadRecord[]>([]);
 	const [isPaused, setIsPaused] = useState<boolean>(false);
+	const [nxmProtocolLoading, setNxmProtocolLoading] =
+		useState<boolean>(false);
 
 	const games = settingStore(state => state.games);
 	const selectedGame = settingStore(state => state.selectedGame);
@@ -128,6 +129,7 @@ export const Downloads = () => {
 				'nxm-protocol',
 				async event => {
 					try {
+						setNxmProtocolLoading(true);
 						const downloadRequestLink = event.payload;
 						const downloadLinkExp = downloadRequestLink.split('/');
 
@@ -217,6 +219,8 @@ export const Downloads = () => {
 						]);
 					} catch (error) {
 						toastError(error);
+					} finally {
+						setNxmProtocolLoading(false);
 					}
 				},
 			);
@@ -287,7 +291,7 @@ export const Downloads = () => {
 		}
 	};
 
-	const handleDownloadFileSelection = (download: DownloadProgRecord) => {
+	const handleDownloadFileSelection = (download: DownloadRecord) => {
 		if (
 			typeof download.progress !== 'undefined' &&
 			download.progress !== 100
@@ -337,7 +341,7 @@ export const Downloads = () => {
 		);
 	};
 
-	const renderDownloadItem = (download: DownloadProgRecord) => (
+	const renderDownloadItem = (download: DownloadRecord) => (
 		<div
 			key={`downloads_${download.app_id}_${download.item_id}`}
 			className="flex items-start p-3 hover:cursor-pointer hover:bg-black/90 relative"
@@ -347,9 +351,13 @@ export const Downloads = () => {
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<div
-								className={`hover:cursor-pointer hover:text-blue-500 pe-[30px] ${download.hidden === 0 ? 'text-orange-500' : ''}`}
+								className={`hover:cursor-pointer hover:text-blue-500 pe-[30px] ${
+									download.hidden === 1
+										? 'text-orange-500'
+										: ''
+								}`}
 							>
-								{download.filename}
+								{download.filename} - {download.hidden}
 							</div>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
@@ -377,7 +385,7 @@ export const Downloads = () => {
 									await loadDownloads();
 								}}
 							>
-								{download.hidden === 0 ? (
+								{download.hidden === 1 ? (
 									<div className="flex gap-2 items-center">
 										<EyeIcon className="w-4 h-4" /> Set
 										Visible
@@ -422,7 +430,7 @@ export const Downloads = () => {
 
 	return (
 		<div>
-			<div className="absolute top-[5px] left-[110px] z-10 flex gap-2">
+			<div className="absolute top-[5px] left-[110px] z-10 flex items-center gap-2">
 				{renderPauseResumeButton()}
 
 				<Tooltip>
@@ -448,8 +456,14 @@ export const Downloads = () => {
 						<p>Toggle hidden downloads</p>
 					</TooltipContent>
 				</Tooltip>
+
+				{nxmProtocolLoading && (
+					<div className="text-center animate-pulse">
+						<LoaderIcon className="animate-spin w-5 h-5 text-foreground mx-auto" />
+					</div>
+				)}
 			</div>
-			{downloads.map(renderDownloadItem)}
+			<div className="divide-y">{downloads.map(renderDownloadItem)}</div>
 		</div>
 	);
 };

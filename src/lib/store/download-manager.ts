@@ -17,8 +17,9 @@ export interface DownloadRecord {
 	mod_url?: string | null;
 	preview_url?: string | null;
 	version?: string | null;
+	progress?: number;
 	status: string;
-	hidden: number;
+	hidden: 1 | 0;
 	created_at?: number;
 }
 
@@ -54,7 +55,7 @@ class DownloadManager {
 		const query =
 			includeHidden === 1
 				? 'SELECT * FROM downloads WHERE app_id = ? ORDER BY id'
-				: 'SELECT * FROM downloads WHERE app_id = ? AND hidden = 1 ORDER BY id';
+				: 'SELECT * FROM downloads WHERE app_id = ? AND hidden = 0 ORDER BY id';
 
 		const results: any = await dbWrapper.db.select(query, [app_id]);
 
@@ -134,8 +135,8 @@ class DownloadManager {
 
 		const query = `
 			INSERT INTO downloads 
-			(app_id, item_id, filename, url, total_size, bytes_downloaded, preview_url, version, mod_url, status) 
-			VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, 'queued')
+			(app_id, item_id, filename, url, total_size, bytes_downloaded, preview_url, version, mod_url, status, hidden) 
+			VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, 'queued', 0)
 		`;
 
 		const result = await dbWrapper.db.execute(query, [
