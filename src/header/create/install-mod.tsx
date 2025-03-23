@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 
+import { RadioGroup, RadioGroupItem } from '@/components/radio-group';
 import { NativeFileInput } from '@/components/native-file-input';
 import { Input } from '@/components/input';
 import { Label } from '@/components/label';
@@ -12,7 +13,7 @@ import { Loading } from '@/components/loading';
 import { ModItem, modsStore } from '@/lib/store/mods';
 import { isSeparator, modSeparatorStore } from '@/lib/store/mod_separator';
 import { isEmptyString, toastError } from '@/lib/utils';
-import api from '@/lib/api';
+import api, { ZipItemInfo } from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 
 export const InstallMod = () => {
@@ -23,6 +24,7 @@ export const InstallMod = () => {
 	const [imageFilePath, setImageFilePath] = useState('');
 	const [version, setVersion] = useState('');
 	const [categories, setCategories] = useState('');
+	const [modFiles, setModFiles] = useState<ZipItemInfo[]>([]);
 
 	const [archivePath, setArchivePath] = useState<string>();
 	const [modPath, setModPath] = useState<string>();
@@ -112,12 +114,16 @@ export const InstallMod = () => {
 							const packFiles = zipContents.filter(zc =>
 								zc.filename.endsWith('.pack'),
 							);
-							if (packFiles.length !== 1) {
+
+							if (packFiles.length === 0) {
 								toast.error(
-									'Multiple .pack files or none were found in given archive.',
+									'No mod files were found in given archive',
 								);
-								setArchivePath(undefined);
 								return;
+							}
+
+							if (packFiles.length > 1) {
+								setModFiles(packFiles);
 							}
 
 							const twModFile = packFiles[0];
@@ -147,12 +153,16 @@ export const InstallMod = () => {
 								.filter(zc =>
 									zc.filename.endsWith('SubModule.xml'),
 								);
-							if (subModuleFiles.length !== 1) {
+
+							if (subModuleFiles.length === 0) {
 								toast.error(
-									'Multiple SubModule.xml files or none were found in given archive.',
+									'No mod files were found in given archive',
 								);
-								setArchivePath(undefined);
 								return;
+							}
+
+							if (subModuleFiles.length > 1) {
+								setModFiles(subModuleFiles);
 							}
 
 							const blModFile =
@@ -249,6 +259,7 @@ export const InstallMod = () => {
 			setVersion('');
 			setArchivePath('');
 			setModPath('');
+			setModFiles([]);
 			setDownloadedArchivePath('');
 			setDownloadedModMeta({});
 			setInitReload(!init_reload);
@@ -345,6 +356,34 @@ export const InstallMod = () => {
 						mod action will fail.
 					</p>
 				</div>
+			)}
+
+			{modFiles.length > 1 && (
+				<RadioGroup
+					className="mt-4"
+					defaultValue={modFiles[0].filename}
+					onValueChange={value => setModPath(value)}
+				>
+					<p className="text-sm mb-2">
+						Multiple mod files/folders found, please select which
+						one to install. You may install same archive multiple
+						times for different packs if desired.
+					</p>
+					{modFiles.map(pf => (
+						<div
+							key={`rgi_${pf}`}
+							className="flex items-center space-x-2 mt-1"
+						>
+							<RadioGroupItem
+								id={`rgi_${pf.filename}`}
+								value={pf.filename}
+							/>
+							<Label htmlFor={`rgi_${pf.filename}`}>
+								{pf.filename}
+							</Label>
+						</div>
+					))}
+				</RadioGroup>
 			)}
 
 			<Button

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ArchiveIcon, PauseIcon, PlayIcon, XIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -29,35 +29,35 @@ export const Downloads = () => {
 		state => state.setInstallModItemOpen,
 	);
 
+	const loadDownloads = useCallback(async () => {
+		try {
+			const downloadManager = DownloadManager.getInstance();
+			const initialDownloads = await downloadManager.retrieve(
+				selectedGame!.steam_id,
+			);
+			const processedDownloads = initialDownloads.map(download => ({
+				...download,
+				progress:
+					download.total_size > 0
+						? (download.bytes_downloaded / download.total_size) *
+							100
+						: 0,
+			}));
+
+			setDownloads(processedDownloads);
+			setIsPaused(
+				initialDownloads.some(
+					download => download.status !== 'completed',
+				),
+			);
+		} catch (error) {
+			toastError(error);
+		}
+	}, [selectedGame!.steam_id]);
+
 	useEffect(() => {
-		const loadDownloads = async () => {
-			try {
-				const downloadManager = DownloadManager.getInstance();
-				const initialDownloads = await downloadManager.retrieve();
-
-				const processedDownloads = initialDownloads.map(download => ({
-					...download,
-					progress:
-						download.total_size > 0
-							? (download.bytes_downloaded /
-									download.total_size) *
-								100
-							: 0,
-				}));
-
-				setDownloads(processedDownloads);
-				setIsPaused(
-					initialDownloads.some(
-						download => download.status !== 'completed',
-					),
-				);
-			} catch (error) {
-				toastError(error);
-			}
-		};
-
 		loadDownloads();
-	}, []);
+	}, [loadDownloads]);
 
 	useEffect(() => {
 		const downloadManager = DownloadManager.getInstance();
@@ -149,6 +149,13 @@ export const Downloads = () => {
 							return;
 						}
 
+						if (targetGame.steam_id !== selectedGame!.steam_id) {
+							toast.error(
+								`This file is for another game, you should switch to ${targetGame.name} for downloads to work.`,
+							);
+							return;
+						}
+
 						const nxmLinkResponse =
 							await api.nexus_download_link(requestOptions);
 						const url = new URL(nxmLinkResponse.download_url);
@@ -217,6 +224,8 @@ export const Downloads = () => {
 								: download,
 						),
 					);
+
+					await loadDownloads();
 				},
 			);
 
@@ -275,7 +284,9 @@ export const Downloads = () => {
 			return;
 		}
 
-		const modFilePath = `${mod_download_path}\\${selectedGame!.steam_id}\\${download.filename}`;
+		const modFilePath = `${mod_download_path}\\${selectedGame!.steam_id}\\${
+			download.filename
+		}`;
 		setDownloadedArchivePath(modFilePath);
 		setDownloadedModMeta({
 			mod_file_path: modFilePath,
@@ -289,7 +300,9 @@ export const Downloads = () => {
 	const handleHighlightPath = async (filename: string) => {
 		try {
 			const setting = await SettingModel.retrieve();
-			const downloadFilePath = `${setting.mod_download_path}\\${selectedGame!.steam_id}\\${filename}`;
+			const downloadFilePath = `${setting.mod_download_path}\\${
+				selectedGame!.steam_id
+			}\\${filename}`;
 			api.highlight_path(downloadFilePath);
 		} catch (error) {
 			toastError(error);

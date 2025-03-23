@@ -48,13 +48,14 @@ class DownloadManager {
 	}
 
 	public async retrieve(
+		app_id: number,
 		includeHidden: boolean = false,
 	): Promise<DownloadRecord[]> {
 		const query = includeHidden
-			? 'SELECT * FROM downloads ORDER BY id'
-			: 'SELECT * FROM downloads WHERE hidden = 0 ORDER BY id';
+			? 'SELECT * FROM downloads WHERE app_id = ? AND hidden = 0 ORDER BY id'
+			: 'SELECT * FROM downloads WHERE app_id = ? ORDER BY id';
 
-		const results: any = await dbWrapper.db.select(query);
+		const results: any = await dbWrapper.db.select(query, [app_id]);
 
 		const setting = await SettingModel.retrieve();
 		const syncRequests = results
