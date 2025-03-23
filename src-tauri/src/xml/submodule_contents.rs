@@ -1,15 +1,16 @@
+use serde::{Deserialize, Serialize};
 use std::{fs::File, io::Read, path::Path};
 use xml::reader::{EventReader, XmlEvent};
 
 #[allow(dead_code)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DependentModule {
     pub id: String,
     pub dependent_version: Option<String>,
     pub optional: Option<bool>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubModuleContents {
     pub id: String,
     pub name: String,

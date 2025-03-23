@@ -1,19 +1,31 @@
 use futures_util::FutureExt;
+use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
+use std::fs;
+use std::io::{Read, Write};
 use std::path::PathBuf;
 use steamworks::{Client, PublishedFileId};
+use tauri::path::BaseDirectory;
+use tauri::Manager;
 
 use crate::game::supported_games::SUPPORTED_GAMES;
 use crate::r#mod::base_mods::{ModItem, ModVersion};
 use crate::r#mod::totalwar;
 use crate::steam::workshop_item::workshop::WorkshopItemsResult;
-use crate::xml::submodule_contents::submodule_contents;
+use crate::xml::submodule_contents::{submodule_contents, SubModuleContents};
 use crate::AppState;
 
 use super::workshop_path_for_app::workshop_path_for_app;
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct CachedSubModuleContents {
+    submodule_info: SubModuleContents,
+    file_size: u64,
+}
+
 #[tauri::command(rename_all = "snake_case")]
 pub async fn subscribed_mods(
+    handle: tauri::AppHandle,
     app_state: tauri::State<'_, AppState>,
     app_id: u32,
 ) -> Result<Vec<ModItem>, String> {
@@ -39,6 +51,17 @@ pub async fn subscribed_mods(
     };
 
     let steam_client_clone = steam_client.clone();
+
+    let app_cache_dir = handle
+        .path()
+        .resolve("cache".to_string(), BaseDirectory::AppConfig)
+        .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?;
+
+    if !app_cache_dir.exists() {
+        fs::create_dir_all(&app_cache_dir)
+            .map_err(|e| format!("Failed to create cache directory: {}", e))?;
+    }
+
     let (tx, mut rx) = tokio::sync::mpsc::channel(32);
     let items_task = tokio::task::spawn_blocking(move || {
         let ugc = steam_client.ugc();
@@ -140,12 +163,73 @@ pub async fn subscribed_mods(
                     }
                 }
                 "bannerlord" => {
+                    let submodule_path = item_path.join("SubModule.xml");
+                    let cache_json_filename = format!(
+                        "workshop_item_{}_{}_contents.json",
+                        app_id, item.published_file_id
+                    );
+                    let cache_file = app_cache_dir.join(cache_json_filename);
+                    let mut use_cache = false;
+                    let mut cached_info: Option<CachedSubModuleContents> = None;
+
+                    if cache_file.exists() {
+                        if let Ok(metadata) = fs::metadata(&submodule_path) {
+                            let file_size = metadata.len();
+                            if let Ok(mut file) = fs::File::open(&cache_file) {
+                                let mut contents = String::new();
+                                if file.read_to_string(&mut contents).is_ok() {
+                                    if let Ok(parsed_cache) =
+                                        serde_json::from_str::<CachedSubModuleContents>(&contents)
+                                    {
+                                        if parsed_cache.file_size == file_size {
+                                            use_cache = true;
+                                            cached_info = Some(parsed_cache);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if use_cache {
+                        if let Some(cached) = cached_info {
+                            mod_contents_map.insert(
+                                cached.submodule_info.id.clone(),
+                                (
+                                    cached.submodule_info.clone(),
+                                    item.published_file_id.to_string(),
+                                ),
+                            );
+                            steam_items.push((
+                                cached.submodule_info.id,
+                                item,
+                                cached.submodule_info.name,
+                                item_path.to_string_lossy().to_string(),
+                                String::from(""),
+                                Vec::<String>::new(),
+                                Vec::<String>::new(),
+                            ));
+                            continue;
+                        }
+                    }
+
                     if let Some(submodule_info) = submodule_contents(&item_path) {
+                        if let Ok(metadata) = fs::metadata(&submodule_path) {
+                            let file_size = metadata.len();
+                            let cache_data = CachedSubModuleContents {
+                                submodule_info: submodule_info.clone(),
+                                file_size,
+                            };
+                            if let Ok(mut file) = fs::File::create(&cache_file) {
+                                let _ = file.write_all(
+                                    serde_json::to_string(&cache_data).unwrap().as_bytes(),
+                                );
+                            }
+                        }
                         mod_contents_map.insert(
                             submodule_info.id.clone(),
                             (submodule_info.clone(), item.published_file_id.to_string()),
                         );
-
                         steam_items.push((
                             submodule_info.id,
                             item,
