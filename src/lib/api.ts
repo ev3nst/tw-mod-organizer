@@ -83,6 +83,10 @@ class API {
 					lm.preview_local !== null && lm.preview_local !== ''
 						? convertFileSrc(lm.preview_local)
 						: '',
+				item_type:
+					lm?.url && lm.url.startsWith('https://www.nexusmods.com')
+						? 'nexus_mod'
+						: ('local_mod' as any),
 			};
 		});
 
