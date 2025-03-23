@@ -290,5 +290,6 @@ export const Title = memo(
 	},
 	(prevProps, nextProps) =>
 		prevProps.mod.identifier === nextProps.mod.identifier &&
-		prevProps.hasViolation === nextProps.hasViolation,
+		prevProps.hasViolation === nextProps.hasViolation &&
+		prevProps.dependentCount === nextProps.dependentCount,
 );
