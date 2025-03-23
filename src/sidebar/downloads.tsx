@@ -344,56 +344,61 @@ export const Downloads = () => {
 		>
 			<div className="flex items-center gap-3">
 				<div className="text-xs leading-5">
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<div
-								className={`hover:cursor-pointer hover:text-blue-500 pe-[30px] ${
-									download.hidden === 1
-										? 'text-orange-500'
-										: ''
-								}`}
-							>
-								{download.filename} - {download.hidden}
-							</div>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent>
-							<DropdownMenuItem
-								onClick={() =>
-									handleHighlightPath(download.filename)
-								}
-							>
-								<ArchiveIcon /> Highlight Archive
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={() =>
-									handleDownloadFileSelection(download)
-								}
-							>
-								<DownloadIcon /> Install
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={async () => {
-									const downloadManager =
-										DownloadManager.getInstance();
-									await downloadManager.hideToggle(
-										download.id,
-									);
-									await loadDownloads();
-								}}
-							>
-								{download.hidden === 1 ? (
-									<div className="flex gap-2 items-center">
-										<EyeIcon className="w-4 h-4" /> Set
-										Visible
-									</div>
-								) : (
-									<div className="flex gap-2 items-center">
-										<EyeOffIcon className="w-4 h-4" /> Hide
-									</div>
-								)}
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					{download.status === 'completed' ? (
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<div
+									className={`hover:cursor-pointer hover:text-blue-500 pe-[30px] ${
+										download.hidden === 1
+											? 'text-orange-500'
+											: ''
+									}`}
+								>
+									{download.filename}
+								</div>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent>
+								<DropdownMenuItem
+									onClick={() =>
+										handleHighlightPath(download.filename)
+									}
+								>
+									<ArchiveIcon /> Highlight Archive
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() =>
+										handleDownloadFileSelection(download)
+									}
+								>
+									<DownloadIcon /> Install
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={async () => {
+										const downloadManager =
+											DownloadManager.getInstance();
+										await downloadManager.hideToggle(
+											download.id,
+										);
+										await loadDownloads();
+									}}
+								>
+									{download.hidden === 1 ? (
+										<div className="flex gap-2 items-center">
+											<EyeIcon className="w-4 h-4" /> Set
+											Visible
+										</div>
+									) : (
+										<div className="flex gap-2 items-center">
+											<EyeOffIcon className="w-4 h-4" />{' '}
+											Hide
+										</div>
+									)}
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					) : (
+						download.filename
+					)}
 
 					<div className="flex justify-between text-muted-foreground">
 						<div>
