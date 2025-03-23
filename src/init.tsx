@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { lazy, Suspense, useEffect, useState, useCallback } from 'react';
 
 import { appConfigDir } from '@tauri-apps/api/path';
 
@@ -10,8 +10,16 @@ import api from '@/lib/api';
 import { dbWrapper } from '@/lib/db';
 import { SettingModel, settingStore } from '@/lib/store/setting';
 
-import GameSelector from './game-selector';
-import App from './app';
+const App = lazy(() => import('./app'));
+const GameSelector = lazy(() => import('./game-selector'));
+
+const toasterOptions = {
+	classNames: {
+		success: 'text-green-500',
+		error: 'text-red-500',
+		info: 'text-blue-500',
+	},
+};
 
 function Init() {
 	const [initLoading, setInitLoading] = useState(true);
@@ -103,21 +111,19 @@ function Init() {
 
 	if (initLoading) return <Loading />;
 
-	if (!selectedGame) return <GameSelector />;
+	if (!selectedGame)
+		return (
+			<Suspense fallback={<Loading />}>
+				<GameSelector />
+			</Suspense>
+		);
 
 	return (
 		<ErrorBoundary>
-			<Toaster
-				theme="dark"
-				toastOptions={{
-					classNames: {
-						success: 'text-green-500',
-						error: 'text-red-500',
-						info: 'text-blue-500',
-					},
-				}}
-			/>
-			<App />
+			<Toaster theme="dark" toastOptions={toasterOptions} />
+			<Suspense fallback={<Loading />}>
+				<App />
+			</Suspense>
 		</ErrorBoundary>
 	);
 }
