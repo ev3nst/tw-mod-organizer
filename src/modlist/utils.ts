@@ -142,54 +142,57 @@ export const initOrder = async (
 ) => {
 	const modOrder = await ModOrderModel.retrieve(profileId);
 	if (typeof modOrder !== 'undefined' && modOrder.data !== null) {
-		let updatedOrder = [];
-		const toAdd = [];
-		for (let mi = 0; mi < mods.length; mi++) {
-			const mod = mods[mi];
-			const currentOrder = modOrder.data.find(
-				f => f.mod_id === mod.identifier,
-			);
+		const existingModsMap = new Map(
+			modOrder.data.map(item => [item.mod_id, item]),
+		);
 
-			if (currentOrder) {
-				updatedOrder.push({
+		const processedMods = mods.map(mod => {
+			const existingMod = existingModsMap.get(mod.identifier);
+
+			if (existingMod) {
+				return {
 					mod_id: mod.identifier,
-					order: currentOrder.order,
+					order: existingMod.order,
 					mod_file_path:
 						'mod_file_path' in mod ? mod.mod_file_path : undefined,
 					title: mod.title,
-				});
+				};
 			} else {
-				toAdd.push({
+				return {
 					mod_id: mod.identifier,
-					order: 0,
+					order: Number.MAX_SAFE_INTEGER,
 					mod_file_path:
 						'mod_file_path' in mod ? mod.mod_file_path : undefined,
 					title: mod.title,
-				});
+				};
 			}
-		}
+		});
 
-		updatedOrder = normalizeOrder(updatedOrder);
-		let updatedOrderLength = updatedOrder.length;
-		for (let tai = 0; tai < toAdd.length; tai++) {
-			updatedOrderLength++;
-			toAdd[tai].order = updatedOrderLength;
-		}
+		const highestOrder = Math.max(
+			...processedMods
+				.map(m => m.order)
+				.filter(o => o !== Number.MAX_SAFE_INTEGER),
+			0,
+		);
 
-		updatedOrder = normalizeOrder([...updatedOrder, ...toAdd]);
-		return updatedOrder;
+		let nextOrder = highestOrder;
+		processedMods.forEach(mod => {
+			if (mod.order === Number.MAX_SAFE_INTEGER) {
+				nextOrder++;
+				mod.order = nextOrder;
+			}
+		});
+
+		return normalizeOrder(processedMods);
 	} else {
-		const newOrder = [];
-		for (let mi = 0; mi < mods.length; mi++) {
-			const mod = mods[mi];
-			newOrder.push({
-				mod_id: mod.identifier,
-				order: mi + 1,
-				mod_file_path:
-					'mod_file_path' in mod ? mod.mod_file_path : undefined,
-				title: mod.title,
-			});
-		}
+		const newOrder = mods.map((mod, index) => ({
+			mod_id: mod.identifier,
+			order: index + 1,
+			mod_file_path:
+				'mod_file_path' in mod ? mod.mod_file_path : undefined,
+			title: mod.title,
+		}));
+
 		const newModOrder = new ModOrderModel({
 			id: null as any,
 			profile_id: profileId,
