@@ -41,7 +41,6 @@ open = "5.3.2"
 notify = "8.0.0"
 dirs = "6.0.0"
 xml = "0.8.20"
-quick-xml = "0.37.2"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-single-instance = "2"
