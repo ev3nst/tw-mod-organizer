@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { type ChangeEvent, useState } from 'react';
 import { FolderIcon, UploadIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/button';
 import { Loading } from '@/components/loading';
 import { Checkbox } from '@/components/checkbox';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
 
 import { settingStore } from '@/lib/store/setting';
 import { profileStore } from '@/lib/store/profile';
@@ -25,6 +27,7 @@ export const ExportProfile = () => {
 	const [onlyActiveMods, setOnlyActiveMods] = useState(false);
 	const [exportLoading, setExportLoading] = useState(false);
 	const [exportPath, setExportPath] = useState('');
+	const [customExportProfileName, setCustomExportProfileName] = useState('');
 
 	const selectedGame = settingStore(state => state.selectedGame);
 	const profile = profileStore(state => state.profile);
@@ -34,12 +37,11 @@ export const ExportProfile = () => {
 	const modMetaData = modMetaStore(state => state.data);
 	const modSeparatorData = modSeparatorStore(state => state.data);
 
-	const handleExport = async () => {
-		if (profile.name === 'Default') {
-			toast.error('Default profile cannot be exported.');
-			return;
-		}
+	const handleProfileName = (event: ChangeEvent<HTMLInputElement>) => {
+		setCustomExportProfileName(event.currentTarget.value);
+	};
 
+	const handleExport = async () => {
 		setExportLoading(true);
 		try {
 			let modsToExport = mods.filter(mod => !isSeparator(mod));
@@ -86,9 +88,13 @@ export const ExportProfile = () => {
 				);
 			}
 
+			let profileNameToExport =
+				customExportProfileName !== ''
+					? customExportProfileName
+					: profile.name;
 			const exportData = {
 				app_id: selectedGame!.steam_id,
-				name: profile.name,
+				name: profileNameToExport,
 				mods: modsToExport,
 				mod_order: modOrderDataToExport,
 				mod_activation: modActivationDataToExport,
@@ -98,7 +104,7 @@ export const ExportProfile = () => {
 			const export_file_path = await api.export_profile(
 				selectedGame!.steam_id,
 				profile.id,
-				profile.name,
+				profileNameToExport,
 				JSON.stringify(exportData),
 			);
 
@@ -113,15 +119,41 @@ export const ExportProfile = () => {
 
 	return (
 		<div className="flex flex-col gap-3">
-			<div className="flex justify-between items-center gap-2">
+			<div className="flex flex-col gap-3 mb-3 flex-grow">
+				<Label htmlFor="name">Name</Label>
+				<Input
+					id="name"
+					value={customExportProfileName}
+					onChange={handleProfileName}
+					autoComplete="off"
+					className="col-span-3"
+				/>
+				<p className="text-sm text-muted-foreground">
+					If left empty, current profile's name will be used.
+				</p>
+			</div>
+			<div className="flex items-center gap-2">
+				<Checkbox
+					id="onlyActiveMods"
+					checked={onlyActiveMods}
+					onCheckedChange={isChecked =>
+						setOnlyActiveMods(isChecked as any)
+					}
+				/>
+				<label
+					htmlFor="onlyActiveMods"
+					className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+				>
+					Ignore Passive Mods
+				</label>
+			</div>
+			<div className="flex justify-between items-center gap-2 mt-2">
 				<Button
 					className={`flex-grow ${
-						exportLoading === true || profile.name === 'Default'
-							? 'disabled'
-							: ''
+						exportLoading === true ? 'disabled' : ''
 					}`}
 					variant="success"
-					disabled={exportLoading || profile.name === 'Default'}
+					disabled={exportLoading}
 					onClick={handleExport}
 				>
 					<UploadIcon />
@@ -139,29 +171,6 @@ export const ExportProfile = () => {
 				</Button>
 			</div>
 
-			<div className="flex items-center space-x-2">
-				<Checkbox
-					id="onlyActiveMods"
-					checked={onlyActiveMods}
-					onCheckedChange={isChecked =>
-						setOnlyActiveMods(isChecked as any)
-					}
-				/>
-				<label
-					htmlFor="onlyActiveMods"
-					className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-				>
-					Ignore Passive Mods
-				</label>
-			</div>
-
-			{profile.name === 'Default' && (
-				<p className="text-red-500">
-					Default profile cannot be exported. You may create a
-					duplicate profile with a different name and export that
-					instead.
-				</p>
-			)}
 			<p className="text-sm">
 				This process will create a .json file that contains the current
 				profile's data in a folder which you can view by clicking the
