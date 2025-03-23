@@ -51,7 +51,7 @@ pub async fn conflicts(
             .map_err(|e| format!("Failed to create cache directory: {}", e))?;
     }
 
-    let cache_json_filename = format!("bannerlord_conflicts_{}_cache.json", app_id.to_string());
+    let cache_json_filename = format!("mod_conflicts_{}_cache.json", app_id);
     let cache_file = app_cache_dir.join(cache_json_filename);
 
     let excluded_elements: BTreeSet<&str> = ["LanguageData", "Module", "XmlNode", "string"]
@@ -97,6 +97,30 @@ pub async fn conflicts(
             ))
         })
         .collect();
+
+    if cache_file.exists() {
+        let cache_content = fs::read_to_string(&cache_file).ok();
+        if let Some(content) = cache_content {
+            if let Ok(cache_entry) = serde_json::from_str::<CacheEntry>(&content) {
+                let file_paths_set: BTreeSet<_> = file_paths.iter().cloned().collect();
+                let cached_paths_set: BTreeSet<_> =
+                    cache_entry.file_paths.iter().cloned().collect();
+
+                if file_paths_set == cached_paths_set {
+                    let all_files_unchanged = file_metadata.iter().all(|(path, metadata)| {
+                        cache_entry
+                            .file_metadata
+                            .get(path)
+                            .map_or(false, |cached| cached == metadata)
+                    });
+
+                    if all_files_unchanged {
+                        return Ok(cache_entry.conflicts);
+                    }
+                }
+            }
+        }
+    }
 
     let mod_folders_clone = mod_folders.clone();
     let excluded_elements_clone = excluded_elements.clone();
