@@ -1,4 +1,4 @@
-# Modulus - Mod Organizer Application
+# TW Mod Organizer
 
 ### Supported Games
 
@@ -39,7 +39,10 @@ Here are some ideas I might add in the future, depending on feedback and time:
 -   Selective file exclusion from conflicts — choose files to exclude or ignore specific conflicts
 -   Load order patching — unit size multiplier, language fix etc.
 -   Create Steam collections from mod lists — publish your load order as a Steam collection
--   More games to support under Total War title
+-   Drag & Drop multiple local mod installation
+-   Error tracking, script logging
+-   Automatic mod installation via import & export for Nexus Mods
+-   More games to support
 
 ## For Developers
 

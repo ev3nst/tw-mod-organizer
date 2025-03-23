@@ -50,7 +50,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(
             tauri_plugin_sql::Builder::new()
-                .add_migrations("sqlite:modulus.db", migrations::get_migrations())
+                .add_migrations("sqlite:twmodorganizer.db", migrations::get_migrations())
                 .build(),
         )
         .manage(AppState {

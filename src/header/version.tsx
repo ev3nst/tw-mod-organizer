@@ -76,7 +76,7 @@ export const Version = () => {
 								className="text-blue-500 hover:cursor-pointer"
 								onClick={() =>
 									api.open_external_url(
-										`https://github.com/ev3nst/modulus/releases`,
+										`https://github.com/ev3nst/tw-mod-organizer/releases`,
 									)
 								}
 							>

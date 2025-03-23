@@ -2686,37 +2686,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "modulus"
-version = "0.6.0"
-dependencies = [
- "dirs 6.0.0",
- "futures-util",
- "notify",
- "open",
- "rayon",
- "regex",
- "reqwest",
- "rpfm_lib",
- "serde",
- "serde_json",
- "sqlx",
- "steamworks",
- "tauri",
- "tauri-build",
- "tauri-plugin-deep-link",
- "tauri-plugin-dialog",
- "tauri-plugin-opener",
- "tauri-plugin-single-instance",
- "tauri-plugin-sql",
- "tokio",
- "tokio-tungstenite",
- "trash",
- "uuid",
- "winreg 0.55.0",
- "xml",
-]
-
-[[package]]
 name = "muda"
 version = "0.15.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6025,6 +5994,37 @@ dependencies = [
  "sha1",
  "thiserror 2.0.11",
  "utf-8",
+]
+
+[[package]]
+name = "tw-mod-organizer"
+version = "0.6.0"
+dependencies = [
+ "dirs 6.0.0",
+ "futures-util",
+ "notify",
+ "open",
+ "rayon",
+ "regex",
+ "reqwest",
+ "rpfm_lib",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "steamworks",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-deep-link",
+ "tauri-plugin-dialog",
+ "tauri-plugin-opener",
+ "tauri-plugin-single-instance",
+ "tauri-plugin-sql",
+ "tokio",
+ "tokio-tungstenite",
+ "trash",
+ "uuid",
+ "winreg 0.55.0",
+ "xml",
 ]
 
 [[package]]

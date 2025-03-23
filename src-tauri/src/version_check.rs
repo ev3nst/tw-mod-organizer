@@ -8,7 +8,7 @@ pub struct VersionResponse {
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn version_check() -> Result<VersionResponse, String> {
-    let url = "https://github.com/ev3nst/modulus/releases/latest/download/latest.json";
+    let url = "https://github.com/ev3nst/tw-mod-organizer/releases/latest/download/latest.json";
 
     let client = Client::new();
     let res = client
