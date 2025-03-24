@@ -313,6 +313,11 @@ export const Downloads = () => {
 		setDownloadedModMeta({
 			mod_file_path: modFilePath,
 			mod_url: download?.mod_url,
+			download_url:
+				download.mod_url &&
+				download.mod_url.startsWith('https://www.nexusmods.com')
+					? `${download.mod_url}?tab=files&file_id=${download.item_id}&nmm=1`
+					: '',
 			preview_url: download?.preview_url,
 			version: download?.version,
 		});
