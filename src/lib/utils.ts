@@ -185,7 +185,6 @@ export async function startGameBannerlord(
 		modsToLoad,
 		save_game,
 	);
-	console.log(command, 'DEBUG: BANNERLORD START EXECUTE COMMAND');
 	return command;
 }
 

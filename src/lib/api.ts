@@ -304,7 +304,7 @@ class API {
 		used_mods_txt: string,
 		save_game?: string,
 	): Promise<string> {
-		return invoke('start_game', {
+		return invoke('start_game_totalwar', {
 			app_id,
 			add_directory_txt,
 			used_mods_txt,
