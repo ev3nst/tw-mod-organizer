@@ -493,14 +493,16 @@ export const Downloads = () => {
 	return (
 		<div>
 			<div className="absolute top-[5px] left-[110px] z-10 flex items-center gap-2">
-				<Button
-					className="hover:text-blue-500 h-7 w-7"
-					variant="ghost"
-					size="icon"
-					onClick={handlePauseResume}
-				>
-					{isPaused ? <PlayIcon /> : <PauseIcon />}
-				</Button>
+				{downloads.length > 0 && (
+					<Button
+						className="hover:text-blue-500 h-7 w-7"
+						variant="ghost"
+						size="icon"
+						onClick={handlePauseResume}
+					>
+						{isPaused ? <PlayIcon /> : <PauseIcon />}
+					</Button>
+				)}
 
 				<Tooltip>
 					<TooltipTrigger asChild>
