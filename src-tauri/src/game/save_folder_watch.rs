@@ -40,7 +40,8 @@ pub async fn save_folder_watch(
 
     let save_watcher_running = Arc::clone(&state.save_watcher_running);
     if save_watcher_running.load(Ordering::SeqCst) {
-        return Ok(());
+        save_watcher_running.store(false, Ordering::SeqCst);
+        tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
     }
 
     let folder_clone = state.save_folder_path.lock().await.clone();
@@ -87,9 +88,13 @@ pub async fn save_folder_watch(
     save_watcher_running.store(true, Ordering::SeqCst);
 
     let (tx, mut rx) = mpsc::channel(100);
+    let folder_to_watch = folder_clone.clone();
+
     let _watcher = tokio::task::spawn_blocking({
         let tx = tx.clone();
-        let folder_clone = folder_clone.clone();
+        let folder_clone = folder_to_watch;
+        let save_watcher_running = Arc::clone(&save_watcher_running);
+
         move || {
             let mut watcher: RecommendedWatcher =
                 notify::recommended_watcher(move |res: Result<Event, _>| {
@@ -114,19 +119,28 @@ pub async fn save_folder_watch(
 
             if let Err(e) = watcher.watch(&folder_clone, RecursiveMode::NonRecursive) {
                 eprintln!("Failed to watch folder: {:?}", e);
+                save_watcher_running.store(false, Ordering::SeqCst);
                 return None;
             }
 
-            let forever = std::sync::mpsc::channel::<()>();
-            forever.1.recv().ok();
+            while save_watcher_running.load(Ordering::SeqCst) {
+                std::thread::sleep(std::time::Duration::from_millis(100));
+            }
+
             Some(watcher)
         }
     });
 
     tokio::spawn({
         let save_watcher_running = Arc::clone(&save_watcher_running);
+        let handle = handle.clone();
+
         async move {
             while let Some((path, event_type)) = rx.recv().await {
+                if !save_watcher_running.load(Ordering::SeqCst) {
+                    break;
+                }
+
                 if let Some(extension) = path.extension() {
                     if extension == game.save_file_extension {
                         if path.to_string_lossy().ends_with(&format!(
