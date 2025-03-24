@@ -12,6 +12,7 @@ use trash::delete;
 use crate::utils::create_app_default_paths::create_app_default_paths;
 use crate::AppState;
 
+use super::migrate_legacy_meta_files::migrate_legacy_meta_files;
 use super::supported_games::SUPPORTED_GAMES;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -30,6 +31,8 @@ pub async fn save_folder_watch(
     app_id: u32,
 ) -> Result<(), String> {
     let _ = create_app_default_paths(handle.clone());
+    let _ = migrate_legacy_meta_files(&handle, app_id);
+
     let game = SUPPORTED_GAMES
         .iter()
         .find(|game| game.steam_id == app_id)

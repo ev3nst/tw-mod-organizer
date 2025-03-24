@@ -4,6 +4,7 @@ use std::{fs::read_dir, path::PathBuf};
 use serde::{Deserialize, Serialize};
 use tauri::{path::BaseDirectory, Manager};
 
+use super::migrate_legacy_meta_files::migrate_legacy_meta_files;
 use super::supported_games::SUPPORTED_GAMES;
 use crate::utils::create_app_default_paths::create_app_default_paths;
 
@@ -19,6 +20,8 @@ pub struct SaveFile {
 #[tauri::command(rename_all = "snake_case")]
 pub async fn save_files(handle: tauri::AppHandle, app_id: u32) -> Result<Vec<SaveFile>, String> {
     let _ = create_app_default_paths(handle.clone());
+    let _ = migrate_legacy_meta_files(&handle, app_id);
+
     let game = SUPPORTED_GAMES
         .iter()
         .find(|game| game.steam_id == app_id)

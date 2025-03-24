@@ -1,6 +1,7 @@
 use std::{fs, path::PathBuf};
 use tauri::{path::BaseDirectory, Manager};
 
+use super::migrate_legacy_meta_files::migrate_legacy_meta_files;
 use super::supported_games::SUPPORTED_GAMES;
 use crate::utils::create_app_default_paths::create_app_default_paths;
 
@@ -13,6 +14,7 @@ pub async fn fetch_save_file_meta(
     save_file_name: String,
 ) -> Result<SaveFileMeta, String> {
     let _ = create_app_default_paths(handle.clone());
+    let _ = migrate_legacy_meta_files(&handle, app_id);
 
     let game = SUPPORTED_GAMES
         .iter()

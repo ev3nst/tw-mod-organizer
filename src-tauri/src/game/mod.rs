@@ -3,6 +3,7 @@ pub mod delete_save_file;
 pub mod fetch_save_file_meta;
 pub mod find_installation_path;
 pub mod is_running;
+pub mod migrate_legacy_meta_files;
 pub mod save_files;
 pub mod save_folder_watch;
 pub mod set_watch_save_folder;

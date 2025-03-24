@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{path::BaseDirectory, Manager};
 
+use super::migrate_legacy_meta_files::migrate_legacy_meta_files;
 use super::supported_games::SUPPORTED_GAMES;
 use crate::utils::create_app_default_paths::create_app_default_paths;
 
@@ -36,6 +37,7 @@ pub async fn upsert_save_file_meta(
     mod_order_data: Vec<LoadOrderData>,
 ) -> Result<String, String> {
     let _ = create_app_default_paths(handle.clone());
+    let _ = migrate_legacy_meta_files(&handle, app_id);
 
     let game = SUPPORTED_GAMES
         .iter()
