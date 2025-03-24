@@ -9,13 +9,6 @@ edition = "2021"
 [profile.dev]
 incremental = true
 
-[profile.release]
-codegen-units = 1
-lto = true
-opt-level = 3
-panic = "abort"
-strip = true
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
