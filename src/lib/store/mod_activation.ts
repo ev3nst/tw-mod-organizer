@@ -90,44 +90,56 @@ export const modActivationStore = createStore<
 	}),
 });
 
-const processDependencies = (
+const buildModLookup = (
+	mods: ModItemSeparatorUnion[],
+): { modLookup: Map<string, ModItem>; nonSeparatorMods: ModItem[] } => {
+	const modLookup = new Map<string, ModItem>();
+	const nonSeparatorMods: ModItem[] = [];
+	mods.forEach(m => {
+		if (!isSeparator(m)) {
+			const modItem = m as ModItem;
+			nonSeparatorMods.push(modItem);
+			modLookup.set(modItem.identifier, modItem);
+			if (modItem.game_specific_id) {
+				modLookup.set(modItem.game_specific_id, modItem);
+			}
+		}
+	});
+	return { modLookup, nonSeparatorMods };
+};
+
+export const processDependencies = (
 	modId: string,
 	shouldActivate: boolean,
 	updatedActivation: ModActivationItem[],
 	mods: ModItemSeparatorUnion[],
 ): ModActivationItem[] => {
-	const currentMod = mods.find(
-		m =>
-			m.identifier === modId ||
-			(m as ModItem)?.game_specific_id === modId,
-	) as ModItem;
-
-	if (!currentMod || isSeparator(currentMod)) return updatedActivation;
+	const { modLookup, nonSeparatorMods } = buildModLookup(mods);
+	const currentMod = modLookup.get(modId);
+	if (!currentMod) return updatedActivation;
 
 	let result = updatedActivation;
-	if (!shouldActivate) {
-		const dependentModIds = new Set(
-			mods
-				.filter(
-					otherMod =>
-						!isSeparator(otherMod) &&
-						(otherMod as ModItem).item_type !== 'base_mod' &&
-						((otherMod as ModItem).required_items.includes(modId) ||
-							(otherMod as ModItem).required_items.includes(
-								currentMod.game_specific_id,
-							)) &&
-						result.some(
-							ma =>
-								ma.is_active &&
-								(ma.mod_id === otherMod.identifier ||
-									ma.mod_id ===
-										(otherMod as ModItem)
-											?.game_specific_id),
-						),
-				)
-				.map(dm => dm.identifier ?? (dm as ModItem)?.game_specific_id),
-		);
 
+	if (!shouldActivate) {
+		const dependentModIds = new Set<string>();
+		for (const otherMod of nonSeparatorMods) {
+			if (otherMod.item_type === 'base_mod') continue;
+			if (
+				otherMod.required_items.includes(modId) ||
+				otherMod.required_items.includes(currentMod.game_specific_id)
+			) {
+				if (
+					result.some(
+						ma =>
+							ma.is_active &&
+							(ma.mod_id === otherMod.identifier ||
+								ma.mod_id === otherMod.game_specific_id),
+					)
+				) {
+					dependentModIds.add(otherMod.identifier);
+				}
+			}
+		}
 		if (dependentModIds.size > 0) {
 			result = result.map(item =>
 				dependentModIds.has(item.mod_id)
@@ -138,32 +150,30 @@ const processDependencies = (
 	}
 
 	if (shouldActivate && currentMod.required_items.length > 0) {
-		const missingDependencyIds = new Set(
-			currentMod.required_items.filter(
-				requiredId =>
+		const missingDependencyIds = new Set<string>();
+		for (const requiredId of currentMod.required_items) {
+			const requiredMod = modLookup.get(requiredId);
+			if (requiredMod && requiredMod.item_type !== 'base_mod') {
+				const requiredIdentifier = requiredMod.identifier;
+				if (
 					result.some(
 						ma =>
 							(ma.mod_id === requiredId ||
-								ma.mod_id ===
-									mods.find(
-										m =>
-											(m as ModItem)?.game_specific_id ===
-											requiredId,
-									)?.identifier) &&
+								ma.mod_id === requiredIdentifier) &&
 							!ma.is_active,
-					) &&
-					(mods.find(m => m.identifier === requiredId) as ModItem)
-						?.item_type !== 'base_mod',
-			),
-		);
-
+					)
+				) {
+					missingDependencyIds.add(requiredId);
+				}
+			}
+		}
 		if (missingDependencyIds.size > 0) {
 			result = result.map(item =>
 				missingDependencyIds.has(item.mod_id) ||
-				missingDependencyIds.has(
-					(mods.find(m => m.identifier === item.mod_id) as ModItem)
-						?.game_specific_id,
-				)
+				(modLookup.get(item.mod_id) &&
+					missingDependencyIds.has(
+						modLookup.get(item.mod_id)!.game_specific_id,
+					))
 					? { ...item, is_active: true }
 					: item,
 			);
@@ -191,36 +201,33 @@ export const toggleModActivation = (
 			? dependency_confirmation_override
 			: settingStore.getState().dependency_confirmation;
 
+	const { modLookup, nonSeparatorMods } = buildModLookup(mods);
 	let updatedModActivation = modActivation.map(item =>
 		item.mod_id === mod.identifier ? { ...item, is_active: checked } : item,
 	);
 
 	setModActivation(updatedModActivation);
-	if (!checked) {
-		const dependentModIds = new Set(
-			mods
-				.filter(
-					otherMod =>
-						!isSeparator(otherMod) &&
-						(otherMod as ModItem).item_type !== 'base_mod' &&
-						((otherMod as ModItem).required_items.includes(
-							mod.identifier,
-						) ||
-							(otherMod as ModItem).required_items.includes(
-								mod.game_specific_id,
-							)) &&
-						updatedModActivation.some(
-							ma =>
-								ma.is_active &&
-								(ma.mod_id === otherMod.identifier ||
-									ma.mod_id ===
-										(otherMod as ModItem)
-											?.game_specific_id),
-						),
-				)
-				.map(dm => dm.identifier ?? (dm as ModItem)?.game_specific_id),
-		);
 
+	if (!checked) {
+		const dependentModIds = new Set<string>();
+		for (const otherMod of nonSeparatorMods) {
+			if (otherMod.item_type === 'base_mod') continue;
+			if (
+				otherMod.required_items.includes(mod.identifier) ||
+				otherMod.required_items.includes(mod.game_specific_id)
+			) {
+				if (
+					updatedModActivation.some(
+						ma =>
+							ma.is_active &&
+							(ma.mod_id === otherMod.identifier ||
+								ma.mod_id === otherMod.game_specific_id),
+					)
+				) {
+					dependentModIds.add(otherMod.identifier);
+				}
+			}
+		}
 		if (dependentModIds.size > 0) {
 			if (dependency_confirmation) {
 				setRequiredItemsModal(true);
@@ -228,11 +235,11 @@ export const toggleModActivation = (
 				return;
 			} else {
 				setModActivation(
-					updatedModActivation.map(item => {
-						return dependentModIds.has(item.mod_id)
+					updatedModActivation.map(item =>
+						dependentModIds.has(item.mod_id)
 							? { ...item, is_active: false }
-							: item;
-					}),
+							: item,
+					),
 				);
 				return;
 			}
@@ -240,25 +247,23 @@ export const toggleModActivation = (
 	}
 
 	if (checked && mod.required_items.length > 0) {
-		const missingDependencyIds = new Set(
-			mod.required_items.filter(requiredId => {
-				return updatedModActivation.some(
-					ma =>
-						(ma.mod_id === requiredId ||
-							ma.mod_id ===
-								mods.find(
-									m =>
-										(m as ModItem)?.game_specific_id ===
-										requiredId,
-								)?.identifier) &&
-						!ma.is_active &&
-						(mods.find(m => m.identifier === requiredId) as ModItem)
-							?.item_type !== 'base_mod',
-				);
-			}),
-		);
-
-		console.log(missingDependencyIds, 'missingDependencyIds');
+		const missingDependencyIds = new Set<string>();
+		for (const requiredId of mod.required_items) {
+			const requiredMod = modLookup.get(requiredId);
+			if (requiredMod && requiredMod.item_type !== 'base_mod') {
+				const requiredIdentifier = requiredMod.identifier;
+				if (
+					updatedModActivation.some(
+						ma =>
+							(ma.mod_id === requiredId ||
+								ma.mod_id === requiredIdentifier) &&
+							!ma.is_active,
+					)
+				) {
+					missingDependencyIds.add(requiredId);
+				}
+			}
+		}
 
 		if (missingDependencyIds.size > 0) {
 			if (dependency_confirmation) {
@@ -266,18 +271,13 @@ export const toggleModActivation = (
 				setRequiredItemsMod(mod);
 				return;
 			} else {
-				console.log(missingDependencyIds, 'missingDependencyIds');
-
 				setModActivation(
 					updatedModActivation.map(item =>
 						missingDependencyIds.has(item.mod_id) ||
-						missingDependencyIds.has(
-							(
-								mods.find(
-									m => m.identifier === item.mod_id,
-								) as ModItem
-							)?.game_specific_id,
-						)
+						(modLookup.get(item.mod_id) &&
+							missingDependencyIds.has(
+								modLookup.get(item.mod_id)!.game_specific_id,
+							))
 							? { ...item, is_active: true }
 							: item,
 					),
@@ -297,9 +297,9 @@ export const toggleSeparatorActivation = (mod: ModItemSeparatorUnion) => {
 	const shouldActivate = childMods.some(item =>
 		modActivation.some(
 			ma =>
+				ma.is_active === false &&
 				(ma.mod_id === item.identifier ||
-					ma.mod_id === (item as ModItem)?.game_specific_id) &&
-				!ma.is_active,
+					ma.mod_id === (item as ModItem)?.game_specific_id),
 		),
 	);
 
