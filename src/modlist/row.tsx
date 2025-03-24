@@ -48,6 +48,7 @@ const RowComponent = ({
 	hasViolation = false,
 	dependentMods,
 }: RowProps) => {
+	const selectedGame = settingStore(state => state.selectedGame);
 	const sort_by = settingStore(state => state.sort_by);
 	const isSortingEnabled = sort_by === 'load_order';
 
@@ -138,7 +139,7 @@ const RowComponent = ({
 				}
 			/>
 			<Category mod={mod} />
-			<Conflict mod={mod} />
+			{selectedGame!.slug !== 'mbbl' && <Conflict mod={mod} />}
 			<Version mod={mod} />
 			<Creator mod={mod} />
 			<CreatedAt mod={mod} />

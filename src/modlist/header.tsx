@@ -56,6 +56,7 @@ const SortByIndicator = ({
 };
 
 export const Header = () => {
+	const selectedGame = settingStore(state => state.selectedGame);
 	const toggle_type = settingStore(state => state.toggle_type);
 	const toggle_category = settingStore(state => state.toggle_category);
 	const toggle_conflict = settingStore(state => state.toggle_conflict);
@@ -208,7 +209,7 @@ export const Header = () => {
 						CATEGORY
 					</TableHead>
 				)}
-				{toggle_conflict && (
+				{selectedGame!.slug !== 'mbbl' && toggle_conflict && (
 					<TableHead className="text-center w-[80px]">
 						CONFLICT
 					</TableHead>
@@ -243,9 +244,18 @@ export const Header = () => {
 								Categories
 							</DropdownMenuCheckboxItem>
 							<DropdownMenuCheckboxItem
-								checked={toggle_conflict}
+								checked={
+									selectedGame!.slug === 'mbbl'
+										? false
+										: toggle_conflict
+								}
 								onCheckedChange={isChecked =>
 									setColumnSelection('conflict', isChecked)
+								}
+								className={
+									selectedGame!.slug === 'mbbl'
+										? 'text-muted-foreground'
+										: ''
 								}
 							>
 								Conflict

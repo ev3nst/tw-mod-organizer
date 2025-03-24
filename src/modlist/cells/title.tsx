@@ -84,6 +84,7 @@ export const Title = memo(
 	}) => {
 		const { title, background_color, text_color } = mod;
 
+		const selectedGame = settingStore(state => state.selectedGame);
 		const toggle_type = settingStore(state => state.toggle_type);
 		const toggle_category = settingStore(state => state.toggle_category);
 		const toggle_conflict = settingStore(state => state.toggle_conflict);
@@ -125,7 +126,8 @@ export const Title = memo(
 			let separatorColSpan = 7;
 			if (!toggle_type) separatorColSpan--;
 			if (!toggle_category) separatorColSpan--;
-			if (!toggle_conflict) separatorColSpan--;
+			if (!toggle_conflict || selectedGame!.slug === 'mbbl')
+				separatorColSpan--;
 			if (!toggle_version) separatorColSpan--;
 			if (!toggle_creator) separatorColSpan--;
 			if (!toggle_created_at) separatorColSpan--;
