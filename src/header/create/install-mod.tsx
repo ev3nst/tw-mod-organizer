@@ -16,7 +16,7 @@ import { ModItem, modsStore } from '@/lib/store/mods';
 import { isSeparator, modSeparatorStore } from '@/lib/store/mod_separator';
 
 import api, { ZipItemInfo } from '@/lib/api';
-import { isEmptyString, toastError } from '@/lib/utils';
+import { cleanFileName, isEmptyString, toastError } from '@/lib/utils';
 import { initOrder } from '@/modlist/utils';
 
 export const InstallMod = () => {
@@ -82,10 +82,7 @@ export const InstallMod = () => {
 					? archivePath
 					: downloadedArchivePath) ?? '';
 			const zipName = finalArchivePath.split('\\').pop() ?? '';
-			let predictName = zipName;
-			if (predictName.includes('-')) {
-				predictName = predictName.split('-')[0];
-			}
+			const predictName = cleanFileName(zipName);
 
 			setName(predictName);
 			setNameAutoFilled(true);
@@ -192,6 +189,14 @@ export const InstallMod = () => {
 						setImageFilePath(imageFiles[0].filename);
 					}
 				} catch (error) {
+					setName('');
+					setCategories('');
+					setVersion('');
+					setArchivePath('');
+					setModPath('');
+					setModFiles([]);
+					setDownloadedArchivePath('');
+					setDownloadedModMeta({});
 					toastError(error);
 				}
 			};

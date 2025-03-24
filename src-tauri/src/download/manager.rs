@@ -82,7 +82,7 @@ impl DownloadManager {
         }
 
         loop {
-            if is_paused.load(Ordering::SeqCst) {
+            if is_paused.load(Ordering::Relaxed) {
                 break;
             }
 
@@ -94,14 +94,16 @@ impl DownloadManager {
             file.write_all(&chunk)?;
             task.bytes_downloaded += chunk.len() as u64;
 
-            handle.emit(
-                "download-progress",
-                serde_json::json!({
-                    "download_id": task.id,
-                    "bytes_downloaded": task.bytes_downloaded,
-                    "total_size": task.total_size
-                }),
-            )?;
+            if !is_paused.load(Ordering::Relaxed) {
+                handle.emit(
+                    "download-progress",
+                    serde_json::json!({
+                        "download_id": task.id,
+                        "bytes_downloaded": task.bytes_downloaded,
+                        "total_size": task.total_size
+                    }),
+                )?;
+            }
         }
 
         let final_status = if task.bytes_downloaded >= task.total_size {

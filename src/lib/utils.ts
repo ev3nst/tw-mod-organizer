@@ -31,7 +31,6 @@ export const debounceCallback = (cb: () => Promise<void>, timeoutMs = 100) => {
 
 export function toastError(error: any) {
 	try {
-		console.log('toast?');
 		toast.error(String(error));
 	} catch (_e) {}
 	console.error(error);
@@ -55,6 +54,14 @@ export const formatFileSize = (sizeInBytes: number): string => {
 
 export function isEmptyString(str?: string): boolean {
 	return typeof str === 'undefined' || str === null || str === '';
+}
+
+export function cleanFileName(filename: string) {
+	let name = filename.replace(/\.[^.]+$/, '');
+	name = name.replace(/-((\d+-)+\d+)$/, '');
+	name = name.replace(/(\d+(?:\.\d+)+)\.x$/, '$1');
+	name = name.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+	return name.endsWith('.') ? name.slice(0, -1) : name;
 }
 
 export async function getFileDetailsFromPath(path: string): Promise<FileMeta> {

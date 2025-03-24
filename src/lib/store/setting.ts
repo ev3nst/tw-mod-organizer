@@ -43,6 +43,7 @@ export type Setting = {
 	dependency_confirmation: 1 | 0;
 	sort_by: 'load_order' | 'title' | 'version';
 	include_hidden_downloads: 1 | 0;
+	compact_archive_names: 1 | 0;
 };
 
 export type SteamLibraryPaths = {
@@ -116,6 +117,7 @@ export class SettingModel {
 					dependency_confirmation: 1,
 					sort_by: 'load_order',
 					include_hidden_downloads: 0,
+					compact_archive_names: 0,
 				});
 			} else {
 				throw new Error('Error while initiating the settings record');
@@ -242,6 +244,15 @@ export class SettingModel {
 	set include_hidden_downloads(value: 1 | 0) {
 		this.props.include_hidden_downloads = value;
 	}
+
+	// Compact Archive Names
+	get compact_archive_names(): 1 | 0 {
+		return this.props.compact_archive_names;
+	}
+
+	set compact_archive_names(value: 1 | 0) {
+		this.props.compact_archive_names = value;
+	}
 }
 
 type SettingStore = {
@@ -297,6 +308,9 @@ type SettingStore = {
 
 	include_hidden_downloads: 1 | 0;
 	setIncludeHiddenDownloads: (include_hidden_downloads: 1 | 0) => void;
+
+	compact_archive_names: 1 | 0;
+	setCompactArchiveNames: (compact_archive_names: 1 | 0) => void;
 
 	isGameLoading: boolean;
 	setIsGameLoading: (isGameLoading: boolean) => void;
@@ -417,6 +431,12 @@ export const settingStore = create<SettingStore>(set => ({
 		debounceCallback(syncSetting);
 	},
 
+	compact_archive_names: 0,
+	setCompactArchiveNames: compact_archive_names => {
+		set({ compact_archive_names });
+		debounceCallback(syncSetting);
+	},
+
 	isGameLoading: false,
 	setIsGameLoading: (isGameLoading: boolean) => set({ isGameLoading }),
 
@@ -510,6 +530,11 @@ const syncSetting = async () => {
 		setting.include_hidden_downloads = state.include_hidden_downloads
 			? 1
 			: 0;
+		changed = true;
+	}
+
+	if (setting.compact_archive_names !== state.compact_archive_names) {
+		setting.compact_archive_names = state.compact_archive_names ? 1 : 0;
 		changed = true;
 	}
 

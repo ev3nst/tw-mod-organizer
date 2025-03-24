@@ -41,6 +41,9 @@ function Init() {
 	const setIncludeHiddenDownloads = settingStore(
 		state => state.setIncludeHiddenDownloads,
 	);
+	const setCompactArchiveNames = settingStore(
+		state => state.setCompactArchiveNames,
+	);
 
 	const init = useCallback(async () => {
 		setInitLoading(true);
@@ -57,6 +60,7 @@ function Init() {
 		setColumnSelection('creator', setting.column_selections.creator);
 		setSortBy(setting.sort_by);
 		setIncludeHiddenDownloads(setting.include_hidden_downloads);
+		setCompactArchiveNames(setting.compact_archive_names);
 		setNexusAuthApi(setting.nexus_api_key ?? null);
 		setNexusAuthParams(
 			setting.nexus_auth_params ?? {

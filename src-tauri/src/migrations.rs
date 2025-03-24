@@ -187,5 +187,13 @@ pub fn get_migrations() -> Vec<Migration> {
 			"#,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 13,
+            description: "add_compact_archive_names_to_settings",
+            sql: r#"
+			ALTER TABLE settings ADD COLUMN compact_archive_names INTEGER DEFAULT 0 CHECK(compact_archive_names IN (0, 1));
+			"#,
+            kind: MigrationKind::Up,
+        },
     ]
 }
