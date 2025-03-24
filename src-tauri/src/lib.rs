@@ -93,6 +93,7 @@ pub fn run() {
             sevenz::zip_contents::zip_contents,
             nexus::auth_init::nexus_auth_init,
             nexus::download_link::nexus_download_link,
+            nexus::mod_details::nexus_mod_details,
             nexus::nxm_protocol_toggle::nxm_protocol_toggle,
             download::start::start_download,
             download::pause::pause_download,

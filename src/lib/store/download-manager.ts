@@ -216,7 +216,7 @@ class DownloadManager {
 		if (!this.isProcessing) return;
 
 		const query =
-			'SELECT * FROM downloads WHERE status = "not_started" OR status = "in_progress" ORDER BY id LIMIT 1';
+			'SELECT * FROM downloads WHERE status != "completed" ORDER BY id LIMIT 1';
 		const results: any = await dbWrapper.db.select(query);
 
 		if (results.length === 0) {

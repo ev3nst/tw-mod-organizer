@@ -55,6 +55,7 @@ const customSyncData = async (dataToSync: ModActivationItem[]) => {
 		await instance.save();
 	}
 };
+
 export const modActivationStore = createStore<
 	ModActivation,
 	ModActivationModel,
@@ -95,7 +96,12 @@ const processDependencies = (
 	updatedActivation: ModActivationItem[],
 	mods: ModItemSeparatorUnion[],
 ): ModActivationItem[] => {
-	const currentMod = mods.find(m => m.identifier === modId) as ModItem;
+	const currentMod = mods.find(
+		m =>
+			m.identifier === modId ||
+			(m as ModItem)?.game_specific_id === modId,
+	) as ModItem;
+
 	if (!currentMod || isSeparator(currentMod)) return updatedActivation;
 
 	let result = updatedActivation;
@@ -106,14 +112,20 @@ const processDependencies = (
 					otherMod =>
 						!isSeparator(otherMod) &&
 						(otherMod as ModItem).item_type !== 'base_mod' &&
-						(otherMod as ModItem).required_items.includes(modId) &&
+						((otherMod as ModItem).required_items.includes(modId) ||
+							(otherMod as ModItem).required_items.includes(
+								currentMod.game_specific_id,
+							)) &&
 						result.some(
 							ma =>
 								ma.is_active &&
-								ma.mod_id === otherMod.identifier,
+								(ma.mod_id === otherMod.identifier ||
+									ma.mod_id ===
+										(otherMod as ModItem)
+											?.game_specific_id),
 						),
 				)
-				.map(dm => dm.identifier),
+				.map(dm => dm.identifier ?? (dm as ModItem)?.game_specific_id),
 		);
 
 		if (dependentModIds.size > 0) {
@@ -130,16 +142,28 @@ const processDependencies = (
 			currentMod.required_items.filter(
 				requiredId =>
 					result.some(
-						ma => ma.mod_id === requiredId && !ma.is_active,
+						ma =>
+							(ma.mod_id === requiredId ||
+								ma.mod_id ===
+									mods.find(
+										m =>
+											(m as ModItem)?.game_specific_id ===
+											requiredId,
+									)?.identifier) &&
+							!ma.is_active,
 					) &&
 					(mods.find(m => m.identifier === requiredId) as ModItem)
-						.item_type !== 'base_mod',
+						?.item_type !== 'base_mod',
 			),
 		);
 
 		if (missingDependencyIds.size > 0) {
 			result = result.map(item =>
-				missingDependencyIds.has(item.mod_id)
+				missingDependencyIds.has(item.mod_id) ||
+				missingDependencyIds.has(
+					(mods.find(m => m.identifier === item.mod_id) as ModItem)
+						?.game_specific_id,
+				)
 					? { ...item, is_active: true }
 					: item,
 			);
@@ -179,16 +203,22 @@ export const toggleModActivation = (
 					otherMod =>
 						!isSeparator(otherMod) &&
 						(otherMod as ModItem).item_type !== 'base_mod' &&
-						(otherMod as ModItem).required_items.includes(
+						((otherMod as ModItem).required_items.includes(
 							mod.identifier,
-						) &&
+						) ||
+							(otherMod as ModItem).required_items.includes(
+								mod.game_specific_id,
+							)) &&
 						updatedModActivation.some(
 							ma =>
 								ma.is_active &&
-								ma.mod_id === otherMod.identifier,
+								(ma.mod_id === otherMod.identifier ||
+									ma.mod_id ===
+										(otherMod as ModItem)
+											?.game_specific_id),
 						),
 				)
-				.map(dm => dm.identifier),
+				.map(dm => dm.identifier ?? (dm as ModItem)?.game_specific_id),
 		);
 
 		if (dependentModIds.size > 0) {
@@ -198,11 +228,11 @@ export const toggleModActivation = (
 				return;
 			} else {
 				setModActivation(
-					updatedModActivation.map(item =>
-						dependentModIds.has(item.mod_id)
+					updatedModActivation.map(item => {
+						return dependentModIds.has(item.mod_id)
 							? { ...item, is_active: false }
-							: item,
-					),
+							: item;
+					}),
 				);
 				return;
 			}
@@ -211,16 +241,24 @@ export const toggleModActivation = (
 
 	if (checked && mod.required_items.length > 0) {
 		const missingDependencyIds = new Set(
-			mod.required_items.filter(requiredId =>
-				updatedModActivation.some(
+			mod.required_items.filter(requiredId => {
+				return updatedModActivation.some(
 					ma =>
-						ma.mod_id === requiredId &&
+						(ma.mod_id === requiredId ||
+							ma.mod_id ===
+								mods.find(
+									m =>
+										(m as ModItem)?.game_specific_id ===
+										requiredId,
+								)?.identifier) &&
 						!ma.is_active &&
 						(mods.find(m => m.identifier === requiredId) as ModItem)
-							.item_type !== 'base_mod',
-				),
-			),
+							?.item_type !== 'base_mod',
+				);
+			}),
 		);
+
+		console.log(missingDependencyIds, 'missingDependencyIds');
 
 		if (missingDependencyIds.size > 0) {
 			if (dependency_confirmation) {
@@ -228,9 +266,18 @@ export const toggleModActivation = (
 				setRequiredItemsMod(mod);
 				return;
 			} else {
+				console.log(missingDependencyIds, 'missingDependencyIds');
+
 				setModActivation(
 					updatedModActivation.map(item =>
-						missingDependencyIds.has(item.mod_id)
+						missingDependencyIds.has(item.mod_id) ||
+						missingDependencyIds.has(
+							(
+								mods.find(
+									m => m.identifier === item.mod_id,
+								) as ModItem
+							)?.game_specific_id,
+						)
 							? { ...item, is_active: true }
 							: item,
 					),
@@ -249,12 +296,19 @@ export const toggleSeparatorActivation = (mod: ModItemSeparatorUnion) => {
 	const childMods = getChildMods(mods, mod.identifier);
 	const shouldActivate = childMods.some(item =>
 		modActivation.some(
-			ma => ma.mod_id === item.identifier && !ma.is_active,
+			ma =>
+				(ma.mod_id === item.identifier ||
+					ma.mod_id === (item as ModItem)?.game_specific_id) &&
+				!ma.is_active,
 		),
 	);
 
 	let updatedModActivation = modActivation.map(activation =>
-		childMods.some(item => item.identifier === activation.mod_id)
+		childMods.some(
+			item =>
+				item.identifier === activation.mod_id ||
+				item.game_specific_id === activation.mod_id,
+		)
 			? { ...activation, is_active: shouldActivate }
 			: activation,
 	);
@@ -266,6 +320,14 @@ export const toggleSeparatorActivation = (mod: ModItemSeparatorUnion) => {
 			updatedModActivation,
 			mods,
 		);
+		if (item.game_specific_id) {
+			updatedModActivation = processDependencies(
+				item.game_specific_id,
+				shouldActivate,
+				updatedModActivation,
+				mods,
+			);
+		}
 	});
 
 	setModActivation(updatedModActivation);

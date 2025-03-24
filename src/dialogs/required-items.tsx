@@ -65,18 +65,26 @@ function RequiredItemsDialog() {
 				mf =>
 					!isSeparator(mf) &&
 					(mf as ModItem).item_type !== 'base_mod' &&
-					requiredItemsMod.required_items.includes(mf.identifier),
+					(requiredItemsMod.required_items.includes(mf.identifier) ||
+						requiredItemsMod.required_items.includes(
+							(mf as ModItem)?.game_specific_id,
+						)),
 			) as ModItem[])
 		: (mods.filter(
 				f =>
 					!isSeparator(f) &&
 					(f as ModItem).item_type !== 'base_mod' &&
-					(f as ModItem).required_items.includes(
+					((f as ModItem).required_items.includes(
 						requiredItemsMod.identifier,
-					) &&
+					) ||
+						(f as ModItem).required_items.includes(
+							requiredItemsMod.game_specific_id,
+						)) &&
 					modActivationData.some(
 						ma =>
-							ma.is_active === true && ma.mod_id === f.identifier,
+							ma.is_active === true &&
+							(ma.mod_id === f.identifier ||
+								ma.mod_id === (f as ModItem)?.game_specific_id),
 					),
 			) as ModItem[]);
 

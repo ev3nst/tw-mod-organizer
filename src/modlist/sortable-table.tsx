@@ -91,10 +91,14 @@ export const ModListSortableTable = () => {
 				}
 
 				const parentPosition = modPositionMap.get(parentId);
-				if (
-					parentPosition !== undefined &&
-					childPosition < parentPosition
-				) {
+				if (parentPosition !== undefined) {
+					if (childPosition < parentPosition) {
+						if (!violations.has(parentId)) {
+							violations.set(parentId, new Set<string>());
+						}
+						violations.get(parentId)?.add(mod.identifier);
+					}
+				} else {
 					if (!violations.has(parentId)) {
 						violations.set(parentId, new Set<string>());
 					}

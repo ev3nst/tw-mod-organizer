@@ -203,6 +203,8 @@ export const Downloads = () => {
 							nxmLinkResponse,
 						);
 
+						setIsPaused(false);
+						await downloadManager.resume();
 						const now = Date.now();
 						setDownloads(prev => [
 							...prev,

@@ -262,6 +262,15 @@ class API {
 		});
 	}
 
+	async nexus_mod_details(request_options: {
+		game_domain_name: string;
+		mod_id: number;
+	}): Promise<any> {
+		return invoke('nexus_mod_details', {
+			request_options,
+		});
+	}
+
 	async install_mod(
 		app_id: number,
 		mod_details: {

@@ -168,24 +168,46 @@ export const Title = memo(
 						ri < currentMod.required_items.length;
 						ri++
 					) {
-						const isParentPassive = modActivationData.some(
-							map =>
-								map.mod_id === currentMod.required_items[ri] &&
-								map.is_active === false,
+						let findById = currentMod.required_items[ri];
+						let parentActivation = modActivationData.find(
+							ma => ma.mod_id === currentMod.required_items[ri],
 						);
-						if (isParentPassive) {
-							const parentMod = mods.find(
+						if (!parentActivation) {
+							const findModByGameId = mods.find(
 								m =>
-									m.identifier ===
+									(m as ModItem)?.game_specific_id ===
 									currentMod.required_items[ri],
-							) as ModItem | undefined;
-							if (
-								parentMod &&
-								parentMod.item_type !== 'base_mod' &&
-								parentMod?.identifier !== 'BirthAndDeath'
-							) {
-								passiveRequiredParents.push(parentMod);
+							);
+							if (findModByGameId) {
+								findById = findModByGameId.identifier;
+								parentActivation = modActivationData.find(
+									ma =>
+										ma.mod_id ===
+										findModByGameId.identifier,
+								);
 							}
+						}
+
+						if (parentActivation) {
+							const isParentPassive =
+								parentActivation.is_active !== true;
+							if (isParentPassive) {
+								const parentMod = mods.find(
+									m => m.identifier === findById,
+								) as ModItem | undefined;
+								if (
+									parentMod &&
+									parentMod.item_type !== 'base_mod' &&
+									parentMod?.identifier !== 'BirthAndDeath'
+								) {
+									passiveRequiredParents.push(parentMod);
+								}
+							}
+						} else {
+							passiveRequiredParents.push({
+								identifier: findById,
+								title: findById,
+							} as any);
 						}
 					}
 				}
