@@ -72,8 +72,7 @@ pub async fn save_folder_watch(
                 if meta_file_name.ends_with(".meta") {
                     let save_file_name = meta_file_name.trim_end_matches(".meta");
                     if !save_file_names.contains(&save_file_name.to_string()) {
-                        delete(&meta_path)
-                            .map_err(|e| format!("Failed to delete meta file: {}", e))?;
+                        //delete(&meta_path).map_err(|e| format!("Failed to delete meta file: {}", e))?;
                     }
                 }
             }
