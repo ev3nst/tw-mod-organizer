@@ -20,6 +20,7 @@ pub struct ModItem {
     pub created_at: u64,
     pub categories: Option<String>,
     pub url: Option<String>,
+    pub download_url: Option<String>,
     pub preview_url: Option<String>,
     pub version: Option<ModVersion>,
     pub item_type: String,
@@ -40,6 +41,7 @@ pub struct LocalModMeta {
     pub created_at: u64,
     pub categories: Option<String>,
     pub url: Option<String>,
+    pub download_url: Option<String>,
     pub preview_url: Option<String>,
     pub version: Option<ModVersion>,
 }

@@ -42,7 +42,8 @@ pub async fn start_game_totalwar(
             .into_owned()
     };
 
-    let used_mods_file_path = Path::new(&game_installation_path).join("tw_mod_organizer_used_mods.txt");
+    let used_mods_file_path =
+        Path::new(&game_installation_path).join("tw_mod_organizer_used_mods.txt");
     fs::write(
         &used_mods_file_path,
         format!("{}{}", add_directory_txt, used_mods_txt),

@@ -49,6 +49,7 @@ pub struct ModEntry {
     preview_url: Option<String>,
     title: String,
     url: Option<String>,
+    download_url: Option<String>,
     version: Option<Value>,
 }
 

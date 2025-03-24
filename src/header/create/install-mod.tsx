@@ -251,6 +251,7 @@ export const InstallMod = () => {
 						imageFilePath === '' ? undefined : imageFilePath,
 					preview_url: downloadedModMeta.preview_url ?? '',
 					url: downloadedModMeta.mod_url ?? '',
+					download_url: downloadedModMeta.download_url ?? '',
 					categories,
 					version:
 						version !== ''

@@ -16,6 +16,7 @@ export type ModItem = {
 	child_mods?: string[];
 	item_type: 'steam_mod' | 'nexus_mod' | 'base_mod' | 'local_mod';
 	url?: string;
+	download_url?: string;
 	preview_url?: string | null;
 	mod_file: string;
 	mod_file_path: string;
@@ -28,6 +29,7 @@ export type ModItem = {
 type DownloadedModMeta = {
 	mod_file_path?: string;
 	mod_url?: string | null;
+	download_url?: string | null;
 	preview_url?: string | null;
 	image_file_path?: string | null;
 	version?: string | null;

@@ -3,16 +3,9 @@ import { DownloadIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { type FileMeta, NativeFileInput } from '@/components/native-file-input';
-import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from '@/components/accordion';
-import { Checkbox } from '@/components/checkbox';
+import { Accordion } from '@/components/accordion';
 import { Input } from '@/components/input';
 import { Button } from '@/components/button';
-import { Separator } from '@/components/separator';
 import { Loading } from '@/components/loading';
 
 import { settingStore } from '@/lib/store/setting';
@@ -25,10 +18,14 @@ import { modsStore, type ModItem } from '@/lib/store/mods';
 import { ModOrderModel } from '@/lib/store/mod_order';
 import { ModActivationModel } from '@/lib/store/mod_activation';
 import { ModSeparatorModel, isSeparator } from '@/lib/store/mod_separator';
-import { ModMetaItem } from '@/lib/store/mod_meta';
 
 import api from '@/lib/api';
 import { toastError } from '@/lib/utils';
+
+import { Legend } from './legend';
+import { Separators } from './separators';
+import { Mods } from './mods';
+import { Meta } from './meta';
 
 export const ImportProfile = () => {
 	const [importProfileName, setImportProfileName] = useState('');
@@ -241,74 +238,6 @@ export const ImportProfile = () => {
 		}
 	}, [importFile]);
 
-	const ModItemComponent = ({ item }: { item: ModItem }) => {
-		const modExists = modsOnly.some(m => m.mod_file === item.mod_file);
-		const isLocalMod = item.item_type !== 'steam_mod';
-
-		let styleClasses = '';
-
-		if (isLocalMod) {
-			styleClasses = modExists ? 'text-orange-500' : 'text-red-500';
-		} else {
-			styleClasses = modExists
-				? 'text-white hover:text-blue-500 hover:cursor-pointer'
-				: 'text-muted-foreground hover:text-blue-500 hover:cursor-pointer';
-		}
-
-		const handleUrlOpen = () => {
-			if (isLocalMod) return;
-			api.open_external_url(
-				`steam://openurl/https://steamcommunity.com/sharedfiles/filedetails/?id=${item.identifier}`,
-			);
-		};
-
-		return (
-			<div
-				key={`import_profile_mitem_${item.identifier}`}
-				onClick={isLocalMod ? undefined : handleUrlOpen}
-				className={`text-sm py-1 ${styleClasses}`}
-			>
-				{item.title}
-				<em className="block text-muted-foreground text-xs">
-					{item.mod_file}
-				</em>
-			</div>
-		);
-	};
-
-	const MetaItem = ({ meta }: { meta: ModMetaItem }) => {
-		if (meta.title === '' && meta.categories === '') {
-			return null;
-		}
-
-		const modDetail = profileExportData?.mods.find(
-			pedm => pedm.identifier === meta.mod_id,
-		);
-
-		if (!modDetail) {
-			return null;
-		}
-
-		return (
-			<div
-				className="flex flex-col gap-1 py-1"
-				key={`import_profile_mod_meta_${meta.mod_id}`}
-			>
-				<div>{modDetail.title}</div>
-				{meta.title && (
-					<div className="text-muted-foreground">
-						Title: {meta.title}
-					</div>
-				)}
-				{meta.categories && (
-					<div className="text-muted-foreground">
-						Categories: {meta.categories}
-					</div>
-				)}
-			</div>
-		);
-	};
-
 	const renderProfileExportSummary = () => {
 		if (!profileExportData) return null;
 
@@ -325,7 +254,23 @@ export const ImportProfile = () => {
 
 		return (
 			<div className="flex flex-col gap-3 max-h-[400px] overflow-y-auto">
-				<b className="mb-2">Import Details:</b>
+				<div className="mb-2">
+					<div className="flex items-center gap-2">
+						<div className="font-bold">Import Details:</div>
+						{steamModDontExists.length > 0 ||
+							localModsDontExists.length > 0 ||
+							(nexusModsDontExists.length > 0 && (
+								<Legend
+									localModsDontExists={
+										localModsDontExists.length
+									}
+									nexusModsDontExists={
+										nexusModsDontExists.length
+									}
+								/>
+							))}
+					</div>
+				</div>
 
 				<div className="grid grid-cols-4 items-center">
 					<div className="col-span-1">Game:</div>
@@ -364,136 +309,23 @@ export const ImportProfile = () => {
 				)}
 
 				<Accordion type="single" collapsible className="w-full">
-					<AccordionItem value="mods">
-						<AccordionTrigger className="text-md">
-							<div className="flex gap-2">
-								<span>Mods</span>
-								<span className="text-white">
-									({steamModExists.length})
-								</span>
-								<span className="text-muted-foreground">
-									({steamModDontExists.length})
-								</span>
-								<span className="text-blue-500">
-									({nexusModsExists.length})
-								</span>
-								<span className="text-purple-500">
-									({nexusModsDontExists.length})
-								</span>
-								<span className="text-orange-500">
-									({localModsExists.length})
-								</span>
-								<span className="text-red-500">
-									({localModsDontExists.length})
-								</span>
-							</div>
-						</AccordionTrigger>
-						<AccordionContent>
-							<p className="text-muted-foreground">
-								<span className="text-white w-[60px] inline-block">
-									White
-								</span>
-								Steam mods that are present.
-							</p>
-							<p className="text-muted-foreground">
-								<span className="text-muted-foreground w-[60px] inline-block">
-									Gray
-								</span>
-								Steam mods that are not present.
-							</p>
-
-							<p className="text-muted-foreground">
-								<span className="text-blue-500 w-[60px] inline-block">
-									Blue
-								</span>
-								Nexus mods that are found in the system.
-							</p>
-
-							<p className="text-muted-foreground">
-								<span className="text-purple-500 w-[60px] inline-block">
-									Purple
-								</span>
-								Nexus mods that dont exists.
-							</p>
-
-							<p className="text-muted-foreground">
-								<span className="text-orange-500 w-[60px] inline-block">
-									Orange
-								</span>
-								Local mods that are found in the system.
-							</p>
-
-							<p className="text-muted-foreground">
-								<span className="text-red-500 w-[60px] inline-block">
-									Red
-								</span>
-								Local mods that dont exists.
-							</p>
-
-							<Separator className="my-3" />
-							<div className="flex flex-col gap-1">
-								{profileExportData.mods.map(item => (
-									<ModItemComponent
-										key={`mod-${item.identifier}`}
-										item={item}
-									/>
-								))}
-							</div>
-						</AccordionContent>
-					</AccordionItem>
-
-					<AccordionItem value="separators">
-						<AccordionTrigger className="text-md">
-							Separators
-						</AccordionTrigger>
-						<AccordionContent>
-							{profileExportData.mod_separators.map(sep => (
-								<div
-									key={`import_profile_separator_${sep.identifier}`}
-									className="py-1.5 px-3 rounded-sm mb-2"
-									style={{
-										color: sep.text_color,
-										backgroundColor: sep.background_color,
-									}}
-								>
-									{sep.title}
-								</div>
-							))}
-						</AccordionContent>
-					</AccordionItem>
-
-					<AccordionItem value="meta-info">
-						<AccordionTrigger className="text-md">
-							Mod Meta Information
-						</AccordionTrigger>
-						<AccordionContent>
-							<div className="flex items-center space-x-2 mb-4">
-								<Checkbox
-									id="import_profile_copy_meta"
-									aria-label="Copy Meta Information"
-									checked={copyMeta}
-									onCheckedChange={checked =>
-										setCopyMeta(!!checked)
-									}
-								/>
-								<label
-									htmlFor="import_profile_copy_meta"
-									className="text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-								>
-									This is completely optional. Unless
-									unchecked meta information will be copied as
-									well.
-								</label>
-							</div>
-
-							{profileExportData.mod_meta.map(meta => (
-								<MetaItem
-									key={`meta-${meta.mod_id}`}
-									meta={meta}
-								/>
-							))}
-						</AccordionContent>
-					</AccordionItem>
+					<Mods
+						steamModExists={steamModExists}
+						steamModDontExists={steamModDontExists}
+						nexusModsExists={nexusModsExists}
+						nexusModsDontExists={nexusModsDontExists}
+						localModsExists={localModsExists}
+						localModsDontExists={localModsDontExists}
+						profileExportMods={profileExportData.mods}
+						modsOnly={modsOnly}
+					/>
+					<Separators data={profileExportData.mod_separators} />
+					<Meta
+						copyMeta={copyMeta}
+						setCopyMeta={setCopyMeta}
+						profileModMeta={profileExportData.mod_meta}
+						profileExportMods={profileExportData.mods}
+					/>
 				</Accordion>
 			</div>
 		);
@@ -526,7 +358,7 @@ export const ImportProfile = () => {
 		<div className="flex flex-col gap-3">
 			<div className="flex justify-between items-center gap-2">
 				<NativeFileInput
-					key={importFile?.path || 'file-input'}
+					key={importFile?.path ?? 'import-profile-file-input'}
 					className="w-full"
 					size="sm"
 					disabled={importLoading}
@@ -541,21 +373,6 @@ export const ImportProfile = () => {
 			</div>
 
 			{profileExportData && renderProfileExportSummary()}
-
-			{localModsDontExists.length > 0 && (
-				<p className="text-red-500 text-sm pt-2">
-					There are some local mods that could not be found in your
-					system, if you continue anyways they will be ignored.
-				</p>
-			)}
-
-			{nexusModsDontExists.length > 0 && (
-				<p className="text-purple-500 text-sm border-t pt-2">
-					There are some nexus mods that could not be found in your
-					system, you may view them in the list and install them
-					manually afterwards import button should be enabled.
-				</p>
-			)}
 
 			<Button
 				variant="success"

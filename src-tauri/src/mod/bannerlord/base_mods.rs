@@ -82,6 +82,7 @@ pub async fn base_mods(app_id: u32) -> Result<Vec<ModItem>, String> {
             created_at,
             categories: Some(String::from("Official")),
             url: None,
+            download_url: None,
             preview_url: None,
             version: Some(ModVersion::Text(
                 submodule_info.version.unwrap_or_else(|| "".to_string()),

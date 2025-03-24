@@ -91,7 +91,7 @@ pub fn migrate_local_mod(
         identifier: uuid.clone(),
         title: mod_title.to_string(),
         mod_file: mod_file_name.to_owned(),
-        downloaded_url: Some("".to_string()),
+        download_url: Some("".to_string()),
         description: Some("".to_string()),
         categories: categories.map(|cats| cats.join(", ")),
         url: Some("".to_string()),

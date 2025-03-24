@@ -271,10 +271,10 @@ class API {
 			mod_file_path: string;
 			preview_url?: string;
 			image_file_path?: string;
-			downloaded_url?: string;
 			description?: string;
 			categories?: string;
 			url?: string;
+			download_url?: string;
 			version?: string;
 		},
 		mod_installation_path: string,

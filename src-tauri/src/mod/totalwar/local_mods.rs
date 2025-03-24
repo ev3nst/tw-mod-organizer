@@ -33,6 +33,7 @@ pub async fn local_mods(app_mods_path: PathBuf) -> Result<Vec<ModItem>, String> 
             created_at: meta.created_at,
             categories: meta.categories,
             url: meta.url,
+            download_url: meta.download_url,
             preview_url: meta.preview_url,
             version: meta.version,
             item_type: "local_mod".to_string(),
