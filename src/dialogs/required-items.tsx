@@ -10,8 +10,11 @@ import {
 import { Button } from '@/components/button';
 
 import { modsStore, type ModItem } from '@/lib/store/mods';
-import { modActivationStore } from '@/lib/store/mod_activation';
-import { isSeparator } from '@/lib/store/mod_separator';
+import {
+	buildModLookup,
+	getCascadingDependencies,
+	modActivationStore,
+} from '@/lib/store/mod_activation';
 import { Separator } from '@/components/separator';
 
 const DependencyModComponent = ({
@@ -55,39 +58,20 @@ function RequiredItemsDialog() {
 
 	if (!requiredItemsMod) return null;
 
-	const isActive = modActivationData.some(
-		ma =>
-			ma.mod_id === requiredItemsMod.identifier && ma.is_active === true,
+	const { modLookup, nonSeparatorMods } = buildModLookup(mods);
+	const activatedMods = new Set(
+		modActivationData.filter(ma => ma.is_active).map(ma => ma.mod_id),
 	);
 
-	const dependencyMods = isActive
-		? (mods.filter(
-				mf =>
-					!isSeparator(mf) &&
-					(mf as ModItem).item_type !== 'base_mod' &&
-					(requiredItemsMod.required_items.includes(mf.identifier) ||
-						requiredItemsMod.required_items.includes(
-							(mf as ModItem)?.game_specific_id,
-						)),
-			) as ModItem[])
-		: (mods.filter(
-				f =>
-					!isSeparator(f) &&
-					(f as ModItem).item_type !== 'base_mod' &&
-					((f as ModItem).required_items.includes(
-						requiredItemsMod.identifier,
-					) ||
-						(f as ModItem).required_items.includes(
-							requiredItemsMod.game_specific_id,
-						)) &&
-					modActivationData.some(
-						ma =>
-							ma.is_active === true &&
-							(ma.mod_id === f.identifier ||
-								ma.mod_id === (f as ModItem)?.game_specific_id),
-					),
-			) as ModItem[]);
+	const isActive = activatedMods.has(requiredItemsMod.identifier);
+	const cascadingMods = getCascadingDependencies(
+		requiredItemsMod,
+		modLookup,
+		nonSeparatorMods,
+		isActive ? 'dependencies' : 'dependents',
+	);
 
+	const dependencyMods = cascadingMods;
 	const closeModal = () => {
 		setRequiredItemsModal(false);
 		setRequiredItemsMod(undefined);
@@ -95,14 +79,11 @@ function RequiredItemsDialog() {
 
 	const handleActivationChange = (activate: boolean) => {
 		const updatedModActivation = modActivationData.map(item => {
-			const isDependency =
-				dependencyMods.some(dm => dm.identifier === item.mod_id) &&
-				(mods.find(m => m.identifier === item.mod_id) as ModItem)
-					.item_type !== 'base_mod';
-
+			const isDependency = dependencyMods.some(
+				dm => dm.identifier === item.mod_id,
+			);
 			return isDependency ? { ...item, is_active: activate } : item;
 		});
-
 		setModActivation(updatedModActivation);
 		closeModal();
 	};
@@ -140,11 +121,7 @@ function RequiredItemsDialog() {
 								<DependencyModComponent
 									key={`required_items_dialog_${dm.identifier}`}
 									dependencyMod={dm}
-									isActive={modActivationData.some(
-										ma =>
-											ma.mod_id === dm.identifier &&
-											ma.is_active === true,
-									)}
+									isActive={activatedMods.has(dm.identifier)}
 								/>
 							))}
 						</ul>
@@ -158,28 +135,24 @@ function RequiredItemsDialog() {
 								Enable
 							</Button>
 							<p className="text-sm">
-								These mods are required for
+								These mods are required for{' '}
 								<span className="text-blue-500 mx-1">
 									{requiredItemsMod.title}
-								</span>
+								</span>{' '}
 								to work. Would you like to enable them as well?
 							</p>
 						</div>
 					</div>
 				) : (
 					<div>
-						<div>Mods that require this mod as base:</div>
+						<div>Mods that depend on this mod:</div>
 						<Separator className="my-2" />
 						<ul className="max-h-[220px] overflow-y-auto">
 							{dependencyMods.map(dm => (
 								<DependencyModComponent
 									key={`required_items_dialog_${dm.identifier}`}
 									dependencyMod={dm}
-									isActive={modActivationData.some(
-										ma =>
-											ma.mod_id === dm.identifier &&
-											ma.is_active === true,
-									)}
+									isActive={activatedMods.has(dm.identifier)}
 								/>
 							))}
 						</ul>
@@ -193,11 +166,11 @@ function RequiredItemsDialog() {
 								Disable
 							</Button>
 							<p className="text-sm">
-								These mods require
+								These mods depend on{' '}
 								<span className="text-blue-500 mx-1">
 									{requiredItemsMod.title}
 								</span>
-								which you just disabled. Would you like to
+								, which you just disabled. Would you like to
 								disable them as well?
 							</p>
 						</div>
@@ -205,7 +178,7 @@ function RequiredItemsDialog() {
 				)}
 				<em className="text-sm text-muted-foreground">
 					If you want this to occur automatically without asking for
-					your confirmation, you can disable related option in
+					your confirmation, you can disable the related option in
 					settings.
 				</em>
 			</DialogContent>

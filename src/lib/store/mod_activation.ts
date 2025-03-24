@@ -90,7 +90,7 @@ export const modActivationStore = createStore<
 	}),
 });
 
-const buildModLookup = (
+export const buildModLookup = (
 	mods: ModItemSeparatorUnion[],
 ): { modLookup: Map<string, ModItem>; nonSeparatorMods: ModItem[] } => {
 	const modLookup = new Map<string, ModItem>();
@@ -331,4 +331,51 @@ export const toggleSeparatorActivation = (mod: ModItemSeparatorUnion) => {
 	});
 
 	setModActivation(updatedModActivation);
+};
+
+export const getCascadingDependencies = (
+	rootMod: ModItem,
+	modLookup: Map<string, ModItem>,
+	nonSeparatorMods: ModItem[],
+	direction: 'dependencies' | 'dependents',
+): ModItem[] => {
+	const visited = new Set<string>();
+	const result: ModItem[] = [];
+
+	const stack: ModItem[] = [rootMod];
+
+	while (stack.length) {
+		const current = stack.pop()!;
+		if (direction === 'dependencies') {
+			for (const reqId of current.required_items) {
+				const requiredMod = modLookup.get(reqId);
+				if (
+					requiredMod &&
+					requiredMod.item_type !== 'base_mod' &&
+					!visited.has(requiredMod.identifier)
+				) {
+					visited.add(requiredMod.identifier);
+					result.push(requiredMod);
+					stack.push(requiredMod);
+				}
+			}
+		} else {
+			for (const otherMod of nonSeparatorMods) {
+				if (otherMod.item_type === 'base_mod') continue;
+				const isDependent =
+					otherMod.required_items.includes(current.identifier) ||
+					(current.game_specific_id &&
+						otherMod.required_items.includes(
+							current.game_specific_id,
+						));
+				if (isDependent && !visited.has(otherMod.identifier)) {
+					visited.add(otherMod.identifier);
+					result.push(otherMod);
+					stack.push(otherMod);
+				}
+			}
+		}
+	}
+
+	return result;
 };
