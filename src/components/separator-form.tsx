@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Compact as ColorPicker } from '@uiw/react-color';
 
 import { Input } from '@/components/input';
@@ -33,18 +33,11 @@ export const SeparatorForm = ({
 }: SeparatorFormProps) => {
 	const [title, setTitle] = useState<string>(initialValues.title || '');
 	const [backgroundColor, setBackgroundColor] = useState<string>(
-		initialValues.backgroundColor || '#262626',
+		initialValues.backgroundColor ?? '#262626',
 	);
 	const [textColor, setTextColor] = useState<string>(
-		initialValues.textColor || '#fefefe',
+		initialValues.textColor ?? '#fefefe',
 	);
-
-	useEffect(() => {
-		if (initialValues.title) setTitle(initialValues.title);
-		if (initialValues.backgroundColor)
-			setBackgroundColor(initialValues.backgroundColor);
-		if (initialValues.textColor) setTextColor(initialValues.textColor);
-	}, [initialValues]);
 
 	const handleSubmit = () => {
 		onSubmit({
