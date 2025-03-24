@@ -37,7 +37,8 @@ pub async fn save_files(handle: tauri::AppHandle, app_id: u32) -> Result<Vec<Sav
     let save_file_meta_folder = handle
         .path()
         .resolve("save_file_meta".to_string(), BaseDirectory::AppConfig)
-        .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?;
+        .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?
+        .join(app_id.to_string());
 
     let mut save_files = Vec::new();
     match read_dir(save_folder) {

@@ -64,7 +64,8 @@ pub async fn upsert_save_file_meta(
     let save_file_meta_folder = handle
         .path()
         .resolve("save_file_meta".to_string(), BaseDirectory::AppConfig)
-        .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?;
+        .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?
+        .join(app_id.to_string());
 
     let meta_file_path = save_file_meta_folder
         .join(&save_file_name)

@@ -37,7 +37,8 @@ pub async fn fetch_save_file_meta(
     let save_file_meta_folder = handle
         .path()
         .resolve("save_file_meta".to_string(), BaseDirectory::AppConfig)
-        .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?;
+        .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?
+        .join(app_id.to_string());
 
     let clean_save_file_name =
         save_file_name.trim_end_matches(&format!(".{}", game.save_file_extension));

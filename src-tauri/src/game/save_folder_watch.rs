@@ -48,7 +48,8 @@ pub async fn save_folder_watch(
     let save_file_meta_folder = handle
         .path()
         .resolve("save_file_meta".to_string(), BaseDirectory::AppConfig)
-        .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?;
+        .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?
+        .join(app_id.to_string());
 
     let save_file_names: Vec<String> = fs::read_dir(&folder_clone)
         .map_err(|e| format!("Failed to read save folder: {}", e))?
@@ -72,7 +73,8 @@ pub async fn save_folder_watch(
                 if meta_file_name.ends_with(".meta") {
                     let save_file_name = meta_file_name.trim_end_matches(".meta");
                     if !save_file_names.contains(&save_file_name.to_string()) {
-                        //delete(&meta_path).map_err(|e| format!("Failed to delete meta file: {}", e))?;
+                        delete(&meta_path)
+                            .map_err(|e| format!("Failed to delete meta file: {}", e))?;
                     }
                 }
             }
