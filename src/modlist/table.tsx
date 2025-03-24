@@ -51,6 +51,7 @@ export const ModTable: React.FC<ModTableProps> = memo(
 							const dependentMods = hasViolation
 								? dependencyViolations.get(mod.identifier)
 								: undefined;
+
 							return (
 								<Row
 									key={mod.identifier}

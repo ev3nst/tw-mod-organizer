@@ -37,18 +37,18 @@ const customSyncData = async (dataToSync: ModActivationItem[]) => {
 	if (instance) {
 		instance.data = dataToSync.map(d => {
 			const mod = mods.find(m => m.identifier === d.mod_id);
-			if (!mod) return d;
-			if (isSeparator(mod)) return d;
-
 			const isBaseAndAlwaysActive =
 				(mod as ModItem).item_type === 'base_mod' &&
-				mod.identifier !== 'BirthAndDeath';
+				mod?.identifier !== 'BirthAndDeath';
 			if (isBaseAndAlwaysActive) {
 				return {
 					...d,
 					is_active: true,
 				};
 			}
+
+			if (!mod) return d;
+			if (isSeparator(mod)) return d;
 
 			return d;
 		});
@@ -99,7 +99,7 @@ const processDependencies = (
 	if (!currentMod || isSeparator(currentMod)) return updatedActivation;
 
 	let result = updatedActivation;
-	if (!shouldActivate && currentMod.item_type === 'steam_mod') {
+	if (!shouldActivate) {
 		const dependentModIds = new Set(
 			mods
 				.filter(
@@ -125,11 +125,7 @@ const processDependencies = (
 		}
 	}
 
-	if (
-		shouldActivate &&
-		currentMod.item_type === 'steam_mod' &&
-		currentMod.required_items.length > 0
-	) {
+	if (shouldActivate && currentMod.required_items.length > 0) {
 		const missingDependencyIds = new Set(
 			currentMod.required_items.filter(
 				requiredId =>
@@ -176,7 +172,7 @@ export const toggleModActivation = (
 	);
 
 	setModActivation(updatedModActivation);
-	if (!checked && mod.item_type === 'steam_mod') {
+	if (!checked) {
 		const dependentModIds = new Set(
 			mods
 				.filter(
@@ -213,11 +209,7 @@ export const toggleModActivation = (
 		}
 	}
 
-	if (
-		checked &&
-		mod.item_type === 'steam_mod' &&
-		mod.required_items.length > 0
-	) {
+	if (checked && mod.required_items.length > 0) {
 		const missingDependencyIds = new Set(
 			mod.required_items.filter(requiredId =>
 				updatedModActivation.some(

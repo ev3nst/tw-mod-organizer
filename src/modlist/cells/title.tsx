@@ -179,7 +179,11 @@ export const Title = memo(
 									m.identifier ===
 									currentMod.required_items[ri],
 							) as ModItem | undefined;
-							if (parentMod) {
+							if (
+								parentMod &&
+								parentMod.item_type !== 'base_mod' &&
+								parentMod?.identifier !== 'BirthAndDeath'
+							) {
 								passiveRequiredParents.push(parentMod);
 							}
 						}
