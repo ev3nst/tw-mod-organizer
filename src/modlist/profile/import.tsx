@@ -48,6 +48,50 @@ export const ImportProfile = () => {
 	const setLockScreen = settingStore(state => state.setLockScreen);
 	const profiles = profileStore(state => state.profiles);
 
+	let steamModExists: ModItem[] = [];
+	let steamModDontExists: ModItem[] = [];
+	let localModsExists: ModItem[] = [];
+	let localModsDontExists: ModItem[] = [];
+	let nexusModsExists: ModItem[] = [];
+	let nexusModsDontExists: ModItem[] = [];
+	if (profileExportData) {
+		steamModExists = profileExportData.mods.filter(
+			pm =>
+				modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
+				pm.item_type === 'steam_mod',
+		);
+
+		steamModDontExists = profileExportData.mods.filter(
+			pm =>
+				!modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
+				pm.item_type === 'steam_mod',
+		);
+
+		localModsExists = profileExportData.mods.filter(
+			pm =>
+				modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
+				pm.item_type === 'local_mod',
+		);
+
+		localModsDontExists = profileExportData.mods.filter(
+			pm =>
+				!modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
+				pm.item_type === 'local_mod',
+		);
+
+		nexusModsExists = profileExportData.mods.filter(
+			pm =>
+				modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
+				pm.item_type === 'nexus_mod',
+		);
+
+		nexusModsDontExists = profileExportData.mods.filter(
+			pm =>
+				!modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
+				pm.item_type === 'nexus_mod',
+		);
+	}
+
 	const handleImportFileChange = async (file: FileMeta) => {
 		if (!file?.path) return;
 
@@ -279,30 +323,6 @@ export const ImportProfile = () => {
 			return null;
 		}
 
-		const steamModExists = profileExportData.mods.filter(
-			pm =>
-				modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
-				pm.item_type === 'steam_mod',
-		);
-
-		const steamModDontExists = profileExportData.mods.filter(
-			pm =>
-				!modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
-				pm.item_type === 'steam_mod',
-		);
-
-		const localModsExists = profileExportData.mods.filter(
-			pm =>
-				modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
-				pm.item_type !== 'steam_mod',
-		);
-
-		const localModsDontExists = profileExportData.mods.filter(
-			pm =>
-				!modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
-				pm.item_type !== 'steam_mod',
-		);
-
 		return (
 			<div className="flex flex-col gap-3 max-h-[400px] overflow-y-auto">
 				<b className="mb-2">Import Details:</b>
@@ -354,6 +374,12 @@ export const ImportProfile = () => {
 								<span className="text-muted-foreground">
 									({steamModDontExists.length})
 								</span>
+								<span className="text-blue-500">
+									({nexusModsExists.length})
+								</span>
+								<span className="text-purple-500">
+									({nexusModsDontExists.length})
+								</span>
 								<span className="text-orange-500">
 									({localModsExists.length})
 								</span>
@@ -374,6 +400,20 @@ export const ImportProfile = () => {
 									Gray
 								</span>
 								Steam mods that are not present.
+							</p>
+
+							<p className="text-muted-foreground">
+								<span className="text-blue-500 w-[60px] inline-block">
+									Blue
+								</span>
+								Nexus mods that are found in the system.
+							</p>
+
+							<p className="text-muted-foreground">
+								<span className="text-purple-500 w-[60px] inline-block">
+									Purple
+								</span>
+								Nexus mods that dont exists.
 							</p>
 
 							<p className="text-muted-foreground">
@@ -502,16 +542,37 @@ export const ImportProfile = () => {
 
 			{profileExportData && renderProfileExportSummary()}
 
+			{localModsDontExists.length > 0 && (
+				<p className="text-red-500 text-sm pt-2">
+					There are some local mods that could not be found in your
+					system, if you continue anyways they will be ignored.
+				</p>
+			)}
+
+			{nexusModsDontExists.length > 0 && (
+				<p className="text-purple-500 text-sm border-t pt-2">
+					There are some nexus mods that could not be found in your
+					system, you may view them in the list and install them
+					manually afterwards import button should be enabled.
+				</p>
+			)}
+
 			<Button
 				variant="success"
 				size="sm"
 				className={`${
-					!profileExportData || importLoading || importProcessLoading
+					!profileExportData ||
+					importLoading ||
+					importProcessLoading ||
+					nexusModsDontExists.length > 0
 						? 'disabled'
 						: ''
 				}`}
 				disabled={
-					!profileExportData || importLoading || importProcessLoading
+					!profileExportData ||
+					importLoading ||
+					importProcessLoading ||
+					nexusModsDontExists.length > 0
 				}
 				onClick={handleImportProcess}
 			>
