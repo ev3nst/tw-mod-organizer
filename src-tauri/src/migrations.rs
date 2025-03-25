@@ -203,5 +203,13 @@ pub fn get_migrations() -> Vec<Migration> {
 			"#,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 15,
+            description: "add_mod_table_scroll_to_settings",
+            sql: r#"
+			ALTER TABLE settings ADD COLUMN mod_table_scroll INTEGER NOT NULL DEFAULT 0;
+			"#,
+            kind: MigrationKind::Up,
+        },
     ]
 }

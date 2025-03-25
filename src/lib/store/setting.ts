@@ -45,6 +45,7 @@ export type Setting = {
 	include_hidden_downloads: 1 | 0;
 	compact_archive_names: 1 | 0;
 	sidebar_accordion: 'saves' | 'downloads';
+	mod_table_scroll: number;
 };
 
 export type SteamLibraryPaths = {
@@ -120,6 +121,7 @@ export class SettingModel {
 					include_hidden_downloads: 0,
 					compact_archive_names: 0,
 					sidebar_accordion: 'saves',
+					mod_table_scroll: 0,
 				});
 			} else {
 				throw new Error('Error while initiating the settings record');
@@ -263,6 +265,15 @@ export class SettingModel {
 
 	set sidebar_accordion(value: 'saves' | 'downloads') {
 		this.props.sidebar_accordion = value;
+	}
+
+	// Mod Table Scroll
+	get mod_table_scroll(): number {
+		return this.props.mod_table_scroll;
+	}
+
+	set mod_table_scroll(value: number) {
+		this.props.mod_table_scroll = value;
 	}
 }
 

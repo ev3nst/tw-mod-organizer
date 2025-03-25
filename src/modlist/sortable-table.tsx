@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
 	DndContext,
 	closestCenter,
@@ -23,7 +23,7 @@ import {
 } from '@/lib/store/mod_separator';
 import { filterMods, modMetaStore } from '@/lib/store/mod_meta';
 
-import { settingStore } from '@/lib/store/setting';
+import { SettingModel, settingStore } from '@/lib/store/setting';
 import {
 	sortMods,
 	sortCollapsedSection,
@@ -33,8 +33,11 @@ import {
 
 import { ModTable } from './table';
 import { Filter } from './filter';
+import { debounceCallback } from '@/lib/utils';
 
 export const ModListSortableTable = () => {
+	const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
 	const [searchModText, setSearchModText] = useState<string>('');
 	const [activationFilter, setActivationFilter] = useState<string>('all');
 	const [activeId, setActiveId] = useState<string | null>(null);
@@ -297,6 +300,32 @@ export const ModListSortableTable = () => {
 		return selectedRows.has(activeId) ? selectedRows.size : 0;
 	}, [activeId, selectedRows]);
 
+	useEffect(() => {
+		const loadScrollPosition = async () => {
+			try {
+				const setting = await SettingModel.retrieve();
+				if (scrollContainerRef.current) {
+					scrollContainerRef.current.scrollTop =
+						setting.mod_table_scroll;
+				}
+			} catch (error) {
+				console.error('Failed to load scroll position:', error);
+			}
+		};
+		loadScrollPosition();
+	}, []);
+
+	const handleScroll = () => {
+		if (scrollContainerRef.current) {
+			const newPosition = scrollContainerRef.current.scrollTop;
+			debounceCallback(async () => {
+				const setting = await SettingModel.retrieve();
+				setting.mod_table_scroll = newPosition;
+				await setting.save();
+			}, 500);
+		}
+	};
+
 	return (
 		<div className="relative flex-1 mb-[41px]">
 			<DndContext
@@ -305,7 +334,11 @@ export const ModListSortableTable = () => {
 				onDragStart={handleDragStart}
 				onDragEnd={handleDragEnd}
 			>
-				<div className="absolute inset-0 overflow-y-auto dark-scrollbar">
+				<div
+					className="absolute inset-0 overflow-y-auto dark-scrollbar"
+					ref={scrollContainerRef}
+					onScroll={handleScroll}
+				>
 					<ModTable
 						totalMods={mods.length - separators.length}
 						modsResolved={modsResolved}
