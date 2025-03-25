@@ -104,17 +104,6 @@ function Init() {
 
 	useEffect(() => {
 		init();
-
-		// Prevent CTRL + F from opening the browser search
-		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.ctrlKey && event.key === 'f') {
-				event.preventDefault();
-			}
-		};
-		document.addEventListener('keydown', handleKeyDown);
-		return () => {
-			document.removeEventListener('keydown', handleKeyDown);
-		};
 	}, [init]);
 
 	if (initLoading) return <Loading />;
