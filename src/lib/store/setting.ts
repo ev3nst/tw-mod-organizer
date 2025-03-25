@@ -44,6 +44,7 @@ export type Setting = {
 	sort_by: 'load_order' | 'title' | 'version';
 	include_hidden_downloads: 1 | 0;
 	compact_archive_names: 1 | 0;
+	sidebar_accordion: 'saves' | 'downloads';
 };
 
 export type SteamLibraryPaths = {
@@ -118,6 +119,7 @@ export class SettingModel {
 					sort_by: 'load_order',
 					include_hidden_downloads: 0,
 					compact_archive_names: 0,
+					sidebar_accordion: 'saves',
 				});
 			} else {
 				throw new Error('Error while initiating the settings record');
@@ -253,6 +255,15 @@ export class SettingModel {
 	set compact_archive_names(value: 1 | 0) {
 		this.props.compact_archive_names = value;
 	}
+
+	// Sidebar Accordion
+	get sidebar_accordion(): 'saves' | 'downloads' {
+		return this.props.sidebar_accordion;
+	}
+
+	set sidebar_accordion(value: 'saves' | 'downloads') {
+		this.props.sidebar_accordion = value;
+	}
 }
 
 type SettingStore = {
@@ -311,6 +322,9 @@ type SettingStore = {
 
 	compact_archive_names: 1 | 0;
 	setCompactArchiveNames: (compact_archive_names: 1 | 0) => void;
+
+	sidebar_accordion: 'saves' | 'downloads';
+	setSidebarAccordion: (sidebar_accordion: 'saves' | 'downloads') => void;
 
 	isGameLoading: boolean;
 	setIsGameLoading: (isGameLoading: boolean) => void;
@@ -437,6 +451,12 @@ export const settingStore = create<SettingStore>(set => ({
 		debounceCallback(syncSetting);
 	},
 
+	sidebar_accordion: 'saves',
+	setSidebarAccordion: sidebar_accordion => {
+		set({ sidebar_accordion });
+		debounceCallback(syncSetting);
+	},
+
 	isGameLoading: false,
 	setIsGameLoading: (isGameLoading: boolean) => set({ isGameLoading }),
 
@@ -535,6 +555,11 @@ const syncSetting = async () => {
 
 	if (setting.compact_archive_names !== state.compact_archive_names) {
 		setting.compact_archive_names = state.compact_archive_names ? 1 : 0;
+		changed = true;
+	}
+
+	if (setting.sidebar_accordion !== state.sidebar_accordion) {
+		setting.sidebar_accordion = state.sidebar_accordion;
 		changed = true;
 	}
 

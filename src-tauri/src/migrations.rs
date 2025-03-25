@@ -195,5 +195,13 @@ pub fn get_migrations() -> Vec<Migration> {
 			"#,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 14,
+            description: "add_sidebar_accordion_to_settings",
+            sql: r#"
+			ALTER TABLE settings ADD COLUMN sidebar_accordion TEXT NOT NULL DEFAULT 'saves';
+			"#,
+            kind: MigrationKind::Up,
+        },
     ]
 }

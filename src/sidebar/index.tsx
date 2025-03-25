@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { InfoIcon } from 'lucide-react';
 
 import { Sidebar, SidebarContent } from '@/components/sidebar';
 import {
@@ -15,15 +15,20 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@/components/dialog';
+import { Button } from '@/components/button';
+
+import { settingStore } from '@/lib/store/setting';
 
 import { Downloads } from './downloads';
 import { Saves } from './saves';
 import { Play } from './play';
-import { Button } from '@/components/button';
-import { InfoIcon } from 'lucide-react';
 
 export function AppSidebar() {
-	const [tab, setActiveTab] = useState<string>('saves');
+	const sidebar_accordion = settingStore(state => state.sidebar_accordion);
+	const setSidebarAccordion = settingStore(
+		state => state.setSidebarAccordion,
+	);
+
 	return (
 		<Sidebar
 			side="right"
@@ -35,8 +40,8 @@ export function AppSidebar() {
 						type="single"
 						collapsible
 						defaultValue="saves"
-						value={tab}
-						onValueChange={setActiveTab}
+						value={sidebar_accordion}
+						onValueChange={setSidebarAccordion}
 						className="flex flex-col"
 					>
 						<AccordionItem value="saves">
@@ -96,7 +101,7 @@ export function AppSidebar() {
 							<AccordionContent
 								className="overflow-auto max-h-[calc(100vh-12rem)]"
 								forceMount
-								hidden={'downloads' !== tab}
+								hidden={'downloads' !== sidebar_accordion}
 							>
 								<Downloads />
 							</AccordionContent>

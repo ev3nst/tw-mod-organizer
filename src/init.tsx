@@ -44,6 +44,9 @@ function Init() {
 	const setCompactArchiveNames = settingStore(
 		state => state.setCompactArchiveNames,
 	);
+	const setSidebarAccordion = settingStore(
+		state => state.setSidebarAccordion,
+	);
 
 	const init = useCallback(async () => {
 		setInitLoading(true);
@@ -61,6 +64,7 @@ function Init() {
 		setSortBy(setting.sort_by);
 		setIncludeHiddenDownloads(setting.include_hidden_downloads);
 		setCompactArchiveNames(setting.compact_archive_names);
+		setSidebarAccordion(setting.sidebar_accordion);
 		setNexusAuthApi(setting.nexus_api_key ?? null);
 		setNexusAuthParams(
 			setting.nexus_auth_params ?? {
