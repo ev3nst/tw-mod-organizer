@@ -28,11 +28,15 @@ fn create_symlinks_batch_script(
 
     writeln!(batch_file, "@echo off")?;
     writeln!(batch_file, "cd /d \"{}\\Modules\"", game_installation_path)?;
+    writeln!(
+        batch_file,
+        "for /f \"delims= \" %%a in ('dir /b /aL') do rmdir \"%%a\""
+    )?;
 
     for (identifier, mod_path, bannerlord_id) in mods {
         writeln!(
             batch_file,
-            "if exist \"{}\" rmdir /s /q \"{}\"",
+            "if exist \"{}\" rmdir \"{}\"",
             identifier, identifier
         )?;
         writeln!(
