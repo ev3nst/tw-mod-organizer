@@ -2,19 +2,28 @@ import { ExternalLinkIcon } from 'lucide-react';
 
 import api from '@/lib/api';
 import type { ModItem } from '@/lib/store/mods';
+import type { ModMetaItem } from '@/lib/store/mod_meta';
 
 type ModItemProps = {
 	modsOnly: ModItem[];
+	modMetaData: ModMetaItem[];
 	item: ModItem;
 };
 
-export const ModItemComponent = ({ modsOnly, item }: ModItemProps) => {
-	const modExists = modsOnly.some(m => m.mod_file === item.mod_file);
+export const ModItemComponent = ({
+	modsOnly,
+	modMetaData,
+	item,
+}: ModItemProps) => {
+	const modExists =
+		modsOnly.some(m => m.mod_file === item.mod_file) ||
+		((item.item_type === 'nexus_mod' || item.item_type === 'local_mod') &&
+			modMetaData.some(me => me.title === item.mod_file));
+	const isSteamMod = item.item_type === 'steam_mod';
 	const isLocalMod = item.item_type === 'local_mod';
 	const isNexusMod = item.item_type === 'nexus_mod';
 
 	let styleClasses = '';
-
 	switch (item.item_type) {
 		case 'local_mod':
 			styleClasses = modExists ? 'text-orange-500' : 'text-red-500';
@@ -52,7 +61,7 @@ export const ModItemComponent = ({ modsOnly, item }: ModItemProps) => {
 			className={`text-sm py-1 ${styleClasses}`}
 		>
 			<div className="flex items-center gap-1">
-				<div onClick={isLocalMod ? undefined : handleUrlOpen}>
+				<div onClick={isSteamMod ? handleUrlOpen : undefined}>
 					{item.title}
 				</div>
 				{isNexusMod && downloadLink !== '' && (

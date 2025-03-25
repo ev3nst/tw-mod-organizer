@@ -18,6 +18,7 @@ import { modsStore, type ModItem } from '@/lib/store/mods';
 import { ModOrderModel } from '@/lib/store/mod_order';
 import { ModActivationModel } from '@/lib/store/mod_activation';
 import { ModSeparatorModel, isSeparator } from '@/lib/store/mod_separator';
+import { modMetaStore } from '@/lib/store/mod_meta';
 
 import api from '@/lib/api';
 import { toastError } from '@/lib/utils';
@@ -40,6 +41,7 @@ export const ImportProfile = () => {
 		useState<ProfileExportData>();
 
 	const mods = modsStore(state => state.mods);
+	const modMetaData = modMetaStore(state => state.data);
 	const modsOnly = mods.filter(mod => !isSeparator(mod)) as ModItem[];
 	const games = settingStore(state => state.games);
 	const setLockScreen = settingStore(state => state.setLockScreen);
@@ -54,38 +56,42 @@ export const ImportProfile = () => {
 	if (profileExportData) {
 		steamModExists = profileExportData.mods.filter(
 			pm =>
-				modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
-				pm.item_type === 'steam_mod',
+				pm.item_type === 'steam_mod' &&
+				modsOnly.some(mo => mo.mod_file === pm.mod_file),
 		);
 
 		steamModDontExists = profileExportData.mods.filter(
 			pm =>
-				!modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
-				pm.item_type === 'steam_mod',
+				pm.item_type === 'steam_mod' &&
+				!modsOnly.some(mo => mo.mod_file === pm.mod_file),
 		);
 
 		localModsExists = profileExportData.mods.filter(
 			pm =>
-				modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
-				pm.item_type === 'local_mod',
+				pm.item_type === 'local_mod' &&
+				(modsOnly.some(mo => mo.mod_file === pm.mod_file) ||
+					modMetaData.some(me => me.title === pm.mod_file)),
 		);
 
 		localModsDontExists = profileExportData.mods.filter(
 			pm =>
+				pm.item_type === 'local_mod' &&
 				!modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
-				pm.item_type === 'local_mod',
+				!modMetaData.some(me => me.title === pm.mod_file),
 		);
 
 		nexusModsExists = profileExportData.mods.filter(
 			pm =>
-				modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
-				pm.item_type === 'nexus_mod',
+				pm.item_type === 'nexus_mod' &&
+				(modsOnly.some(mo => mo.mod_file === pm.mod_file) ||
+					modMetaData.some(me => me.title === pm.mod_file)),
 		);
 
 		nexusModsDontExists = profileExportData.mods.filter(
 			pm =>
+				pm.item_type === 'nexus_mod' &&
 				!modsOnly.some(mo => mo.mod_file === pm.mod_file) &&
-				pm.item_type === 'nexus_mod',
+				!modMetaData.some(me => me.title === pm.mod_file),
 		);
 	}
 
@@ -257,18 +263,14 @@ export const ImportProfile = () => {
 				<div className="mb-2">
 					<div className="flex items-center gap-2">
 						<div className="font-bold">Import Details:</div>
-						{steamModDontExists.length > 0 ||
+						{(steamModDontExists.length > 0 ||
 							localModsDontExists.length > 0 ||
-							(nexusModsDontExists.length > 0 && (
-								<Legend
-									localModsDontExists={
-										localModsDontExists.length
-									}
-									nexusModsDontExists={
-										nexusModsDontExists.length
-									}
-								/>
-							))}
+							nexusModsDontExists.length > 0) && (
+							<Legend
+								localModsDontExists={localModsDontExists.length}
+								nexusModsDontExists={nexusModsDontExists.length}
+							/>
+						)}
 					</div>
 				</div>
 
@@ -318,6 +320,7 @@ export const ImportProfile = () => {
 						localModsDontExists={localModsDontExists}
 						profileExportMods={profileExportData.mods}
 						modsOnly={modsOnly}
+						modMetaData={modMetaData}
 					/>
 					<Separators data={profileExportData.mod_separators} />
 					<Meta

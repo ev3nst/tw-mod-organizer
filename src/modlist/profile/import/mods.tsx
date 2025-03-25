@@ -5,6 +5,7 @@ import {
 } from '@/components/accordion';
 
 import type { ModItem } from '@/lib/store/mods';
+import type { ModMetaItem } from '@/lib/store/mod_meta';
 
 import { ModItemComponent } from './mod-item';
 
@@ -17,6 +18,7 @@ type ModsProps = {
 	localModsDontExists: ModItem[];
 	profileExportMods: ModItem[];
 	modsOnly: ModItem[];
+	modMetaData: ModMetaItem[];
 };
 
 export const Mods = ({
@@ -28,6 +30,7 @@ export const Mods = ({
 	localModsDontExists,
 	profileExportMods,
 	modsOnly,
+	modMetaData,
 }: ModsProps) => {
 	return (
 		<AccordionItem value="mods">
@@ -61,6 +64,7 @@ export const Mods = ({
 						.map(item => (
 							<ModItemComponent
 								modsOnly={modsOnly}
+								modMetaData={modMetaData}
 								key={`mod-${item.identifier}`}
 								item={item}
 							/>
