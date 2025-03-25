@@ -6,7 +6,7 @@ import {
 	useCallback,
 	type ReactNode,
 } from 'react';
-import { CircleAlertIcon, TriangleAlertIcon } from 'lucide-react';
+import { CircleAlertIcon, InfoIcon, TriangleAlertIcon } from 'lucide-react';
 
 import { TableCell } from '@/components/table';
 
@@ -106,7 +106,6 @@ export const Title = memo(
 			useState(false);
 		const [showParentTooltip, setShowParentTooltip] = useState(false);
 
-		// Memoized toggle handlers
 		const toggleDependencyTooltip = useCallback(() => {
 			setShowDependencyTooltip(prev => !prev);
 		}, []);
@@ -223,7 +222,13 @@ export const Title = memo(
 								src={imgSrc}
 							/>
 						)}
-						{titleTxt ?? ''}
+						<span className="whitespace-pre-wrap">
+							{titleTxt ?? ''}
+							{selectedModMeta?.title !== '' && (
+								<InfoIcon className="inline-block align-middle relative top-[-1px] text-sky-300 w-3 h-3 ml-2" />
+							)}
+						</span>
+
 						{hasViolation &&
 							dependentCount &&
 							dependentCount > 0 && (
@@ -312,7 +317,11 @@ export const Title = memo(
 													return (
 														<li
 															key={`parent_${parentMod.identifier}`}
-															className={`break-all ${isMissingSteamMod ? 'hover:cursor-pointer hover:text-blue-500' : ''}`}
+															className={`break-all ${
+																isMissingSteamMod
+																	? 'hover:cursor-pointer hover:text-blue-500'
+																	: ''
+															}`}
 															onClick={() =>
 																api.open_external_url(
 																	`https://steamcommunity.com/sharedfiles/filedetails/?id=${parentMod.title}`,
