@@ -363,29 +363,23 @@ export const Downloads = () => {
 
 		switch (download.status) {
 			case 'queued':
-				return (
-					<div className="ml-2 text-blue-500 text-xs mt-5">
-						Queued
-					</div>
-				);
+				return <div className="ml-2 text-blue-500 text-xs">Queued</div>;
 			case 'in_progress':
 				if (isPaused) {
 					return (
-						<div className="ml-2 text-orange-500 text-xs mt-5">
+						<div className="ml-2 text-orange-500 text-xs">
 							Paused
 						</div>
 					);
 				}
 
 				return (
-					<div className="ml-2 text-green-500 text-xs animate-pulse mt-5">
+					<div className="ml-2 text-green-500 text-xs animate-pulse">
 						Active
 					</div>
 				);
 			case 'error':
-				return (
-					<div className="ml-2 text-red-500 text-xs mt-5">Failed</div>
-				);
+				return <div className="ml-2 text-red-500 text-xs">Failed</div>;
 			default:
 				return null;
 		}
@@ -394,10 +388,10 @@ export const Downloads = () => {
 	const renderDownloadItem = (download: DownloadRecord) => (
 		<div
 			key={`downloads_${download.app_id}_${download.item_id}`}
-			className="p-3 hover:cursor-pointer hover:bg-black/90 relative w-full"
+			className="p-2 hover:cursor-pointer hover:bg-black/90 relative w-full"
 		>
 			<div className="text-xs leading-5">
-				<div className="flex items-center justify-between">
+				<div className="flex  justify-between">
 					{download.status === 'completed' ? (
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
@@ -457,21 +451,24 @@ export const Downloads = () => {
 					) : (
 						download.filename
 					)}
-					{getStatusBadge(download)}
 				</div>
 
 				<div className="flex justify-between text-muted-foreground">
-					<div>
-						{download.status === 'in_progress' &&
-						typeof download.bytes_downloaded !== 'undefined'
-							? `${(
-									(download.bytes_downloaded /
-										download.total_size) *
-									100
-								).toFixed(0)}% - ${formatFileSize(
-									download.bytes_downloaded,
-								)} of ${formatFileSize(download.total_size)}`
-							: formatFileSize(download.total_size)}
+					<div className="flex gap-3">
+						<div>
+							{download.status === 'in_progress' &&
+							typeof download.bytes_downloaded !== 'undefined'
+								? `${(
+										(download.bytes_downloaded /
+											download.total_size) *
+										100
+									).toFixed(0)}% - ${formatFileSize(
+										download.bytes_downloaded,
+									)} of ${formatFileSize(download.total_size)}`
+								: formatFileSize(download.total_size)}
+						</div>
+
+						{getStatusBadge(download)}
 					</div>
 
 					<div>
@@ -502,7 +499,7 @@ export const Downloads = () => {
 					)}
 			</div>
 			<Button
-				className="hover:text-red-500 h-6 w-6 absolute right-3 top-2 [&_svg]:size-3"
+				className="hover:text-red-500 h-6 w-6 absolute right-3 top-1 [&_svg]:size-3"
 				variant="ghost"
 				size="icon"
 				onClick={() => handleRemoveDownload(download.id)}
