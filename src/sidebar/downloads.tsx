@@ -4,6 +4,7 @@ import {
 	DownloadIcon,
 	EyeIcon,
 	EyeOffIcon,
+	FolderIcon,
 	LoaderIcon,
 	PauseIcon,
 	PlayIcon,
@@ -570,6 +571,28 @@ export const Downloads = () => {
 					</TooltipTrigger>
 					<TooltipContent>
 						<p>Compact archive names</p>
+					</TooltipContent>
+				</Tooltip>
+
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Button
+							className="hover:text-blue-500 h-7 w-7"
+							variant="ghost"
+							size="icon"
+							onClick={() =>
+								api.highlight_path(
+									`${mod_download_path}\\${
+										selectedGame!.steam_id
+									}`,
+								)
+							}
+						>
+							<FolderIcon />
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent>
+						<p>Open Downloads Folder</p>
 					</TooltipContent>
 				</Tooltip>
 
