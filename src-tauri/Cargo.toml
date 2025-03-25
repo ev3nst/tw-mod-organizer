@@ -1,6 +1,6 @@
 [package]
 name = "tw-mod-organizer"
-version = "0.6.92"
+version = "0.6.93"
 publish = false
 description = "TW Mod Organizer"
 authors = ["Burak Kartal"]
@@ -45,6 +45,7 @@ open = "5.3.2"
 notify = "8.0.0"
 dirs = "6.0.0"
 xml = "0.8.20"
+runas = "1.2.0"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-single-instance = "2"

@@ -155,7 +155,7 @@ export async function startGameBannerlord(
 	app_id: number,
 	mods: ModItemSeparatorUnion[],
 	modActivationData: ModActivationItem[],
-	saveFile?: SaveFile,
+	_saveFile?: SaveFile,
 ): Promise<string> {
 	const modsToLoad = mods
 		.filter(
@@ -170,28 +170,29 @@ export async function startGameBannerlord(
 				),
 		)
 		.map(m => {
-			return {
-				identifier: m.identifier,
-				bannerlord_id: (m as ModItem).game_specific_id,
-				mod_path: (m as ModItem).mod_file_path,
-			};
+			const currentMod = m as ModItem;
+			if (
+				currentMod.item_type === 'steam_mod' ||
+				currentMod.item_type === 'base_mod'
+			) {
+				return {
+					identifier: currentMod.identifier,
+					bannerlord_id: currentMod.game_specific_id,
+					mod_path: currentMod.game_specific_id,
+				};
+			} else {
+				return {
+					identifier: currentMod.identifier,
+					bannerlord_id: currentMod.game_specific_id,
+					mod_path: currentMod.mod_file_path,
+				};
+			}
 		});
 
-	let save_game: string | undefined = '';
-	if (
-		typeof saveFile?.path !== 'undefined' &&
-		saveFile?.path !== null &&
-		saveFile?.path !== '' &&
-		saveFile?.path.includes('\\')
-	) {
-		save_game = saveFile.path.split('\\').pop();
-	}
+	const command = await api.start_game_bannerlord(app_id, modsToLoad);
 
-	const command = await api.start_game_bannerlord(
-		app_id,
-		modsToLoad,
-		save_game,
-	);
+	console.log(modsToLoad, 'modstoload');
+	console.log(command, 'command');
 	return command;
 }
 

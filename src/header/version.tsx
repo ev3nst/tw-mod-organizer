@@ -15,7 +15,7 @@ import api from '@/lib/api';
 export const Version = () => {
 	const [newVersion, setNewVersion] = useState<string | null>(null);
 
-	const currentVersion = '0.6.92';
+	const currentVersion = '0.6.93';
 	const compareVersions = (current: string, latest: string) => {
 		const currentParts = current.split('.').map(Number);
 		const latestParts = latest.split('.').map(Number);

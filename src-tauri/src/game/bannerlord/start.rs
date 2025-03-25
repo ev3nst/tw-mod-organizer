@@ -1,6 +1,9 @@
+use runas;
 use serde::{Deserialize, Serialize};
+use std::fs;
+use std::io::{self, Write};
 use std::os::windows::process::CommandExt;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::game::find_installation_path::find_installation_path;
@@ -14,12 +17,39 @@ pub struct BannerlordMod {
     mod_path: String,
 }
 
+fn create_symlinks_batch_script(
+    game_installation_path: &str,
+    mods: &[(&str, &str, String)],
+) -> io::Result<PathBuf> {
+    let temp_dir = std::env::temp_dir();
+    let batch_path = temp_dir.join("create_bannerlord_symlinks.bat");
+
+    let mut batch_file = fs::File::create(&batch_path)?;
+
+    writeln!(batch_file, "@echo off")?;
+    writeln!(batch_file, "cd /d \"{}\\Modules\"", game_installation_path)?;
+
+    for (identifier, mod_path, bannerlord_id) in mods {
+        writeln!(
+            batch_file,
+            "if exist \"{}\" rmdir /s /q \"{}\"",
+            identifier, identifier
+        )?;
+        writeln!(
+            batch_file,
+            "mklink /D \"{}\" \"{}\"",
+            bannerlord_id, mod_path
+        )?;
+    }
+
+    Ok(batch_path)
+}
+
 #[tauri::command(rename_all = "snake_case")]
 pub async fn start_game_bannerlord(
     app_state: tauri::State<'_, AppState>,
     app_id: u32,
     mods: Vec<BannerlordMod>,
-    _save_game: Option<String>,
 ) -> Result<String, String> {
     let steam_state = &app_state.steam_state;
     steam_state.drop_all_clients();
@@ -49,6 +79,8 @@ pub async fn start_game_bannerlord(
     };
 
     let mut modules_arg = String::new();
+    let mut symlinked_mods = Vec::new();
+
     if !mods.is_empty() {
         let mod_ids: Vec<String> = mods
             .iter()
@@ -57,23 +89,54 @@ pub async fn start_game_bannerlord(
 
         modules_arg = format!("_MODULES_*{}*_MODULES_", mod_ids.join("*"));
 
-        let custom_mods: Vec<&BannerlordMod> = mods
+        let custom_mods: Vec<(&str, &str, String)> = mods
             .iter()
             .filter(|mod_info| {
-                !mod_info.mod_path.is_empty() && !mod_info.mod_path.contains("Modules")
+                !mod_info.mod_path.is_empty() && Path::new(&mod_info.mod_path).exists()
+            })
+            .filter_map(|mod_info| {
+                let mod_path = Path::new(&mod_info.mod_path);
+                if mod_path.is_dir() {
+                    let bannerlord_id = mod_info.bannerlord_id.to_string().clone();
+                    Some((
+                        mod_info.identifier.as_str(),
+                        mod_path.to_str().unwrap(),
+                        bannerlord_id,
+                    ))
+                } else {
+                    None
+                }
             })
             .collect();
 
         if !custom_mods.is_empty() {
-            let paths_param: Vec<String> = custom_mods
-                .iter()
-                .map(|mod_info| format!("{}:{}", mod_info.bannerlord_id, mod_info.mod_path))
-                .collect();
+            let batch_script = create_symlinks_batch_script(&game_installation_path, &custom_mods)
+                .map_err(|e| format!("Failed to create symlink batch script: {}", e))?;
 
-            modules_arg.push_str(&format!(
-                " _MODULES_PATHS_*{}*_MODULES_PATHS_",
-                paths_param.join("*")
-            ));
+            let result = runas::Command::new(batch_script.to_str().unwrap())
+                .show(false)
+                .force_prompt(true)
+                .status();
+
+            let _ = fs::remove_file(batch_script);
+            match result {
+                Ok(status) if status.success() => {}
+                Ok(status) => {
+                    return Err(format!("Symlink creation failed. Exit status: {}", status))
+                }
+                Err(e) => return Err(format!("Failed to create symlinks: {}", e)),
+            }
+
+            symlinked_mods.extend(
+                custom_mods
+                    .iter()
+                    .map(|(_, _, bannerlord_id)| bannerlord_id.to_string()),
+            );
+        }
+
+        if !symlinked_mods.is_empty() {
+            let symlinked_mods_str = symlinked_mods.join("*");
+            modules_arg.push_str(&format!("*{}*", symlinked_mods_str));
         }
     }
 

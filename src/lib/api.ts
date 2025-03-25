@@ -328,12 +328,10 @@ class API {
 			bannerlord_id: string;
 			mod_path: string;
 		}[],
-		save_game?: string,
 	): Promise<string> {
 		return invoke('start_game_bannerlord', {
 			app_id,
 			mods,
-			save_game,
 		});
 	}
 

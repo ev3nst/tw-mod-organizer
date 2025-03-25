@@ -4045,6 +4045,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "runas"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b96d6b6c505282b007a9b009f2aa38b2fd0359b81a0430ceacc60f69ade4c6a0"
+dependencies = [
+ "libc",
+ "security-framework-sys",
+ "which",
+ "windows-sys 0.48.0",
+]
+
+[[package]]
 name = "rust-ini"
 version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5775,7 +5787,7 @@ dependencies = [
 
 [[package]]
 name = "tw-mod-organizer"
-version = "0.6.92"
+version = "0.6.93"
 dependencies = [
  "dirs",
  "futures-util",
@@ -5785,6 +5797,7 @@ dependencies = [
  "regex",
  "reqwest",
  "rpfm_lib",
+ "runas",
  "serde",
  "serde_json",
  "sqlx",
@@ -6236,6 +6249,18 @@ dependencies = [
  "thiserror 2.0.12",
  "windows 0.60.0",
  "windows-core 0.60.1",
+]
+
+[[package]]
+name = "which"
+version = "4.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "87ba24419a2078cd2b0f2ede2691b6c66d8e47836da3b6db8265ebad47afbfc7"
+dependencies = [
+ "either",
+ "home",
+ "once_cell",
+ "rustix 0.38.44",
 ]
 
 [[package]]
