@@ -20,7 +20,7 @@ pub async fn sync_downloads(
         } else if actual_bytes_downloaded > 0 && actual_bytes_downloaded < download.total_size {
             "in_progress".to_string()
         } else {
-            "not_started".to_string()
+            "queued".to_string()
         };
 
         sync_results.push(DownloadSyncResult {

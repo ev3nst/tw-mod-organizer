@@ -32,7 +32,7 @@ import { cleanFileName, formatFileSize, toastError } from '@/lib/utils';
 
 export const Downloads = () => {
 	const [downloads, setDownloads] = useState<DownloadRecord[]>([]);
-	const [isPaused, setIsPaused] = useState<boolean>(true);
+	const [isPaused, setIsPaused] = useState<boolean>(false);
 	const [nxmProtocolLoading, setNxmProtocolLoading] =
 		useState<boolean>(false);
 
@@ -109,11 +109,18 @@ export const Downloads = () => {
 						download.id === download_id
 							? {
 									...download,
-									bytes_downloaded,
+									bytes_downloaded:
+										download.bytes_downloaded <
+										bytes_downloaded
+											? bytes_downloaded
+											: download.bytes_downloaded,
 									progress:
 										download.progress !== undefined
 											? total_size > 0
-												? (bytes_downloaded /
+												? ((download.bytes_downloaded <
+													bytes_downloaded
+														? bytes_downloaded
+														: download.bytes_downloaded) /
 														total_size) *
 													100
 												: 0
@@ -203,25 +210,36 @@ export const Downloads = () => {
 							nxmLinkResponse,
 						);
 
+						const now = Date.now();
+						setDownloads(prev => {
+							const hasActiveDownloads = prev.some(
+								d =>
+									d.status === 'in_progress' ||
+									d.status === 'queued',
+							);
+
+							return [
+								...prev,
+								{
+									id: lastInsertedId,
+									app_id: selectedGame!.steam_id,
+									item_id: requestOptions.file_id,
+									filename: fileName,
+									url: nxmLinkResponse.download_url,
+									total_size: nxmLinkResponse.file_size,
+									bytes_downloaded: 0,
+									status:
+										prev.length === 0 || !hasActiveDownloads
+											? 'in_progress'
+											: 'queued',
+									hidden: 0,
+									progress: 0,
+									created_at: now,
+								},
+							];
+						});
 						setIsPaused(false);
 						await downloadManager.resume();
-						const now = Date.now();
-						setDownloads(prev => [
-							...prev,
-							{
-								id: lastInsertedId,
-								app_id: selectedGame!.steam_id,
-								item_id: requestOptions.file_id,
-								filename: fileName,
-								url: nxmLinkResponse.download_url,
-								total_size: nxmLinkResponse.file_size,
-								bytes_downloaded: 0,
-								status: 'in_progress',
-								hidden: 0,
-								progress: 0,
-								created_at: now,
-							},
-						]);
 					} catch (error) {
 						toastError(error);
 					} finally {
@@ -273,12 +291,13 @@ export const Downloads = () => {
 	const handlePauseResume = async () => {
 		try {
 			const downloadManager = DownloadManager.getInstance();
-			if (!isPaused) {
-				await downloadManager.pause();
-			} else {
+			if (isPaused) {
 				await downloadManager.resume();
+				setIsPaused(false);
+			} else {
+				await downloadManager.pause();
+				setIsPaused(true);
 			}
-			setIsPaused(!isPaused);
 
 			setTimeout(() => {
 				loadDownloads();
@@ -342,7 +361,7 @@ export const Downloads = () => {
 		if (download.hidden === 1) return null;
 
 		switch (download.status) {
-			case 'not_started':
+			case 'queued':
 				return (
 					<div className="ml-2 text-blue-500 text-xs mt-5">
 						Queued

@@ -18,7 +18,7 @@ export interface DownloadRecord {
 	preview_url?: string | null;
 	version?: string | null;
 	progress?: number;
-	status: 'not_started' | 'in_progress' | 'error' | 'completed';
+	status: 'queued' | 'in_progress' | 'error' | 'completed';
 	hidden: 1 | 0;
 	created_at?: number;
 }
@@ -39,6 +39,33 @@ class DownloadManager {
 
 	private constructor() {
 		this.setupDownloadProgressListener();
+		this.setupInitialState();
+	}
+
+	private async setupInitialState() {
+		try {
+			const setting = await SettingModel.retrieve();
+			const pendingDownloads = await this.getPendingDownloads(
+				setting.selected_game as number,
+			);
+
+			if (pendingDownloads.length > 0) {
+				await this.resume();
+			}
+		} catch (error) {
+			toastError(error);
+		}
+	}
+
+	private async getPendingDownloads(
+		app_id: number,
+	): Promise<DownloadRecord[]> {
+		const query = `
+            SELECT * FROM downloads 
+            WHERE app_id = ? AND status IN ('queued', 'in_progress') 
+            ORDER BY id
+        `;
+		return await dbWrapper.db.select(query, [app_id]);
 	}
 
 	public static getInstance(): DownloadManager {
@@ -119,13 +146,13 @@ class DownloadManager {
 	): Promise<number> {
 		// Delete previous attempt that ended with error if exists
 		const deleteQuery = `
-			DELETE FROM downloads 
-			WHERE filename = ? AND status = 'error'
-		`;
+            DELETE FROM downloads 
+            WHERE filename = ? AND status = 'error'
+        `;
 		await dbWrapper.db.execute(deleteQuery, [filename]);
 
 		const checkIfExists: any = await dbWrapper.db.select(
-			`SELECT * FROM downloads WHERE app_id = ? AND item_id = ?`,
+			`SELECT * FROM downloads WHERE app_id = ? AND item_id = ? AND status != 'completed'`,
 			[app_id, item_id],
 		);
 
@@ -134,10 +161,10 @@ class DownloadManager {
 		}
 
 		const query = `
-			INSERT INTO downloads 
-			(app_id, item_id, filename, url, total_size, bytes_downloaded, preview_url, version, mod_url, status, hidden) 
-			VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, 'queued', 0)
-		`;
+            INSERT INTO downloads 
+            (app_id, item_id, filename, url, total_size, bytes_downloaded, preview_url, version, mod_url, status, hidden) 
+            VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, 'queued', 0)
+        `;
 
 		const result = await dbWrapper.db.execute(query, [
 			app_id,
@@ -155,7 +182,7 @@ class DownloadManager {
 		}
 
 		if (!this.isProcessing) {
-			this.resume();
+			await this.resume();
 		}
 
 		return result.lastInsertId;
@@ -215,8 +242,12 @@ class DownloadManager {
 	private async processNextDownload(): Promise<void> {
 		if (!this.isProcessing) return;
 
-		const query =
-			'SELECT * FROM downloads WHERE status != "completed" ORDER BY id LIMIT 1';
+		const query = `
+            SELECT * FROM downloads 
+            WHERE status IN ('queued', 'in_progress') 
+            ORDER BY id 
+            LIMIT 1
+        `;
 		const results: any = await dbWrapper.db.select(query);
 
 		if (results.length === 0) {
@@ -250,6 +281,7 @@ class DownloadManager {
 				'UPDATE downloads SET status = "error" WHERE id = ?',
 				[download.id],
 			);
+			await this.processNextDownload();
 		}
 	}
 
@@ -277,10 +309,27 @@ class DownloadManager {
 				if (this.progressCallback) {
 					this.progressCallback(event.payload);
 				}
+			});
+		} catch (error) {
+			toastError(error);
+		}
 
-				if (bytes_downloaded === total_size) {
-					await this.processNextDownload();
-				}
+		try {
+			this.unlistenDownloadProgress = await listen<{
+				download_id: number;
+				bytes_downloaded: number;
+				total_size: number;
+			}>('download-complete', async event => {
+				const { download_id } = event.payload;
+				await dbWrapper.db.execute(
+					'UPDATE downloads SET status = "completed" WHERE id = ?',
+					[download_id],
+				);
+
+				await this.processNextDownload();
+				setTimeout(async () => {
+					await this.resume();
+				}, 1000);
 			});
 		} catch (error) {
 			toastError(error);
