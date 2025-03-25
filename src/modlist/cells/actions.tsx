@@ -163,8 +163,7 @@ export const ModActions = memo(
 		}, [mod, setSelectedPriorityMod, toggleSetPriority]);
 
 		const handleRemove = useCallback(
-			(event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-				event.stopPropagation();
+			(_event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
 				setSelectedRemoveMod(mod);
 				toggleModRemove();
 			},

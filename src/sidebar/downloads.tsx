@@ -602,6 +602,12 @@ export const Downloads = () => {
 			<div className="divide-y w-full">
 				{downloads.map(renderDownloadItem)}
 			</div>
+
+			{downloads.length === 0 && (
+				<div className="text-center p-4 text-muted-foreground">
+					No downloaded files found
+				</div>
+			)}
 		</div>
 	);
 };

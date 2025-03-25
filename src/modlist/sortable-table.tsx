@@ -328,6 +328,22 @@ export const ModListSortableTable = () => {
 		}
 	};
 
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				scrollContainerRef.current &&
+				!scrollContainerRef.current.contains(event.target as Node)
+			) {
+				clearSelection();
+			}
+		};
+
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+		};
+	}, []);
+
 	return (
 		<div className="relative flex-1 mb-[41px]">
 			<DndContext
