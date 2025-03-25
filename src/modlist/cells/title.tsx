@@ -10,6 +10,7 @@ import { CircleAlertIcon, TriangleAlertIcon } from 'lucide-react';
 
 import { TableCell } from '@/components/table';
 
+import api from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 import { ModItem, modsStore } from '@/lib/store/mods';
 import { modMetaStore } from '@/lib/store/mod_meta';
@@ -300,14 +301,30 @@ export const Title = memo(
 										</p>
 										<ul className="text-sm space-y-1 max-h-48 overflow-y-auto">
 											{passiveRequiredParents.map(
-												parentMod => (
-													<li
-														key={`parent_${parentMod.identifier}`}
-														className="break-all"
-													>
-														{parentMod.title}
-													</li>
-												),
+												parentMod => {
+													const isMissingSteamMod =
+														Number.isNaN(
+															Number(
+																parentMod.title as any,
+															),
+														) === false;
+
+													return (
+														<li
+															key={`parent_${parentMod.identifier}`}
+															className={`break-all ${isMissingSteamMod ? 'hover:cursor-pointer hover:text-blue-500' : ''}`}
+															onClick={() =>
+																api.open_external_url(
+																	`https://steamcommunity.com/sharedfiles/filedetails/?id=${parentMod.title}`,
+																)
+															}
+														>
+															{isMissingSteamMod
+																? `https://steamcommunity.com/sharedfiles/filedetails/?id=${parentMod.title}`
+																: parentMod.title}
+														</li>
+													);
+												},
 											)}
 										</ul>
 									</>
