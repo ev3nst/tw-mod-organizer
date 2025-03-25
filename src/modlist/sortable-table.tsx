@@ -113,31 +113,6 @@ export const ModListSortableTable = () => {
 		setDependencyViolations(violations);
 	}, [mods, sort_by]);
 
-	const selectRange = useCallback(
-		(startId: string, endId: string) => {
-			const startIndex = mods.findIndex(
-				mod => mod.identifier === startId,
-			);
-			const endIndex = mods.findIndex(mod => mod.identifier === endId);
-
-			if (startIndex === -1 || endIndex === -1) return;
-
-			const minIndex = Math.min(startIndex, endIndex);
-			const maxIndex = Math.max(startIndex, endIndex);
-
-			const newSelectedRows = new Set<string>();
-			for (let i = minIndex; i <= maxIndex; i++) {
-				const mod = mods[i];
-				if (!isSeparator(mod)) {
-					newSelectedRows.add(mod.identifier);
-				}
-			}
-
-			setSelectedRows(newSelectedRows);
-		},
-		[mods],
-	);
-
 	const handleSpaceBar = (event: KeyboardEvent) => {
 		if (event.key === ' ' && selectedRows.size > 1) {
 			event.preventDefault();
@@ -234,6 +209,33 @@ export const ModListSortableTable = () => {
 	const modsResolved = useMemo(() => {
 		return filteredMods.filter(mod => !hiddenItems.has(mod.identifier));
 	}, [filteredMods, hiddenItems]);
+
+	const selectRange = useCallback(
+		(startId: string, endId: string) => {
+			const startIndex = modsResolved.findIndex(
+				mod => mod.identifier === startId,
+			);
+			const endIndex = modsResolved.findIndex(
+				mod => mod.identifier === endId,
+			);
+
+			if (startIndex === -1 || endIndex === -1) return;
+
+			const minIndex = Math.min(startIndex, endIndex);
+			const maxIndex = Math.max(startIndex, endIndex);
+
+			const newSelectedRows = new Set<string>();
+			for (let i = minIndex; i <= maxIndex; i++) {
+				const mod = modsResolved[i];
+				if (!isSeparator(mod)) {
+					newSelectedRows.add(mod.identifier);
+				}
+			}
+
+			setSelectedRows(newSelectedRows);
+		},
+		[modsResolved],
+	);
 
 	const sensors = useSensors(
 		useSensor(MouseSensor, {
