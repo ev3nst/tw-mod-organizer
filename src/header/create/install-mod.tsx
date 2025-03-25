@@ -13,11 +13,11 @@ import { Loading } from '@/components/loading';
 import { settingStore } from '@/lib/store/setting';
 import { profileStore } from '@/lib/store/profile';
 import { ModItem, modsStore } from '@/lib/store/mods';
+import { ModOrderModel } from '@/lib/store/mod_order';
 import { isSeparator, modSeparatorStore } from '@/lib/store/mod_separator';
 
 import api, { ZipItemInfo } from '@/lib/api';
 import { cleanFileName, isEmptyString, toastError } from '@/lib/utils';
-import { initOrder } from '@/modlist/utils';
 
 export const InstallMod = () => {
 	const [loading, setLoading] = useState(false);
@@ -245,10 +245,11 @@ export const InstallMod = () => {
 				}
 			}
 
+			const newModIdentifier = uuidv4();
 			await api.install_mod(
 				selectedGame!.steam_id,
 				{
-					identifier: uuidv4(),
+					identifier: newModIdentifier,
 					title: name,
 					zip_file_path: finalArchivePath,
 					mod_file_path: modPath as string,
@@ -276,7 +277,19 @@ export const InstallMod = () => {
 			setDownloadedArchivePath('');
 			setDownloadedModMeta({});
 			setInstallModItemOpen(false);
-			await initOrder(selectedGame!.steam_id, profile.id, mods);
+
+			const modOrder = await ModOrderModel.retrieve(profile.id);
+			const highestOrder = Math.max(
+				...modOrder!.data!.map(item => item.order),
+			);
+
+			modOrder!.data!.push({
+				title: name,
+				mod_id: newModIdentifier,
+				order: highestOrder + 1,
+			});
+			await modOrder?.save();
+
 			setInitReload(!init_reload);
 		} catch (error) {
 			toastError(error);

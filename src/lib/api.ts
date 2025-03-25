@@ -287,7 +287,7 @@ class API {
 			version?: string;
 		},
 		mod_installation_path: string,
-	): Promise<ZipItemInfo[]> {
+	): Promise<void> {
 		return invoke('install_mod', {
 			app_id,
 			mod_details,
