@@ -244,6 +244,13 @@ export const ImportProfile = () => {
 		}
 	}, [importFile]);
 
+	const handleRemoveMod = (mod: ModItem) => {
+		setProfileExportData(prevData => ({
+			...prevData!,
+			mods: prevData!.mods.filter(m => m.identifier !== mod.identifier),
+		}));
+	};
+
 	const renderProfileExportSummary = () => {
 		if (!profileExportData) return null;
 
@@ -321,6 +328,7 @@ export const ImportProfile = () => {
 						profileExportMods={profileExportData.mods}
 						modsOnly={modsOnly}
 						modMetaData={modMetaData}
+						onRemoveMod={handleRemoveMod}
 					/>
 					<Separators data={profileExportData.mod_separators} />
 					<Meta

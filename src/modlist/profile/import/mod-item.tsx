@@ -1,4 +1,4 @@
-import { ExternalLinkIcon } from 'lucide-react';
+import { ExternalLinkIcon, XIcon } from 'lucide-react';
 
 import api from '@/lib/api';
 import type { ModItem } from '@/lib/store/mods';
@@ -8,12 +8,14 @@ type ModItemProps = {
 	modsOnly: ModItem[];
 	modMetaData: ModMetaItem[];
 	item: ModItem;
+	onRemoveMod: (mod: ModItem) => void;
 };
 
 export const ModItemComponent = ({
 	modsOnly,
 	modMetaData,
 	item,
+	onRemoveMod,
 }: ModItemProps) => {
 	const modExists =
 		modsOnly.some(m => m.mod_file === item.mod_file) ||
@@ -58,17 +60,27 @@ export const ModItemComponent = ({
 	return (
 		<div
 			key={`import_profile_mitem_${item.identifier}`}
-			className={`text-sm py-1 ${styleClasses}`}
+			className={`text-sm py-1 ${styleClasses} hover:bg-black p-3`}
 		>
-			<div className="flex items-center gap-1">
-				<div onClick={isSteamMod ? handleUrlOpen : undefined}>
-					{item.title}
+			<div className="flex justify-between items-center">
+				<div className="flex items-center gap-1">
+					<div onClick={isSteamMod ? handleUrlOpen : undefined}>
+						{item.title}
+					</div>
+					{isNexusMod && downloadLink !== '' && (
+						<ExternalLinkIcon
+							className="w-4 h-4 hover:text-blue-500 hover:cursor-pointer"
+							onClick={() => {
+								api.open_external_url(downloadLink);
+							}}
+						/>
+					)}
 				</div>
-				{isNexusMod && downloadLink !== '' && (
-					<ExternalLinkIcon
-						className="w-4 h-4 hover:text-blue-500 hover:cursor-pointer"
+				{item.item_type !== 'base_mod' && (
+					<XIcon
+						className="w-4 h-4 text-red-500 hover:cursor-pointer"
 						onClick={() => {
-							api.open_external_url(downloadLink);
+							onRemoveMod(item);
 						}}
 					/>
 				)}

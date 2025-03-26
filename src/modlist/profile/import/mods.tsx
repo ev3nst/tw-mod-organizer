@@ -19,6 +19,7 @@ type ModsProps = {
 	profileExportMods: ModItem[];
 	modsOnly: ModItem[];
 	modMetaData: ModMetaItem[];
+	onRemoveMod: (mod: ModItem) => void;
 };
 
 export const Mods = ({
@@ -31,6 +32,7 @@ export const Mods = ({
 	profileExportMods,
 	modsOnly,
 	modMetaData,
+	onRemoveMod,
 }: ModsProps) => {
 	return (
 		<AccordionItem value="mods">
@@ -67,6 +69,7 @@ export const Mods = ({
 								modMetaData={modMetaData}
 								key={`mod-${item.identifier}`}
 								item={item}
+								onRemoveMod={onRemoveMod}
 							/>
 						))}
 				</div>

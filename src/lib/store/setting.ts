@@ -387,14 +387,26 @@ export const settingStore = create<SettingStore>(set => ({
 
 	mod_download_path: '',
 	setModDownloadPath: mod_download_path => {
-		set({ mod_download_path });
-		debounceCallback(syncSetting);
+		if (
+			typeof mod_download_path !== 'undefined' &&
+			mod_download_path !== null &&
+			mod_download_path !== ''
+		) {
+			set({ mod_download_path });
+			debounceCallback(syncSetting);
+		}
 	},
 
 	mod_installation_path: '',
 	setModInstallationPath: mod_installation_path => {
-		set({ mod_installation_path });
-		debounceCallback(syncSetting);
+		if (
+			typeof mod_installation_path !== 'undefined' &&
+			mod_installation_path !== null &&
+			mod_installation_path !== ''
+		) {
+			set({ mod_installation_path });
+			debounceCallback(syncSetting);
+		}
 	},
 
 	selectedGame: undefined,
