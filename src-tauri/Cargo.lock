@@ -5787,7 +5787,7 @@ dependencies = [
 
 [[package]]
 name = "tw-mod-organizer"
-version = "0.6.93"
+version = "0.7.0"
 dependencies = [
  "dirs",
  "futures-util",
