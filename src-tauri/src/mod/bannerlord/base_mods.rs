@@ -12,7 +12,7 @@ pub async fn base_mods(app_id: u32) -> Result<Vec<ModItem>, String> {
         .iter()
         .find(|game| game.steam_id == app_id)
         .ok_or_else(|| format!("Given app_id {} is not supported", app_id))?;
-    let game_installation_path = match find_installation_path(game.steam_folder_name.to_string()) {
+    let game_installation_path = match find_installation_path(game.clone()) {
         Some(path) => path,
         None => {
             return Err(format!(
@@ -26,7 +26,7 @@ pub async fn base_mods(app_id: u32) -> Result<Vec<ModItem>, String> {
     let created_at = UNIX_EPOCH
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
-        .as_secs();
+        .as_millis();
     let mods_path = PathBuf::from(game_installation_path).join("Modules");
     for entry in fs::read_dir(&mods_path).map_err(|e| e.to_string())? {
         let entry = entry.map_err(|e| e.to_string())?;
@@ -80,6 +80,7 @@ pub async fn base_mods(app_id: u32) -> Result<Vec<ModItem>, String> {
             title: submodule_info.name.clone(),
             description: Some(String::from("")),
             created_at,
+            updated_at: Some(created_at),
             categories: Some(String::from("Official")),
             url: None,
             download_url: None,

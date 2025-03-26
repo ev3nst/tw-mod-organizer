@@ -1,52 +1,47 @@
-use std::{fs::read_to_string, path::Path};
-
+use super::supported_games::Game;
 use crate::steam::steam_paths::steam_paths;
+use regex::Regex;
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
-pub fn find_installation_path(steam_folder_name: String) -> Option<String> {
-    match steam_paths() {
-        Ok(steam_install_paths) => {
-            for steam_install_path in steam_install_paths {
-                let library_meta_file = Path::new(&steam_install_path)
-                    .join("steamapps")
-                    .join("libraryfolders.vdf");
+pub fn find_installation_path(game: Game) -> Option<String> {
+    let steam_install_paths = steam_paths().ok()?;
+    let re = Regex::new(r#"path"\s*"(.*?)""#).ok()?;
 
-                if !library_meta_file.exists() {
-                    continue;
-                }
+    for steam_install_path in steam_install_paths {
+        let library_meta_file = Path::new(&steam_install_path)
+            .join("steamapps")
+            .join("libraryfolders.vdf");
 
-                let file_data = match read_to_string(&library_meta_file) {
-                    Ok(data) => data,
-                    Err(_) => continue,
-                };
-
-                let re = regex::Regex::new(r#""(.*?)""#).unwrap();
-                let matches: Vec<&str> = re.find_iter(&file_data).map(|m| m.as_str()).collect();
-
-                let mut library_folder_paths = Vec::new();
-                for i in 0..matches.len() {
-                    let match_str = matches[i].replace("\"", "");
-                    if match_str == "path" && i + 1 < matches.len() {
-                        let lib_path = Path::new(&matches[i + 1].replace("\"", ""))
-                            .to_str()
-                            .unwrap_or("")
-                            .to_string();
-                        library_folder_paths.push(lib_path.replace("\\\\", "\\"));
-                    }
-                }
-
-                for lib_path in &library_folder_paths {
-                    let game_installation_path = Path::new(lib_path)
-                        .join("steamapps")
-                        .join("common")
-                        .join(&steam_folder_name);
-
-                    if game_installation_path.exists() {
-                        return Some(game_installation_path.to_string_lossy().into_owned());
-                    }
-                }
-            }
-            None
+        if !library_meta_file.exists() {
+            continue;
         }
-        Err(_) => None,
+
+        let file_data = fs::read_to_string(&library_meta_file).ok()?;
+        let library_folder_paths: Vec<PathBuf> = re
+            .captures_iter(&file_data)
+            .filter_map(|cap| cap.get(1))
+            .map(|m| PathBuf::from(m.as_str().replace("\\", "\\")))
+            .collect();
+
+        for lib_path in library_folder_paths {
+            let game_installation_path = lib_path
+                .join("steamapps/common")
+                .join(&game.steam_folder_name);
+            let mut exe_path = game_installation_path.clone();
+
+            if !game.exe_folder.is_empty() {
+                exe_path.push(&game.exe_folder);
+            }
+
+            exe_path.push(format!("{}.exe", game.exe_name));
+
+            if exe_path.exists() && exe_path.is_file() {
+                return Some(game_installation_path.to_string_lossy().into_owned());
+            }
+        }
     }
+    None
 }

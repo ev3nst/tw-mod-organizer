@@ -63,7 +63,7 @@ pub async fn start_game_bannerlord(
         .find(|game| game.steam_id == app_id)
         .ok_or_else(|| format!("Given app_id {} is not supported", app_id))?;
 
-    let game_installation_path = match find_installation_path(game.steam_folder_name.to_string()) {
+    let game_installation_path = match find_installation_path(game.clone()) {
         Some(path) => path,
         None => {
             return Err(format!(
