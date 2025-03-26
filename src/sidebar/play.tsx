@@ -141,8 +141,18 @@ export const Play = () => {
 			if (!isCompatible) return;
 
 			setIsGameLoading(true);
+			const orderMap: Record<string, number> = modOrderData.reduce(
+				(acc: any, item: any) => {
+					acc[item.mod_id] = item.order;
+					return acc;
+				},
+				{} as Record<string, number>,
+			);
+			const sortedMods = [...mods].sort((a, b) => {
+				return orderMap[a.identifier] - orderMap[b.identifier];
+			});
 			setCurrentlyRunningMods(
-				mods.map(m => {
+				sortedMods.map(m => {
 					if (isSeparator(m)) {
 						return {
 							identifier: m.identifier,
