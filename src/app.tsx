@@ -24,7 +24,6 @@ const SaveFileDetailsDialog = lazy(() => import('@/dialogs/save-file-details'));
 import { Header } from './header';
 import { ModList } from './modlist';
 import { AppSidebar } from './sidebar';
-import { Lock } from './lock';
 
 function App() {
 	const [fetchAppManageLoading, setFetchAppManageLoading] = useState(true);
@@ -66,7 +65,6 @@ function App() {
 					<div className="flex flex-1">
 						<SidebarInset>
 							<ModList />
-							<Lock />
 							<Suspense fallback={<Loading />}>
 								<ConflictDetailsDialog />
 								<SetPriorityDialog />
