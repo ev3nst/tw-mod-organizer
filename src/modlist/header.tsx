@@ -95,6 +95,15 @@ export const Header = () => {
 				/>
 			);
 			break;
+		case 'updated_at':
+			orderByText = (
+				<SortByIndicator
+					title="U"
+					description="Sorting by mod update time."
+					textColorClass="text-green-500"
+				/>
+			);
+			break;
 		default:
 			break;
 	}
@@ -314,6 +323,12 @@ export const Header = () => {
 								onCheckedChange={() => setSortBy('version')}
 							>
 								Version
+							</DropdownMenuCheckboxItem>
+							<DropdownMenuCheckboxItem
+								checked={sort_by === 'updated_at'}
+								onCheckedChange={() => setSortBy('updated_at')}
+							>
+								Updated
 							</DropdownMenuCheckboxItem>
 						</DropdownMenuContent>
 					</DropdownMenu>

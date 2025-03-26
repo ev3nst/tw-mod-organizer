@@ -130,6 +130,11 @@ export const ModList = () => {
 						return 0;
 					});
 					break;
+				case 'updated_at':
+					sortedMods = [...mods].sort(
+						(a, b) => a.updated_at - b.updated_at,
+					);
+					break;
 
 				default:
 					break;

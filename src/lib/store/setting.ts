@@ -42,7 +42,7 @@ export type Setting = {
 	nexus_auth_params: NexusAuthParams;
 	nexus_api_key: string | null;
 	dependency_confirmation: 1 | 0;
-	sort_by: 'load_order' | 'title' | 'version';
+	sort_by: 'load_order' | 'title' | 'version' | 'updated_at';
 	include_hidden_downloads: 1 | 0;
 	compact_archive_names: 1 | 0;
 	sidebar_accordion: 'saves' | 'downloads';
@@ -235,11 +235,11 @@ export class SettingModel {
 	}
 
 	// Sort By
-	get sort_by(): 'load_order' | 'title' | 'version' {
+	get sort_by(): 'load_order' | 'title' | 'version' | 'updated_at' {
 		return this.props.sort_by;
 	}
 
-	set sort_by(value: 'load_order' | 'title' | 'version') {
+	set sort_by(value: 'load_order' | 'title' | 'version' | 'updated_at') {
 		this.props.sort_by = value;
 	}
 
@@ -330,8 +330,10 @@ type SettingStore = {
 	dependency_confirmation: 1 | 0;
 	setDependencyConfirmation: (dependency_confirmation: 1 | 0) => void;
 
-	sort_by: 'load_order' | 'title' | 'version';
-	setSortBy: (sort_by: 'load_order' | 'title' | 'version') => void;
+	sort_by: 'load_order' | 'title' | 'version' | 'updated_at';
+	setSortBy: (
+		sort_by: 'load_order' | 'title' | 'version' | 'updated_at',
+	) => void;
 
 	include_hidden_downloads: 1 | 0;
 	setIncludeHiddenDownloads: (include_hidden_downloads: 1 | 0) => void;
