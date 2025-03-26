@@ -79,7 +79,10 @@ function SaveFileDetailsDialog() {
 
 						<Separator className="my-1" />
 						{missingMods.map(mm => (
-							<li className="flex gap-3 items-center text-sm">
+							<li
+								className="flex gap-3 items-center text-sm"
+								key={`missing_mods_${mm.identifier}`}
+							>
 								<FileWarningIcon className="w-4 h-4 text-red-500" />
 								<div className="italic text-red-500">
 									{mm.order_index}
