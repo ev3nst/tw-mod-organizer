@@ -91,7 +91,7 @@ export const SeparatorActions = memo(
 								onClick={handleEdit}
 							>
 								<InfoIcon className="w-3 h-3" />
-								Meta Information
+								Edit (Meta Information)
 							</DropdownMenuItem>
 							<DropdownMenuItem
 								className="text-xs py-2 my-0"
@@ -191,7 +191,7 @@ export const ModActions = memo(
 								onClick={handleMetaInfo}
 							>
 								<InfoIcon className="w-3 h-3" />
-								Meta Information
+								Edit (Meta Information)
 							</DropdownMenuItem>
 
 							<DropdownMenuItem
