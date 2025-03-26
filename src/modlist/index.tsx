@@ -41,6 +41,7 @@ export const ModList = () => {
 		state => state.mod_installation_path,
 	);
 	const sort_by = settingStore(state => state.sort_by);
+	const sort_by_direction = settingStore(state => state.sort_by_direction);
 
 	const init = useCallback(async () => {
 		try {
@@ -140,6 +141,10 @@ export const ModList = () => {
 					break;
 			}
 
+			if (sort_by !== 'load_order' && sort_by_direction === 'desc') {
+				sortedMods.reverse();
+			}
+
 			setMods(sortedMods);
 			const modActivations = await initActivation(
 				selectedGame!.steam_id,
@@ -159,7 +164,7 @@ export const ModList = () => {
 			setFetchModsLoading(false);
 			setLoading(false);
 		}
-	}, [selectedGame!.steam_id, sort_by, init_reload]);
+	}, [selectedGame!.steam_id, sort_by, sort_by_direction, init_reload]);
 
 	useEffect(() => {
 		init();

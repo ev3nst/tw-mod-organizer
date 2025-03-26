@@ -1,4 +1,9 @@
-import { Grid2X2Icon, RotateCcwIcon } from 'lucide-react';
+import {
+	ArrowDownIcon,
+	ArrowUpIcon,
+	Grid2X2Icon,
+	RotateCcwIcon,
+} from 'lucide-react';
 
 import { TableHead, TableHeader, TableRow } from '@/components/table';
 import {
@@ -66,7 +71,9 @@ export const Header = () => {
 	const toggle_updated_at = settingStore(state => state.toggle_updated_at);
 	const setColumnSelection = settingStore(state => state.setColumnSelection);
 	const sort_by = settingStore(state => state.sort_by);
+	const sort_by_direction = settingStore(state => state.sort_by_direction);
 	const setSortBy = settingStore(state => state.setSortBy);
+	const setSortByDirection = settingStore(state => state.setSortByDirection);
 
 	const mods = modsStore(state => state.mods);
 	const setMods = modsStore(state => state.setMods);
@@ -164,6 +171,16 @@ export const Header = () => {
 		);
 	};
 
+	const handleSortByChange = (
+		column: 'load_order' | 'title' | 'version' | 'updated_at',
+	) => {
+		if (sort_by === column && column !== 'load_order') {
+			setSortByDirection(sort_by_direction === 'asc' ? 'desc' : 'asc');
+		} else {
+			setSortBy(column);
+		}
+	};
+
 	return (
 		<TableHeader>
 			<TableRow>
@@ -224,10 +241,36 @@ export const Header = () => {
 						CONFLICT
 					</TableHead>
 				)}
-				{toggle_version && <TableHead>VERSION</TableHead>}
+
+				{toggle_version && (
+					<TableHead>
+						<div className="flex items-center gap-1">
+							VERSION
+							{sort_by === 'updated_at' &&
+								(sort_by_direction === 'asc' ? (
+									<ArrowDownIcon className="w-4 h-4" />
+								) : (
+									<ArrowUpIcon className="w-4 h-4" />
+								))}
+						</div>
+					</TableHead>
+				)}
+
 				{toggle_creator && <TableHead>CREATOR</TableHead>}
 				{toggle_created_at && <TableHead>CREATED</TableHead>}
-				{toggle_updated_at && <TableHead>UPDATED</TableHead>}
+				{toggle_updated_at && (
+					<TableHead>
+						<div className="flex items-center gap-1">
+							UPDATED
+							{sort_by === 'updated_at' &&
+								(sort_by_direction === 'asc' ? (
+									<ArrowDownIcon className="w-4 h-4" />
+								) : (
+									<ArrowUpIcon className="w-4 h-4" />
+								))}
+						</div>
+					</TableHead>
+				)}
 				<TableHead className="flex justify-center w-[40px]">
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
@@ -304,29 +347,42 @@ export const Header = () => {
 								Updated
 							</DropdownMenuCheckboxItem>
 							<DropdownMenuSeparator />
-							<DropdownMenuLabel>Sort By</DropdownMenuLabel>
+							<DropdownMenuLabel className="flex items-center gap-1">
+								Sort By
+								<div className="text-xs">
+									({sort_by_direction.toUpperCase()})
+								</div>
+							</DropdownMenuLabel>
 							<DropdownMenuSeparator />
 							<DropdownMenuCheckboxItem
 								checked={sort_by === 'load_order'}
-								onCheckedChange={() => setSortBy('load_order')}
+								onCheckedChange={() =>
+									handleSortByChange('load_order')
+								}
 							>
 								Load Order
 							</DropdownMenuCheckboxItem>
 							<DropdownMenuCheckboxItem
 								checked={sort_by === 'title'}
-								onCheckedChange={() => setSortBy('title')}
+								onCheckedChange={() =>
+									handleSortByChange('title')
+								}
 							>
 								Title
 							</DropdownMenuCheckboxItem>
 							<DropdownMenuCheckboxItem
 								checked={sort_by === 'version'}
-								onCheckedChange={() => setSortBy('version')}
+								onCheckedChange={() =>
+									handleSortByChange('version')
+								}
 							>
 								Version
 							</DropdownMenuCheckboxItem>
 							<DropdownMenuCheckboxItem
 								checked={sort_by === 'updated_at'}
-								onCheckedChange={() => setSortBy('updated_at')}
+								onCheckedChange={() =>
+									handleSortByChange('updated_at')
+								}
 							>
 								Updated
 							</DropdownMenuCheckboxItem>

@@ -38,6 +38,7 @@ function Init() {
 	const setNexusAuthParams = settingStore(state => state.setNexusAuthParams);
 	const setColumnSelection = settingStore(state => state.setColumnSelection);
 	const setSortBy = settingStore(state => state.setSortBy);
+	const setSortByDirection = settingStore(state => state.setSortByDirection);
 	const setIncludeHiddenDownloads = settingStore(
 		state => state.setIncludeHiddenDownloads,
 	);
@@ -65,6 +66,7 @@ function Init() {
 		setColumnSelection('created_at', setting.column_selections.created_at);
 		setColumnSelection('updated_at', setting.column_selections.updated_at);
 		setSortBy(setting.sort_by);
+		setSortByDirection(setting.sort_by_direction);
 		setIncludeHiddenDownloads(setting.include_hidden_downloads);
 		setCompactArchiveNames(setting.compact_archive_names);
 		setSidebarAccordion(setting.sidebar_accordion);

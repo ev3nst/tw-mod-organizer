@@ -219,5 +219,15 @@ pub fn get_migrations() -> Vec<Migration> {
 			"#,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 17,
+            description: "add_sort_by_direction_to_settings",
+            sql: r#"
+			ALTER TABLE settings 
+			ADD COLUMN sort_by_direction TEXT NOT NULL DEFAULT 'asc' 
+			CHECK (sort_by_direction IN ('asc', 'desc'));
+			"#,
+            kind: MigrationKind::Up,
+        },
     ]
 }

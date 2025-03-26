@@ -33,6 +33,7 @@ export type NexusAuthParams = {
 	token: string | null;
 };
 
+export type SortColumn = 'load_order' | 'title' | 'version' | 'updated_at';
 export type Setting = {
 	id: number;
 	selected_game: number | null;
@@ -42,7 +43,8 @@ export type Setting = {
 	nexus_auth_params: NexusAuthParams;
 	nexus_api_key: string | null;
 	dependency_confirmation: 1 | 0;
-	sort_by: 'load_order' | 'title' | 'version' | 'updated_at';
+	sort_by: SortColumn;
+	sort_by_direction: 'asc' | 'desc';
 	include_hidden_downloads: 1 | 0;
 	compact_archive_names: 1 | 0;
 	sidebar_accordion: 'saves' | 'downloads';
@@ -121,6 +123,7 @@ export class SettingModel {
 					nexus_api_key: null,
 					dependency_confirmation: 1,
 					sort_by: 'load_order',
+					sort_by_direction: 'asc',
 					include_hidden_downloads: 0,
 					compact_archive_names: 0,
 					sidebar_accordion: 'saves',
@@ -235,12 +238,21 @@ export class SettingModel {
 	}
 
 	// Sort By
-	get sort_by(): 'load_order' | 'title' | 'version' | 'updated_at' {
+	get sort_by(): SortColumn {
 		return this.props.sort_by;
 	}
 
-	set sort_by(value: 'load_order' | 'title' | 'version' | 'updated_at') {
+	set sort_by(value: SortColumn) {
 		this.props.sort_by = value;
+	}
+
+	// Sort By Direction
+	get sort_by_direction(): 'asc' | 'desc' {
+		return this.props.sort_by_direction;
+	}
+
+	set sort_by_direction(value: 'asc' | 'desc') {
+		this.props.sort_by_direction = value;
 	}
 
 	// Include Hidden Downloads
@@ -330,10 +342,11 @@ type SettingStore = {
 	dependency_confirmation: 1 | 0;
 	setDependencyConfirmation: (dependency_confirmation: 1 | 0) => void;
 
-	sort_by: 'load_order' | 'title' | 'version' | 'updated_at';
-	setSortBy: (
-		sort_by: 'load_order' | 'title' | 'version' | 'updated_at',
-	) => void;
+	sort_by: SortColumn;
+	setSortBy: (sort_by: SortColumn) => void;
+
+	sort_by_direction: 'asc' | 'desc';
+	setSortByDirection: (sort_by: 'asc' | 'desc') => void;
 
 	include_hidden_downloads: 1 | 0;
 	setIncludeHiddenDownloads: (include_hidden_downloads: 1 | 0) => void;
@@ -459,6 +472,12 @@ export const settingStore = create<SettingStore>(set => ({
 		debounceCallback(syncSetting);
 	},
 
+	sort_by_direction: 'asc',
+	setSortByDirection: sort_by_direction => {
+		set({ sort_by_direction });
+		debounceCallback(syncSetting);
+	},
+
 	include_hidden_downloads: 0,
 	setIncludeHiddenDownloads: include_hidden_downloads => {
 		set({ include_hidden_downloads });
@@ -565,6 +584,11 @@ const syncSetting = async () => {
 
 	if (setting.sort_by !== state.sort_by) {
 		setting.sort_by = state.sort_by;
+		changed = true;
+	}
+
+	if (setting.sort_by_direction !== state.sort_by_direction) {
+		setting.sort_by_direction = state.sort_by_direction;
 		changed = true;
 	}
 
