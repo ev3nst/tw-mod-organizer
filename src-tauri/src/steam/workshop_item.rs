@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-// Modified by Burak Kartal on [22/03/2025]
+// Modified by Burak Kartal on [26/03/2025]
 
 use std::collections::HashSet;
 
@@ -296,8 +296,8 @@ pub mod workshop {
         pub title: String,
         pub description: String,
         pub owner: PlayerSteamId,
-        pub time_created: u64,
-        pub time_updated: u64,
+        pub time_created: u128,
+        pub time_updated: u128,
         pub time_added_to_user_list: u32,
         pub visibility: UgcItemVisibility,
         pub banned: bool,
@@ -316,10 +316,10 @@ pub mod workshop {
     impl WorkshopItem {
         fn from_query_results(results: &steamworks::QueryResults, index: u32) -> Option<Self> {
             results.get(index).map(|item| {
-                let time_created_u64 = item.time_created as u64;
-                let time_updated_u64 = item.time_updated as u64;
-                let time_created = time_created_u64.checked_mul(1000);
-                let time_updated = time_updated_u64.checked_mul(1000);
+                let time_created_u128 = item.time_created as u128;
+                let time_updated_u128 = item.time_updated as u128;
+                let time_created = time_created_u128.checked_mul(1000);
+                let time_updated = time_updated_u128.checked_mul(1000);
 
                 let required_items = results
                     .get_children(index)
@@ -337,8 +337,8 @@ pub mod workshop {
                     title: item.title,
                     description: item.description,
                     owner: PlayerSteamId::from_steamid(item.owner),
-                    time_created: time_created.unwrap_or(time_created_u64),
-                    time_updated: time_updated.unwrap_or(time_updated_u64),
+                    time_created: time_created.unwrap_or(time_created_u128),
+                    time_updated: time_updated.unwrap_or(time_updated_u128),
                     time_added_to_user_list: item.time_added_to_user_list,
                     visibility: item.visibility.into(),
                     banned: item.banned,

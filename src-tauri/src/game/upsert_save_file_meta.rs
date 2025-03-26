@@ -25,7 +25,7 @@ pub struct SaveFileMeta {
     pub save_file_name: String,
     pub save_file_size: u64,
     pub mod_order_data: Vec<LoadOrderData>,
-    pub created_at: u64,
+    pub created_at: u128,
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -76,7 +76,7 @@ pub async fn upsert_save_file_meta(
     let current_timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map_err(|e| format!("Failed to get system time: {}", e))?
-        .as_secs();
+        .as_millis();
 
     let mut save_file_metas: Vec<SaveFileMeta> = if meta_file_path.exists() {
         let meta_content = fs::read_to_string(&meta_file_path)

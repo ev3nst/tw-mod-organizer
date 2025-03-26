@@ -371,6 +371,7 @@ pub async fn subscribed_mods(
             download_url: Some("".to_string()),
             preview_url: item.preview_url,
             version: Some(ModVersion::Number(item.time_updated)),
+            updated_at: Some(item.time_updated),
             item_type: "steam_mod".to_string(),
             mod_file,
             mod_file_path,

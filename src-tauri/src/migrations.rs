@@ -211,5 +211,13 @@ pub fn get_migrations() -> Vec<Migration> {
 			"#,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 16,
+            description: "add_toggle_updated_at_to_settings",
+            sql: r#"
+			ALTER TABLE settings ADD COLUMN toggle_updated_at INTEGER DEFAULT 0 CHECK(toggle_updated_at IN (0, 1));
+			"#,
+            kind: MigrationKind::Up,
+        },
     ]
 }

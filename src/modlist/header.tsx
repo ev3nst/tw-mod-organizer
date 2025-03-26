@@ -63,6 +63,7 @@ export const Header = () => {
 	const toggle_version = settingStore(state => state.toggle_version);
 	const toggle_creator = settingStore(state => state.toggle_creator);
 	const toggle_created_at = settingStore(state => state.toggle_created_at);
+	const toggle_updated_at = settingStore(state => state.toggle_updated_at);
 	const setColumnSelection = settingStore(state => state.setColumnSelection);
 	const sort_by = settingStore(state => state.sort_by);
 	const setSortBy = settingStore(state => state.setSortBy);
@@ -217,6 +218,7 @@ export const Header = () => {
 				{toggle_version && <TableHead>VERSION</TableHead>}
 				{toggle_creator && <TableHead>CREATOR</TableHead>}
 				{toggle_created_at && <TableHead>CREATED</TableHead>}
+				{toggle_updated_at && <TableHead>UPDATED</TableHead>}
 				<TableHead className="flex justify-center w-[40px]">
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
@@ -283,6 +285,14 @@ export const Header = () => {
 								}
 							>
 								Created
+							</DropdownMenuCheckboxItem>
+							<DropdownMenuCheckboxItem
+								checked={toggle_updated_at}
+								onCheckedChange={isChecked =>
+									setColumnSelection('updated_at', isChecked)
+								}
+							>
+								Updated
 							</DropdownMenuCheckboxItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuLabel>Sort By</DropdownMenuLabel>

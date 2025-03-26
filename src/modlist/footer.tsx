@@ -10,14 +10,16 @@ export const Footer = ({ modCount }: { modCount: number }) => {
 	const toggle_version = settingStore(state => state.toggle_version);
 	const toggle_creator = settingStore(state => state.toggle_creator);
 	const toggle_created_at = settingStore(state => state.toggle_created_at);
+	const toggle_updated_at = settingStore(state => state.toggle_updated_at);
 
-	let colSpan = 10;
+	let colSpan = 11;
 	if (!toggle_type) colSpan--;
 	if (!toggle_category) colSpan--;
 	if (!toggle_conflict || selectedGame!.slug === 'mbbl') colSpan--;
 	if (!toggle_version) colSpan--;
 	if (!toggle_creator) colSpan--;
 	if (!toggle_created_at) colSpan--;
+	if (!toggle_updated_at) colSpan--;
 	return (
 		<TableFooter>
 			<TableRow>

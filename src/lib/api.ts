@@ -1,10 +1,14 @@
 import { convertFileSrc, invoke } from '@tauri-apps/api/core';
-import { SettingModel } from '@/lib/store/setting';
 
-import type { IGameMeta, SteamLibraryPaths } from '@/lib/store/setting';
+import {
+	SettingModel,
+	type IGameMeta,
+	type SteamLibraryPaths,
+} from '@/lib/store/setting';
 import type { ProfileExportData } from '@/lib/store/profile-model';
 import type { ModItem } from '@/lib/store/mods';
 import type { SaveFile, SaveFileLoadOrderData } from '@/lib/store/save_files';
+import { normalizeTimestamp } from '@/lib/utils';
 
 export type ModConflicts = {
 	[mod_file_path: string]: Array<string[]>;
@@ -79,6 +83,10 @@ class API {
 		const local_mods = (await this.local_mods(app_id)).map(lm => {
 			return {
 				...lm,
+				created_at: normalizeTimestamp(lm.created_at),
+				updated_at: lm.updated_at
+					? normalizeTimestamp(lm.updated_at)
+					: normalizeTimestamp(lm.created_at),
 				preview_local:
 					lm.preview_local !== null && lm.preview_local !== ''
 						? convertFileSrc(lm.preview_local)

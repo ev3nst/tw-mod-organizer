@@ -7,7 +7,7 @@ use super::bannerlord;
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
 pub enum ModVersion {
-    Number(u64),
+    Number(u128),
     Text(String),
 }
 
@@ -17,12 +17,13 @@ pub struct ModItem {
     pub identifier: String,
     pub title: String,
     pub description: Option<String>,
-    pub created_at: u64,
+    pub created_at: u128,
     pub categories: Option<String>,
     pub url: Option<String>,
     pub download_url: Option<String>,
     pub preview_url: Option<String>,
     pub version: Option<ModVersion>,
+    pub updated_at: Option<u128>,
     pub item_type: String,
     pub mod_file: String,
     pub mod_file_path: String,
@@ -38,7 +39,8 @@ pub struct LocalModMeta {
     pub identifier: String,
     pub title: String,
     pub description: Option<String>,
-    pub created_at: u64,
+    pub created_at: u128,
+    pub updated_at: Option<u128>,
     pub categories: Option<String>,
     pub url: Option<String>,
     pub download_url: Option<String>,

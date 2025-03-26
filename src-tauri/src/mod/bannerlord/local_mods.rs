@@ -38,6 +38,7 @@ pub async fn local_mods(app_mods_path: PathBuf) -> Result<Vec<ModItem>, String> 
             title: meta.title.clone(),
             description: meta.description,
             created_at: meta.created_at,
+            updated_at: Some(meta.updated_at.unwrap_or(meta.created_at)),
             categories: meta.categories,
             url: meta.url,
             download_url: meta.download_url,

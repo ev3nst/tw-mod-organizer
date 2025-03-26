@@ -22,6 +22,7 @@ import { Creator } from './cells/creator';
 import { Actions } from './cells/actions';
 import { Order } from './cells/order';
 import { CreatedAt } from './cells/created_at';
+import { UpdatedAt } from './cells/updated_at';
 
 type RowProps = {
 	mod: ModItemSeparatorUnion;
@@ -143,6 +144,7 @@ const RowComponent = ({
 			<Version mod={mod} />
 			<Creator mod={mod} />
 			<CreatedAt mod={mod} />
+			<UpdatedAt mod={mod} />
 			<Actions mod={mod as ModItem} />
 		</TableRow>
 	);

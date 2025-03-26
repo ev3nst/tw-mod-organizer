@@ -8,6 +8,7 @@ export type ModItem = {
 	title: string;
 	description: string;
 	created_at: number;
+	updated_at: number;
 	categories: string;
 	version: string | number;
 	creator_id: string | null;

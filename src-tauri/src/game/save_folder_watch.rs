@@ -20,7 +20,7 @@ struct FileData {
     filename: String,
     filesize: u64,
     path: String,
-    date: u64,
+    date: u128,
     event_type: String,
 }
 
@@ -157,7 +157,7 @@ pub async fn save_folder_watch(
                                     .unwrap_or_else(|_| meta.created().unwrap_or(SystemTime::now()))
                                     .duration_since(UNIX_EPOCH)
                                     .expect("Time went backwards")
-                                    .as_secs();
+                                    .as_millis();
 
                                 let file_data = FileData {
                                     filename: path

@@ -85,7 +85,7 @@ pub fn migrate_local_mod(
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map_err(|e| format!("Time error: {}", e))?
-        .as_secs();
+        .as_millis();
 
     let meta = InstallModMeta {
         identifier: uuid.clone(),
@@ -98,6 +98,7 @@ pub fn migrate_local_mod(
         preview_url: preview_url,
         version: Some(ModVersion::Text("".to_string())),
         created_at: now,
+        updated_at: Some(now),
         r#type: "local".to_owned(),
     };
 

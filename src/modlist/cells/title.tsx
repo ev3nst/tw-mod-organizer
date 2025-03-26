@@ -94,6 +94,9 @@ export const Title = memo(
 		const toggle_created_at = settingStore(
 			state => state.toggle_created_at,
 		);
+		const toggle_updated_at = settingStore(
+			state => state.toggle_updated_at,
+		);
 
 		const metaData = modMetaStore(state => state.data);
 		const modActivationData = modActivationStore(state => state.data);
@@ -123,7 +126,7 @@ export const Title = memo(
 				color: text_color,
 			};
 
-			let separatorColSpan = 7;
+			let separatorColSpan = 8;
 			if (!toggle_type) separatorColSpan--;
 			if (!toggle_category) separatorColSpan--;
 			if (!toggle_conflict || selectedGame!.slug === 'mbbl')
@@ -131,6 +134,7 @@ export const Title = memo(
 			if (!toggle_version) separatorColSpan--;
 			if (!toggle_creator) separatorColSpan--;
 			if (!toggle_created_at) separatorColSpan--;
+			if (!toggle_updated_at) separatorColSpan--;
 
 			return (
 				<TableCell

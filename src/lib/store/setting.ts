@@ -25,6 +25,7 @@ export type ModListColumnVisibility = {
 	version: boolean;
 	creator: boolean;
 	created_at: boolean;
+	updated_at: boolean;
 };
 
 export type NexusAuthParams = {
@@ -84,6 +85,7 @@ export class SettingModel {
 				version: true,
 				creator: false,
 				created_at: false,
+				updated_at: false,
 			};
 			const mod_installation_path = `${appConfigPath}\\mods`;
 			const mod_download_path = `${appConfigPath}\\downloads`;
@@ -108,6 +110,7 @@ export class SettingModel {
 						version: true,
 						creator: false,
 						created_at: false,
+						updated_at: false,
 					},
 					mod_installation_path: null,
 					mod_download_path: null,
@@ -311,6 +314,7 @@ type SettingStore = {
 	toggle_version: boolean;
 	toggle_creator: boolean;
 	toggle_created_at: boolean;
+	toggle_updated_at: boolean;
 	setColumnSelection: (
 		column:
 			| 'type'
@@ -318,7 +322,8 @@ type SettingStore = {
 			| 'conflict'
 			| 'version'
 			| 'creator'
-			| 'created_at',
+			| 'created_at'
+			| 'updated_at',
 		value: boolean,
 	) => void;
 
@@ -421,6 +426,7 @@ export const settingStore = create<SettingStore>(set => ({
 	toggle_version: true,
 	toggle_creator: false,
 	toggle_created_at: false,
+	toggle_updated_at: false,
 
 	setColumnSelection: (key, value) => {
 		const keyStr = `toggle_${key}`;
@@ -431,6 +437,7 @@ export const settingStore = create<SettingStore>(set => ({
 			'toggle_version',
 			'toggle_creator',
 			'toggle_created_at',
+			'toggle_updated_at',
 		] as any;
 		if (columns.includes(keyStr)) {
 			set({ [keyStr]: value });
@@ -534,7 +541,8 @@ const syncSetting = async () => {
 		setting.column_selections.conflict !== state.toggle_conflict ||
 		setting.column_selections.version !== state.toggle_version ||
 		setting.column_selections.creator !== state.toggle_creator ||
-		setting.column_selections.version !== state.toggle_created_at
+		setting.column_selections.created_at !== state.toggle_created_at ||
+		setting.column_selections.updated_at !== state.toggle_updated_at
 	) {
 		setting.column_selections = {
 			type: state.toggle_type,
@@ -543,6 +551,7 @@ const syncSetting = async () => {
 			version: state.toggle_version,
 			creator: state.toggle_creator,
 			created_at: state.toggle_created_at,
+			updated_at: state.toggle_updated_at,
 		};
 		changed = true;
 	}

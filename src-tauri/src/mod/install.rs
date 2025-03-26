@@ -39,7 +39,8 @@ pub struct InstallModMeta {
     pub download_url: Option<String>,
     pub preview_url: Option<String>,
     pub version: Option<ModVersion>,
-    pub created_at: u64,
+    pub created_at: u128,
+    pub updated_at: Option<u128>,
     pub r#type: String,
 }
 
@@ -81,7 +82,7 @@ pub async fn install_mod(
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map_err(|e| format!("Time error: {}", e))?
-        .as_secs();
+        .as_millis();
 
     let mod_file_resolved = Path::new(&mod_details.mod_file_path)
         .file_name()
@@ -140,6 +141,7 @@ pub async fn install_mod(
         mod_file: mod_file_resolved.to_owned(),
         download_url: mod_details.download_url.clone(),
         created_at: now,
+        updated_at: Some(now),
         r#type: mod_type.to_string(),
     };
 

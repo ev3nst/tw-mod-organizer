@@ -190,10 +190,13 @@ export async function startGameBannerlord(
 		});
 
 	const command = await api.start_game_bannerlord(app_id, modsToLoad);
-
-	console.log(modsToLoad, 'modstoload');
-	console.log(command, 'command');
 	return command;
+}
+
+export function normalizeTimestamp(timestamp: number): number {
+	return timestamp < 1_262_304_000_000 // Jan 1, 2010 in milliseconds
+		? timestamp * 1000
+		: timestamp;
 }
 
 export const buttonVariants = cva(

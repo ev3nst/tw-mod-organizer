@@ -57,10 +57,13 @@ function Init() {
 		setGames(supportedGames, steamLibraryPaths);
 
 		const setting = await SettingModel.retrieve();
+		setColumnSelection('type', setting.column_selections.type);
 		setColumnSelection('category', setting.column_selections.category);
 		setColumnSelection('conflict', setting.column_selections.conflict);
 		setColumnSelection('version', setting.column_selections.version);
 		setColumnSelection('creator', setting.column_selections.creator);
+		setColumnSelection('created_at', setting.column_selections.created_at);
+		setColumnSelection('updated_at', setting.column_selections.updated_at);
 		setSortBy(setting.sort_by);
 		setIncludeHiddenDownloads(setting.include_hidden_downloads);
 		setCompactArchiveNames(setting.compact_archive_names);
