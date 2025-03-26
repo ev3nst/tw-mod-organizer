@@ -51,7 +51,7 @@ pub async fn start_game_totalwar(
     .map_err(|e| format!("Failed to write tw_mod_organizer_used_mods.txt: {}", e))?;
 
     let batch_content = format!(
-        "start /d \"{}\" {}.exe{}{} tw_mod_organizer_used_mods.txt;",
+        "start \"\" /d \"{}\" \"{}.exe\"{}{} \"tw_mod_organizer_used_mods.txt\";",
         exe_directory,
         game.exe_name,
         if let Some(save) = &save_game {
