@@ -185,7 +185,7 @@ export const Play = () => {
 				case 'totalwar':
 					await startGameTotalwar(
 						selectedGame!.steam_id,
-						mods,
+						sortedMods,
 						modActivationData,
 						saveFile,
 					);
@@ -193,7 +193,7 @@ export const Play = () => {
 				case 'bannerlord':
 					await startGameBannerlord(
 						selectedGame!.steam_id,
-						mods,
+						sortedMods,
 						modActivationData,
 						saveFile,
 					);
