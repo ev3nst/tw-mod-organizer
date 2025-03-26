@@ -85,6 +85,8 @@ export const Downloads = () => {
 
 	useEffect(() => {
 		loadDownloads();
+		const downloadManager = DownloadManager.getInstance();
+		downloadManager.resume();
 	}, [loadDownloads]);
 
 	useEffect(() => {

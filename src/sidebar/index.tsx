@@ -90,7 +90,11 @@ export function AppSidebar() {
 									</DialogContent>
 								</Dialog>
 							</div>
-							<AccordionContent className="overflow-auto max-h-[calc(100vh-12rem)]">
+							<AccordionContent
+								className="overflow-auto max-h-[calc(100vh-12rem)]"
+								forceMount
+								hidden={'saves' !== sidebar_accordion}
+							>
 								<Saves />
 							</AccordionContent>
 						</AccordionItem>
