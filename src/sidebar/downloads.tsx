@@ -324,8 +324,8 @@ export const Downloads = () => {
 
 	const handleDownloadFileSelection = (download: DownloadRecord) => {
 		if (
-			typeof download.progress !== 'undefined' &&
-			download.progress !== 100
+			typeof download.status !== 'undefined' &&
+			download.status !== 'completed'
 		) {
 			return;
 		}
