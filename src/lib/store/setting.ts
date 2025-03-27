@@ -38,8 +38,8 @@ export type Setting = {
 	id: number;
 	selected_game: number | null;
 	column_selections: ModListColumnVisibility;
-	mod_installation_path: string | null;
-	mod_download_path: string | null;
+	mod_installation_path: string;
+	mod_download_path: string;
 	nexus_auth_params: NexusAuthParams;
 	nexus_api_key: string | null;
 	dependency_confirmation: 1 | 0;
@@ -114,8 +114,8 @@ export class SettingModel {
 						created_at: false,
 						updated_at: false,
 					},
-					mod_installation_path: null,
-					mod_download_path: null,
+					mod_installation_path,
+					mod_download_path,
 					nexus_auth_params: {
 						id: null,
 						token: null,
