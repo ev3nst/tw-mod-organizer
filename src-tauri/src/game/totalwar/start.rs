@@ -37,10 +37,18 @@ pub async fn start_game_totalwar(
         game_installation_path.clone()
     } else {
         Path::new(&game_installation_path)
-            .join(game.exe_folder.replace("\\", "/"))
+            .join(game.exe_folder)
             .to_string_lossy()
-            .into_owned()
+            .to_string()
+            .replace("\\\\", "\\")
+            .replace("/", "\\")
     };
+
+    let normalized_exe_directory = game_installation_path
+        .replace("\\\\", "\\")
+        .replace("/", "\\")
+        .trim_end_matches('\\')
+        .to_string();
 
     let used_mods_file_path =
         Path::new(&game_installation_path).join("tw_mod_organizer_used_mods.txt");
@@ -51,8 +59,8 @@ pub async fn start_game_totalwar(
     .map_err(|e| format!("Failed to write tw_mod_organizer_used_mods.txt: {}", e))?;
 
     let batch_content = format!(
-        "start \"\" /d \"{}\" \"{}.exe\"{}{} \"tw_mod_organizer_used_mods.txt\";",
-        exe_directory,
+        "start /d \"{}\" {}.exe{}{} tw_mod_organizer_used_mods.txt;",
+        normalized_exe_directory,
         game.exe_name,
         if let Some(save) = &save_game {
             if !save.is_empty() {
