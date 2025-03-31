@@ -30,7 +30,6 @@ function RemoveModDialog() {
 	const selectedGame = settingStore(state => state.selectedGame);
 
 	const removeModOpen = modsStore(state => state.removeModOpen);
-	const selectedMod = modsStore(state => state.selectedMod);
 	const toggleModRemove = modsStore(state => state.toggleModRemove);
 
 	const mods = modsStore(state => state.mods);
@@ -61,10 +60,7 @@ function RemoveModDialog() {
 	const handleSubmit = async () => {
 		try {
 			setLoading(true);
-			const modsToProcess =
-				selectedRows.size > 0
-					? Array.from(selectedRows)
-					: [selectedMod.identifier];
+			const modsToProcess = Array.from(selectedRows);
 
 			for (const modIdentifier of modsToProcess) {
 				const selectedModData = mods.find(
@@ -121,10 +117,7 @@ function RemoveModDialog() {
 
 	return (
 		<Dialog
-			open={
-				removeModOpen &&
-				(selectedRows.size > 0 || selectedMod !== undefined)
-			}
+			open={removeModOpen && selectedRows.size > 0}
 			onOpenChange={() => toggleModRemove()}
 		>
 			<DialogContent className="min-w-[400px]">
@@ -132,9 +125,7 @@ function RemoveModDialog() {
 					<DialogTitle className="flex items-baseline gap-3">
 						<div>Remove Mod(s)</div>
 						<div className="text-sm text-blue-500">
-							{selectedRows.size > 1
-								? `${selectedRows.size} Mods Selected`
-								: selectedMod?.title}
+							{`${selectedRows.size} Mods Selected`}
 						</div>
 					</DialogTitle>
 					<DialogDescription
@@ -142,20 +133,14 @@ function RemoveModDialog() {
 						asChild
 					>
 						<div>
-							{selectedRows.size === 1
-								? selectedMod?.mod_file
-								: [...selectedRows].map(sr => (
-										<div
-											className="mt-1"
-											key={`mod_to_remove_${sr}`}
-										>
-											{
-												mods.find(
-													m => m.identifier === sr,
-												)!.title
-											}
-										</div>
-									))}
+							{[...selectedRows].map(sr => (
+								<div
+									className="mt-1"
+									key={`mod_to_remove_${sr}`}
+								>
+									{mods.find(m => m.identifier === sr)?.title}
+								</div>
+							))}
 						</div>
 					</DialogDescription>
 				</DialogHeader>

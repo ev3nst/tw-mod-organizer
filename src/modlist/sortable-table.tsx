@@ -50,6 +50,7 @@ export const ModListSortableTable = () => {
 	const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
 	const mods = modsStore(state => state.mods);
 	const setMods = modsStore(state => state.setMods);
+	const toggleModRemove = modsStore(state => state.toggleModRemove);
 
 	const modOrderData = modOrderStore(state => state.data);
 	const setModOrder = modOrderStore(state => state.setData);
@@ -134,7 +135,6 @@ export const ModListSortableTable = () => {
 			}
 		}
 	};
-
 	useEffect(() => {
 		window.addEventListener('keydown', handleSpaceBar);
 		return () => {
@@ -147,13 +147,26 @@ export const ModListSortableTable = () => {
 			clearSelection();
 		}
 	};
-
 	useEffect(() => {
 		window.addEventListener('keydown', handleEscKey);
 		return () => {
 			window.removeEventListener('keydown', handleEscKey);
 		};
 	}, []);
+
+	const handleDelete = (event: KeyboardEvent) => {
+		console.log(event.key);
+		if (event.key === 'Delete' && selectedRows.size > 0) {
+			event.preventDefault();
+			toggleModRemove();
+		}
+	};
+	useEffect(() => {
+		window.addEventListener('keydown', handleDelete);
+		return () => {
+			window.removeEventListener('keydown', handleDelete);
+		};
+	}, [selectedRows]);
 
 	useEffect(() => {
 		if (sort_by !== 'load_order') {
@@ -327,22 +340,6 @@ export const ModListSortableTable = () => {
 			}, 500);
 		}
 	};
-
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				scrollContainerRef.current &&
-				!scrollContainerRef.current.contains(event.target as Node)
-			) {
-				clearSelection();
-			}
-		};
-
-		document.addEventListener('mousedown', handleClickOutside);
-		return () => {
-			document.removeEventListener('mousedown', handleClickOutside);
-		};
-	}, []);
 
 	return (
 		<div className="relative flex-1 mb-[41px]">

@@ -152,6 +152,6 @@ const ConflictDetailsDialog = () => {
 			</DialogContent>
 		</Dialog>
 	);
-}
+};
 
 export default ConflictDetailsDialog;
