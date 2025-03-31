@@ -99,8 +99,14 @@ const RowComponent = ({
 
 	const showViolation = isSortingEnabled && hasViolation;
 
+	const onContextOpen = (isOpen: boolean) => {
+		if (isOpen) {
+			onSelect(id, false);
+		}
+	};
+
 	return (
-		<ContextMenu>
+		<ContextMenu onOpenChange={onContextOpen}>
 			<ContextMenuTrigger asChild>
 				<TableRow
 					ref={setNodeRef}
