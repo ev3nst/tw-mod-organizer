@@ -1,6 +1,6 @@
 use rayon::prelude::*;
 use rpfm_lib::files::pack::Pack;
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
@@ -14,7 +14,7 @@ pub async fn conflicts(
     handle: tauri::AppHandle,
     app_id: u32,
     folder_paths: Vec<String>,
-) -> Result<HashMap<String, HashMap<String, Vec<String>>>, String> {
+) -> Result<BTreeMap<String, BTreeMap<String, Vec<String>>>, String> {
     let app_cache_dir = handle
         .path()
         .resolve("cache".to_string(), BaseDirectory::AppConfig)
@@ -154,10 +154,25 @@ pub async fn conflicts(
     .await
     .map_err(|e| format!("Task failed: {:?}", e))?;
 
+    let mut sorted_conflicts: BTreeMap<String, BTreeMap<String, Vec<String>>> = BTreeMap::new();
+
+    for (mod_file, inner_map) in conflicts_result {
+        let mut sorted_inner: BTreeMap<String, Vec<String>> = BTreeMap::new();
+        for (other_mod_file, mut shared_paths) in inner_map {
+            shared_paths.sort_by(|a, b| {
+                let folder_a = a.split('/').next().unwrap_or("");
+                let folder_b = b.split('/').next().unwrap_or("");
+                folder_a.cmp(folder_b).then_with(|| a.cmp(b))
+            });
+            sorted_inner.insert(other_mod_file, shared_paths);
+        }
+        sorted_conflicts.insert(mod_file, sorted_inner);
+    }
+
     let cache_entry = CacheEntry {
         file_paths,
         file_metadata,
-        conflicts: conflicts_result.clone(),
+        conflicts: sorted_conflicts.clone(),
     };
 
     let cache_json = serde_json::to_string(&cache_entry)
@@ -165,5 +180,5 @@ pub async fn conflicts(
 
     fs::write(&cache_file, cache_json).map_err(|e| format!("Failed to write cache file: {}", e))?;
 
-    Ok(conflicts_result)
+    Ok(sorted_conflicts)
 }

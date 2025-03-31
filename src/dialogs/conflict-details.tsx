@@ -83,7 +83,7 @@ const ConflictItem = ({
 	);
 };
 
-function ConflictDetailsDialog() {
+const ConflictDetailsDialog = () => {
 	const setCurrentConflict = conflictsStore(
 		state => state.setCurrentConflict,
 	);
@@ -103,6 +103,7 @@ function ConflictDetailsDialog() {
 		}
 	};
 
+	console.log(currentConflictData, 'currentConflictData');
 	return (
 		<Dialog
 			open={typeof currentConflict !== 'undefined'}

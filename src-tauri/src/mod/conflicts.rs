@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use super::totalwar;
 use crate::game::supported_games::SUPPORTED_GAMES;
@@ -8,7 +8,7 @@ use crate::game::supported_games::SUPPORTED_GAMES;
 pub struct CacheEntry {
     pub file_paths: Vec<String>,
     pub file_metadata: HashMap<String, FileMetadata>,
-    pub conflicts: HashMap<String, HashMap<String, Vec<String>>>,
+    pub conflicts: BTreeMap<String, BTreeMap<String, Vec<String>>>,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq)]
@@ -22,7 +22,7 @@ pub async fn conflicts(
     handle: tauri::AppHandle,
     app_id: u32,
     folder_paths: Vec<String>,
-) -> Result<HashMap<String, HashMap<String, Vec<String>>>, String> {
+) -> Result<BTreeMap<String, BTreeMap<String, Vec<String>>>, String> {
     let game = SUPPORTED_GAMES
         .iter()
         .find(|game| game.steam_id == app_id)
@@ -34,7 +34,7 @@ pub async fn conflicts(
                 totalwar::conflicts::conflicts(handle, app_id, folder_paths).await?;
             Ok(conflicts_result)
         }
-        "bannerlord" => Ok(HashMap::new()),
+        "bannerlord" => Ok(BTreeMap::new()),
         _ => Err(format!("Game type '{}' is not supported", game.r#type)),
     }
 }
