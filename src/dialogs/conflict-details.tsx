@@ -103,7 +103,6 @@ const ConflictDetailsDialog = () => {
 		}
 	};
 
-	console.log(currentConflictData, 'currentConflictData');
 	return (
 		<Dialog
 			open={typeof currentConflict !== 'undefined'}

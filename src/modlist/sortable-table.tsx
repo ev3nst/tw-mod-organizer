@@ -155,7 +155,6 @@ export const ModListSortableTable = () => {
 	}, []);
 
 	const handleDelete = (event: KeyboardEvent) => {
-		console.log(event.key);
 		if (event.key === 'Delete' && selectedRows.size > 0) {
 			event.preventDefault();
 			toggleModRemove();
