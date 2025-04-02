@@ -80,7 +80,7 @@ export function AppSidebar() {
 													save game file that is
 													created while mod manager
 													was not open they will be
-													excempt from this process as
+													exempt from this process as
 													there is no way to know
 													which mods were active at
 													that time.
