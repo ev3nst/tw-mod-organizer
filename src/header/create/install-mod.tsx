@@ -11,9 +11,7 @@ import { Separator } from '@/components/separator';
 import { Loading } from '@/components/loading';
 
 import { settingStore } from '@/lib/store/setting';
-import { profileStore } from '@/lib/store/profile';
 import { ModItem, modsStore } from '@/lib/store/mods';
-import { ModOrderModel } from '@/lib/store/mod_order';
 import { isSeparator, modSeparatorStore } from '@/lib/store/mod_separator';
 
 import api, { ZipItemInfo } from '@/lib/api';
@@ -32,9 +30,6 @@ export const InstallMod = () => {
 	const [archivePath, setArchivePath] = useState<string>();
 	const [modPath, setModPath] = useState<string>();
 
-	const profile = profileStore(state => state.profile);
-	const init_reload = settingStore(state => state.init_reload);
-	const setInitReload = settingStore(state => state.setInitReload);
 	const selectedGame = settingStore(state => state.selectedGame);
 	const mod_installation_path = settingStore(
 		state => state.mod_installation_path,
@@ -277,20 +272,9 @@ export const InstallMod = () => {
 			setDownloadedArchivePath('');
 			setDownloadedModMeta({});
 			setInstallModItemOpen(false);
-
-			const modOrder = await ModOrderModel.retrieve(profile.id);
-			const highestOrder = Math.max(
-				...modOrder!.data!.map(item => item.order),
-			);
-
-			modOrder!.data!.push({
-				title: name,
-				mod_id: newModIdentifier,
-				order: highestOrder + 1,
-			});
-			await modOrder?.save();
-
-			setInitReload(!init_reload);
+			setTimeout(() => {
+				window.location.reload();
+			}, 300);
 		} catch (error) {
 			toastError(error);
 		} finally {
