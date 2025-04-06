@@ -115,6 +115,16 @@ export const ModListSortableTable = () => {
 	}, [mods, sort_by]);
 
 	const handleSpaceBar = (event: KeyboardEvent) => {
+		const target = event.target as HTMLElement;
+		if (
+			target.tagName === 'INPUT' ||
+			target.tagName === 'TEXTAREA' ||
+			target.getAttribute('contenteditable') === 'true' ||
+			target.isContentEditable
+		) {
+			return;
+		}
+
 		if (event.key === ' ' && selectedRows.size > 0) {
 			event.preventDefault();
 			const selectedMods = mods.filter(
