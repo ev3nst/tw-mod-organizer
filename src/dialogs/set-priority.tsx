@@ -11,7 +11,7 @@ import { Input } from '@/components/input';
 import { Label } from '@/components/label';
 import { Button } from '@/components/button';
 
-import { modsStore } from '@/lib/store/mods';
+import { ModItem, modsStore } from '@/lib/store/mods';
 import { modOrderStore } from '@/lib/store/mod_order';
 
 function SetPriorityDialog() {
@@ -51,7 +51,7 @@ function SetPriorityDialog() {
 		if (Number.isNaN(priorityNum) || priorityNum < 1) return;
 
 		const oldIndex = mods.findIndex(
-			item => item.identifier === selectedMod.identifier,
+			item => item.identifier === selectedMod.identifier
 		);
 		const newArray = [...mods];
 		const [movedItem] = newArray.splice(oldIndex, 1);
@@ -64,7 +64,7 @@ function SetPriorityDialog() {
 				title: na.title,
 				mod_file_path:
 					'mod_file_path' in na ? na.mod_file_path : undefined,
-			})),
+			}))
 		);
 		toggleSetPriority();
 	};
@@ -83,7 +83,10 @@ function SetPriorityDialog() {
 						</div>
 					</DialogTitle>
 					<DialogDescription className="text-xs mt-1 break-all">
-						{selectedMod?.mod_file}
+						{typeof (selectedMod as ModItem)?.mod_file !==
+						'undefined'
+							? (selectedMod as ModItem)?.mod_file
+							: selectedMod?.title}
 					</DialogDescription>
 				</DialogHeader>
 				<div className="flex justify-between items-end gap-4">

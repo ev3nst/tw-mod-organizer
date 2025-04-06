@@ -83,6 +83,14 @@ const SeparatorActions = ({
 		state => state.toggleEditSeparator,
 	);
 
+	const toggleSetPriority = modOrderStore(state => state.toggleSetPriority);
+	const setSelectedPriorityMod = modOrderStore(state => state.setSelectedMod);
+
+	const handleSetPriority = useCallback(() => {
+		setSelectedPriorityMod(mod);
+		toggleSetPriority();
+	}, [mod, setSelectedPriorityMod, toggleSetPriority]);
+
 	const handleDelete = useCallback(() => {
 		setSeparators(
 			[...separators].filter(fi => fi.identifier !== mod.identifier),
@@ -107,6 +115,7 @@ const SeparatorActions = ({
 			mod={mod}
 			cellStyle={cellStyle}
 			handleEdit={handleEdit}
+			handleSetPriority={handleSetPriority}
 			handleDelete={handleDelete}
 		/>
 	);
@@ -235,6 +244,13 @@ export const ModActionDropdownRenderer = ({
 							>
 								<InfoIcon className="w-3 h-3" />
 								Edit (Meta Information)
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								className="text-xs py-2 my-0"
+								onClick={handleSetPriority}
+							>
+								<ArrowRightIcon className="w-3 h-3" />
+								Set Priority
 							</DropdownMenuItem>
 							<DropdownMenuItem
 								className="text-xs py-2 my-0"
@@ -381,6 +397,10 @@ export const ModActionContextMenuRenderer = ({
 				<ContextMenuItem onSelect={handleEdit}>
 					<InfoIcon className="w-3 h-3 mr-2" />
 					Edit (Meta Information)
+				</ContextMenuItem>
+				<ContextMenuItem onSelect={handleSetPriority}>
+					<ArrowRightIcon className="w-3 h-3 mr-2" />
+					Set Priority
 				</ContextMenuItem>
 				<ContextMenuItem onSelect={handleDelete}>
 					<TrashIcon className="w-3 h-3 mr-2 text-red-500" />

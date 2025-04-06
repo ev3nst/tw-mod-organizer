@@ -5,7 +5,7 @@ import {
 } from '@/lib/store/mod_generic';
 import { SettingModel } from '@/lib/store/setting';
 import { profileStore } from '@/lib/store/profile';
-import type { ModItem } from '@/lib/store/mods';
+import type { ModItemSeparatorUnion } from '@/lib/store/mod_separator';
 
 export type ModOrderItem = {
 	mod_id: string;
@@ -39,9 +39,9 @@ export const modOrderStore = createStore<
 	ModOrderItem,
 	{
 		priorityOpen: boolean;
-		selectedMod: ModItem;
+		selectedMod: ModItemSeparatorUnion;
 		toggleSetPriority: () => void;
-		setSelectedMod: (selectedMod: ModItem) => void;
+		setSelectedMod: (selectedMod: ModItemSeparatorUnion) => void;
 		selectedRows: Set<string>;
 		setSelectedRows: (selectedRows: Set<string>) => void;
 		toggleRow: (modId: string, ctrlKey: boolean) => void;
