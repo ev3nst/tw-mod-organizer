@@ -45,6 +45,8 @@ pub struct LocalModMeta {
     pub url: Option<String>,
     pub download_url: Option<String>,
     pub preview_url: Option<String>,
+    pub creator_id: Option<String>,
+    pub creator_name: Option<String>,
     pub version: Option<ModVersion>,
 }
 

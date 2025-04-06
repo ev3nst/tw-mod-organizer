@@ -254,6 +254,8 @@ export const InstallMod = () => {
 					url: downloadedModMeta.mod_url ?? '',
 					download_url: downloadedModMeta.download_url ?? '',
 					categories,
+					creator_id: downloadedModMeta.creator_id ?? '',
+					creator_name: downloadedModMeta.creator_name ?? '',
 					version:
 						version !== ''
 							? version

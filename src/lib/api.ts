@@ -27,6 +27,8 @@ export type NexusDownloadResponse = {
 	file_size: number;
 	preview_url: string;
 	version: string;
+	creator_id: string;
+	creator_name: string;
 	mod_url: string;
 };
 
@@ -292,6 +294,8 @@ class API {
 			categories?: string;
 			url?: string;
 			download_url?: string;
+			creator_id?: string;
+			creator_name?: string;
 			version?: string;
 		},
 		mod_installation_path: string,

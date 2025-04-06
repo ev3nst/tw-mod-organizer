@@ -41,8 +41,8 @@ pub async fn local_mods(app_mods_path: PathBuf) -> Result<Vec<ModItem>, String> 
             mod_file: mod_file_and_images_paths.0,
             mod_file_path: mod_file_and_images_paths.1,
             preview_local: mod_file_and_images_paths.2,
-            creator_id: None,
-            creator_name: Some("".to_string()),
+            creator_id: meta.creator_id,
+            creator_name: meta.creator_name,
             required_items: vec![],
             child_mods: vec![],
         });

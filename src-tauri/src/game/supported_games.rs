@@ -14,6 +14,7 @@ pub struct Game {
     pub steam_id: u32,
     pub steam_folder_name: &'static str,
     pub nexus_slug: &'static str,
+    pub nexus_id: u128,
     pub r#type: &'static str,
 }
 
@@ -28,6 +29,7 @@ pub const SUPPORTED_GAMES: &[Game] = &[
         steam_id: 594570,
         steam_folder_name: "Total War WARHAMMER II",
         nexus_slug: "totalwarwarhammer2",
+        nexus_id: 2436,
         r#type: "totalwar",
     },
     Game {
@@ -40,6 +42,7 @@ pub const SUPPORTED_GAMES: &[Game] = &[
         steam_id: 1142710,
         steam_folder_name: "Total War WARHAMMER III",
         nexus_slug: "totalwarwarhammer3",
+        nexus_id: 4717,
         r#type: "totalwar",
     },
     Game {
@@ -52,6 +55,7 @@ pub const SUPPORTED_GAMES: &[Game] = &[
         steam_id: 779340,
         steam_folder_name: "Total War THREE KINGDOMS",
         nexus_slug: "totalwarthreekingdoms",
+        nexus_id: 2847,
         r#type: "totalwar",
     },
     Game {
@@ -64,6 +68,7 @@ pub const SUPPORTED_GAMES: &[Game] = &[
         steam_id: 261550,
         steam_folder_name: "Mount & Blade II Bannerlord",
         nexus_slug: "mountandblade2bannerlord",
+        nexus_id: 3174,
         r#type: "bannerlord",
     },
 ];

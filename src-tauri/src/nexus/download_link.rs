@@ -21,6 +21,8 @@ pub struct DownloadResponse {
     pub download_url: String,
     pub file_size: Option<u64>,
     pub preview_url: String,
+    pub creator_id: String,
+    pub creator_name: String,
     pub version: String,
     pub mod_url: String,
 }
@@ -123,6 +125,8 @@ pub async fn nexus_download_link(
             file_size,
             preview_url: nexus_mod_details.picture_url,
             version: nexus_mod_details.version,
+            creator_id: nexus_mod_details.uploaded_users_profile_url,
+            creator_name: nexus_mod_details.uploaded_by,
             mod_url: format!(
                 "https://www.nexusmods.com/{}/mods/{}",
                 request_options.game_domain_name, request_options.mod_id

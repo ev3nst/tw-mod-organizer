@@ -341,6 +341,24 @@ export const ModActionDropdownRenderer = ({
 								</DropdownMenuItem>
 							)}
 
+						{currentMod.item_type === 'nexus_mod' &&
+							typeof currentMod.creator_id === 'string' &&
+							currentMod.creator_id.startsWith(
+								'https://www.nexusmods.com',
+							) && (
+								<DropdownMenuItem
+									className="text-xs py-2 my-0"
+									onClick={() =>
+										api.open_external_url(
+											`${currentMod.creator_id as string}/mods?gameId=${selectedGame!.nexus_id}`,
+										)
+									}
+								>
+									<UserIcon className="w-3 h-3" />
+									More from this Author
+								</DropdownMenuItem>
+							)}
+
 						<DropdownMenuItem
 							className="text-xs py-2 my-0"
 							onClick={handleSetPriority}

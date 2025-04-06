@@ -97,6 +97,8 @@ pub fn migrate_local_mod(
         url: Some("".to_string()),
         preview_url: preview_url,
         version: Some(ModVersion::Text("".to_string())),
+        creator_id: Some("".to_string()),
+        creator_name: Some("".to_string()),
         created_at: now,
         updated_at: Some(now),
         r#type: "local".to_owned(),

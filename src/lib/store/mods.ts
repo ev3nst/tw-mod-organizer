@@ -33,6 +33,8 @@ type DownloadedModMeta = {
 	download_url?: string | null;
 	preview_url?: string | null;
 	image_file_path?: string | null;
+	creator_id?: string | null;
+	creator_name?: string | null;
 	version?: string | null;
 };
 

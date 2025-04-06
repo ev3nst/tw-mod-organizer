@@ -14,6 +14,7 @@ export type IGameMeta = {
 	steam_id: number;
 	steam_folder_name: string;
 	nexus_slug: string;
+	nexus_id: number;
 	game_path_exists: boolean;
 	type: 'totalwar' | 'bannerlord';
 };

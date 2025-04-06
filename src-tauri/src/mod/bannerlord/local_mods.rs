@@ -48,8 +48,8 @@ pub async fn local_mods(app_mods_path: PathBuf) -> Result<Vec<ModItem>, String> 
             mod_file: meta.title,
             mod_file_path: mod_path.to_string_lossy().to_string(),
             preview_local: "".to_string(),
-            creator_id: None,
-            creator_name: Some("".to_string()),
+            creator_id: meta.creator_id,
+            creator_name: meta.creator_name,
             required_items: vec![],
             child_mods: vec![],
         });

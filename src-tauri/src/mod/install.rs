@@ -25,6 +25,8 @@ pub struct InstallModDetails {
     download_url: Option<String>,
     image_file_path: Option<String>,
     preview_url: Option<String>,
+    creator_id: Option<String>,
+    creator_name: Option<String>,
     version: Option<ModVersion>,
 }
 
@@ -38,6 +40,8 @@ pub struct InstallModMeta {
     pub url: Option<String>,
     pub download_url: Option<String>,
     pub preview_url: Option<String>,
+    pub creator_id: Option<String>,
+    pub creator_name: Option<String>,
     pub version: Option<ModVersion>,
     pub created_at: u128,
     pub updated_at: Option<u128>,
@@ -135,6 +139,8 @@ pub async fn install_mod(
         title: mod_details.title.clone(),
         description: mod_details.description.clone(),
         categories: mod_details.categories.clone(),
+        creator_id: mod_details.creator_id,
+        creator_name: mod_details.creator_name,
         version: mod_details.version,
         preview_url,
         url: mod_details.url.clone(),

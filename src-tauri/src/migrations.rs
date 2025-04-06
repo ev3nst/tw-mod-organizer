@@ -229,5 +229,14 @@ pub fn get_migrations() -> Vec<Migration> {
 			"#,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 18,
+            description: "add_creator_to_downloads",
+            sql: r#"
+			ALTER TABLE downloads ADD COLUMN creator_id TEXT;
+			ALTER TABLE downloads ADD COLUMN creator_name TEXT;
+			"#,
+            kind: MigrationKind::Up,
+        },
     ]
 }

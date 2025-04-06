@@ -312,6 +312,8 @@ export const Downloads = () => {
 					: '',
 			preview_url: download?.preview_url,
 			version: download?.version,
+			creator_id: download?.creator_id,
+			creator_name: download?.creator_name,
 		});
 		setInstallModItemOpen(true);
 	};

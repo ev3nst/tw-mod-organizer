@@ -16,6 +16,8 @@ export interface DownloadRecord {
 	bytes_downloaded: number;
 	mod_url?: string | null;
 	preview_url?: string | null;
+	creator_id?: string | null;
+	creator_name?: string | null;
 	version?: string | null;
 	progress?: number;
 	status: 'queued' | 'in_progress' | 'error' | 'completed' | 'paused';
@@ -198,8 +200,8 @@ class DownloadManager {
 
 		const query = `
             INSERT INTO downloads 
-            (app_id, item_id, filename, url, total_size, bytes_downloaded, preview_url, version, mod_url, status, hidden) 
-            VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, 'queued', 0)
+            (app_id, item_id, filename, url, total_size, bytes_downloaded, preview_url, version, mod_url, status, hidden, creator_id, creator_name) 
+            VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, 'queued', 0, ?, ?)
         `;
 
 		const result = await dbWrapper.db.execute(query, [
@@ -211,6 +213,8 @@ class DownloadManager {
 			nexus_result.preview_url,
 			nexus_result.version,
 			nexus_result.mod_url,
+			nexus_result.creator_id,
+			nexus_result.creator_name,
 		]);
 
 		if (!result.lastInsertId) {
