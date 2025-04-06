@@ -48,7 +48,7 @@ export const Selection = memo(
 				<TableCell className="select-none w-[40px]" style={cellStyle}>
 					<Checkbox
 						className={checkboxClass}
-						checked={allActive}
+						checked={childMods.length > 0 && allActive}
 						onCheckedChange={() => toggleSeparatorActivation(mod)}
 					/>
 				</TableCell>
