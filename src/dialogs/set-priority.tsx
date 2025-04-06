@@ -51,7 +51,7 @@ function SetPriorityDialog() {
 		if (Number.isNaN(priorityNum) || priorityNum < 1) return;
 
 		const oldIndex = mods.findIndex(
-			item => item.identifier === selectedMod.identifier
+			item => item.identifier === selectedMod.identifier,
 		);
 		const newArray = [...mods];
 		const [movedItem] = newArray.splice(oldIndex, 1);
@@ -64,7 +64,7 @@ function SetPriorityDialog() {
 				title: na.title,
 				mod_file_path:
 					'mod_file_path' in na ? na.mod_file_path : undefined,
-			}))
+			})),
 		);
 		toggleSetPriority();
 	};
