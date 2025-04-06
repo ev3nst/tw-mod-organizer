@@ -7,7 +7,6 @@
 		"name": "Burak KARTAL",
 		"email": "futuregnr@gmail.com"
 	},
-	"license": "MIT",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
