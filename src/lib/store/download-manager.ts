@@ -18,7 +18,7 @@ export interface DownloadRecord {
 	preview_url?: string | null;
 	version?: string | null;
 	progress?: number;
-	status: 'queued' | 'in_progress' | 'error' | 'completed';
+	status: 'queued' | 'in_progress' | 'error' | 'completed' | 'paused';
 	hidden: 1 | 0;
 	created_at?: number;
 }
@@ -36,6 +36,8 @@ class DownloadManager {
 	private isProcessing: boolean = false;
 	private progressCallback?: ProgressCallback;
 	private unlistenDownloadProgress?: UnlistenFn;
+	private unlistenDownloadComplete?: UnlistenFn;
+	private processingLock: boolean = false;
 
 	private constructor() {
 		this.setupDownloadProgressListener();
@@ -62,7 +64,7 @@ class DownloadManager {
 	): Promise<DownloadRecord[]> {
 		const query = `
             SELECT * FROM downloads 
-            WHERE app_id = ? AND status IN ('queued', 'in_progress') 
+            WHERE app_id = ? AND status IN ('queued', 'in_progress', 'paused') 
             ORDER BY id
         `;
 		return await dbWrapper.db.select(query, [app_id]);
@@ -88,7 +90,10 @@ class DownloadManager {
 
 		const setting = await SettingModel.retrieve();
 		const syncRequests = results
-			.filter((record: DownloadRecord) => record.status !== 'completed')
+			.filter(
+				(record: DownloadRecord) =>
+					record.status !== 'completed' && record.status !== 'error',
+			)
 			.map((record: DownloadRecord) => ({
 				filename: record.filename,
 				download_path: `${setting.mod_download_path}\\${setting.selected_game}`,
@@ -118,11 +123,43 @@ class DownloadManager {
 					...record,
 					bytes_downloaded: syncResult.actual_bytes_downloaded,
 					status: syncResult.status,
+					progress:
+						syncResult.actual_bytes_downloaded > 0 &&
+						record.total_size > 0
+							? (syncResult.actual_bytes_downloaded /
+									record.total_size) *
+								100
+							: 0,
 				};
 			}
 
 			return record;
 		});
+
+		const inProgressDownloads = updatedResults.filter(
+			(record: DownloadRecord) => record.status === 'in_progress',
+		);
+
+		if (inProgressDownloads.length > 1) {
+			console.warn(
+				`Found ${inProgressDownloads.length} downloads with 'in_progress' status. Fixing...`,
+			);
+
+			inProgressDownloads.sort(
+				(a: DownloadRecord, b: DownloadRecord) => a.id - b.id,
+			);
+
+			const downloadsToFix = inProgressDownloads.slice(1);
+
+			for (const downloadToFix of downloadsToFix) {
+				await dbWrapper.db.execute(
+					'UPDATE downloads SET status = ? WHERE id = ?',
+					['paused', downloadToFix.id],
+				);
+
+				downloadToFix.status = 'paused';
+			}
+		}
 
 		for (const syncResult of syncResults) {
 			await dbWrapper.db.execute(
@@ -144,7 +181,6 @@ class DownloadManager {
 		filename: string,
 		nexus_result: NexusDownloadResponse,
 	): Promise<number> {
-		// Delete previous attempt that ended with error if exists
 		const deleteQuery = `
             DELETE FROM downloads 
             WHERE filename = ? AND status = 'error'
@@ -152,11 +188,11 @@ class DownloadManager {
 		await dbWrapper.db.execute(deleteQuery, [filename]);
 
 		const checkIfExists: any = await dbWrapper.db.select(
-			`SELECT * FROM downloads WHERE app_id = ? AND item_id = ? AND status != 'completed'`,
+			`SELECT * FROM downloads WHERE app_id = ? AND item_id = ? AND status NOT IN ('completed', 'error')`,
 			[app_id, item_id],
 		);
 
-		if (checkIfExists && checkIfExists[0]) {
+		if (checkIfExists && checkIfExists.length > 0) {
 			throw new Error('This file is already in download list.');
 		}
 
@@ -195,7 +231,29 @@ class DownloadManager {
 
 	public async pause(): Promise<void> {
 		this.isProcessing = false;
-		await invoke('pause_download');
+		try {
+			await invoke('pause_download');
+			// Update the status of the current download to paused in the database
+			const currentDownload = await this.getCurrentDownload();
+			if (currentDownload) {
+				await dbWrapper.db.execute(
+					'UPDATE downloads SET status = "paused" WHERE id = ?',
+					[currentDownload.id],
+				);
+			}
+		} catch (error) {
+			toastError(error);
+		}
+	}
+
+	private async getCurrentDownload(): Promise<DownloadRecord | null> {
+		const query = `
+            SELECT * FROM downloads 
+            WHERE status = 'in_progress' 
+            LIMIT 1
+        `;
+		const results: any = await dbWrapper.db.select(query);
+		return results.length > 0 ? results[0] : null;
 	}
 
 	public async remove(downloadId: number): Promise<void> {
@@ -209,14 +267,31 @@ class DownloadManager {
 
 		const downloadRecord = result[0];
 		const setting = await SettingModel.retrieve();
-		await invoke('remove_download', {
-			download_path: `${setting.mod_download_path}\\${setting.selected_game}`,
-			filename: downloadRecord.filename,
-		});
+
+		if (downloadRecord.status === 'in_progress') {
+			try {
+				await this.pause();
+			} catch (_e) {}
+			await new Promise(resolve => setTimeout(resolve, 500));
+		}
+
+		try {
+			await invoke('remove_download', {
+				download_path: `${setting.mod_download_path}\\${setting.selected_game}`,
+				filename: downloadRecord.filename,
+			});
+		} catch (error) {
+			console.error('Error removing file:', error);
+		}
 
 		await dbWrapper.db.execute('DELETE FROM downloads WHERE id = ?', [
 			downloadId,
 		]);
+
+		// Resume downloading if we were processing and there are more items
+		if (this.isProcessing) {
+			setTimeout(() => this.resume(), 500);
+		}
 	}
 
 	public async hideToggle(downloadId: number): Promise<void> {
@@ -240,48 +315,57 @@ class DownloadManager {
 	}
 
 	private async processNextDownload(): Promise<void> {
-		if (!this.isProcessing) return;
+		if (!this.isProcessing || this.processingLock) return;
 
-		const query = `
-            SELECT * FROM downloads 
-            WHERE status IN ('queued', 'in_progress') 
-            ORDER BY id 
-            LIMIT 1
-        `;
-		const results: any = await dbWrapper.db.select(query);
-
-		if (results.length === 0) {
-			this.isProcessing = false;
-			return;
-		}
-
-		const download = results[0] as DownloadRecord;
+		this.processingLock = true;
 
 		try {
-			await dbWrapper.db.execute(
-				'UPDATE downloads SET status = "in_progress" WHERE id = ?',
-				[download.id],
-			);
+			const query = `
+                SELECT * FROM downloads 
+                WHERE status IN ('in_progress', 'queued', 'paused') 
+                ORDER BY id 
+                LIMIT 1
+            `;
+			const results: any = await dbWrapper.db.select(query);
 
-			const setting = await SettingModel.retrieve();
-			await invoke('start_download', {
-				task: {
-					id: download.id,
-					url: download.url,
-					filename: download.filename,
-					total_size: download.total_size,
-					bytes_downloaded: download.bytes_downloaded,
-					status: 'in_progress',
-					download_path: `${setting.mod_download_path}\\${setting.selected_game}`,
-				},
-			});
-		} catch (error) {
-			toastError(error);
-			await dbWrapper.db.execute(
-				'UPDATE downloads SET status = "error" WHERE id = ?',
-				[download.id],
-			);
-			await this.processNextDownload();
+			if (results.length === 0) {
+				this.isProcessing = false;
+				this.processingLock = false;
+				return;
+			}
+
+			const download = results[0] as DownloadRecord;
+
+			try {
+				await dbWrapper.db.execute(
+					'UPDATE downloads SET status = "in_progress" WHERE id = ?',
+					[download.id],
+				);
+
+				const setting = await SettingModel.retrieve();
+				await invoke('start_download', {
+					task: {
+						id: download.id,
+						url: download.url,
+						filename: download.filename,
+						total_size: download.total_size,
+						bytes_downloaded: download.bytes_downloaded,
+						status: 'in_progress',
+						download_path: `${setting.mod_download_path}\\${setting.selected_game}`,
+					},
+				});
+			} catch (error) {
+				toastError(error);
+				await dbWrapper.db.execute(
+					'UPDATE downloads SET status = "error" WHERE id = ?',
+					[download.id],
+				);
+				// Release lock before attempting next download
+				this.processingLock = false;
+				await this.processNextDownload();
+			}
+		} finally {
+			this.processingLock = false;
 		}
 	}
 
@@ -310,25 +394,19 @@ class DownloadManager {
 					this.progressCallback(event.payload);
 				}
 			});
-		} catch (error) {
-			toastError(error);
-		}
 
-		try {
-			this.unlistenDownloadProgress = await listen<{
+			this.unlistenDownloadComplete = await listen<{
 				download_id: number;
-				bytes_downloaded: number;
-				total_size: number;
 			}>('download-complete', async event => {
 				const { download_id } = event.payload;
+
 				await dbWrapper.db.execute(
 					'UPDATE downloads SET status = "completed" WHERE id = ?',
 					[download_id],
 				);
 
-				await this.processNextDownload();
 				setTimeout(async () => {
-					await this.resume();
+					await this.processNextDownload();
 				}, 1000);
 			});
 		} catch (error) {
@@ -338,8 +416,14 @@ class DownloadManager {
 
 	public async cleanup(): Promise<void> {
 		if (this.unlistenDownloadProgress) {
-			this.unlistenDownloadProgress();
+			await this.unlistenDownloadProgress();
 		}
+		if (this.unlistenDownloadComplete) {
+			await this.unlistenDownloadComplete();
+		}
+		await dbWrapper.db.execute(
+			'UPDATE downloads SET status = "paused" WHERE status = "in_progress"',
+		);
 	}
 }
 

@@ -9,7 +9,6 @@ use std::sync::{
     Arc, Mutex,
 };
 use tauri::Emitter;
-use trash::delete;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DownloadTask {
@@ -65,54 +64,107 @@ impl DownloadManager {
         let file_path = download_dir.join(&task.filename);
         let start_byte = task.bytes_downloaded;
 
-        let mut file = std::fs::OpenOptions::new()
+        let mut file = match std::fs::OpenOptions::new()
             .create(true)
             .write(true)
             .read(true)
-            .open(&file_path)?;
-        file.seek(SeekFrom::Start(start_byte))?;
+            .open(&file_path)
+        {
+            Ok(f) => f,
+            Err(e) => {
+                eprintln!("Failed to open file: {}", e);
+                return Err(Box::new(e));
+            }
+        };
+
+        if let Err(e) = file.seek(SeekFrom::Start(start_byte)) {
+            eprintln!("Failed to seek file: {}", e);
+            return Err(Box::new(e));
+        }
+
         let request = client.get(&task.url).header(
             RANGE,
             HeaderValue::from_str(&format!("bytes={}-", start_byte))?,
         );
 
-        let mut response = request.send().await?;
+        let mut response = match request.send().await {
+            Ok(resp) => resp,
+            Err(e) => {
+                eprintln!("Failed to send request: {}", e);
+                return Err(Box::new(e));
+            }
+        };
+
         if task.total_size == 0 {
             task.total_size = response.content_length().unwrap_or(0);
         }
 
-        loop {
-            if is_paused.load(Ordering::Relaxed) {
-                break;
+        let mut download_completed = false;
+
+        {
+            loop {
+                if is_paused.load(Ordering::Relaxed) {
+                    if let Err(e) = file.flush() {
+                        eprintln!("Failed to flush file on pause: {}", e);
+                    }
+                    break;
+                }
+
+                let bytes_read = match response.chunk().await {
+                    Ok(chunk) => chunk,
+                    Err(e) => {
+                        eprintln!("Failed to read chunk: {}", e);
+                        break;
+                    }
+                };
+
+                let Some(chunk) = bytes_read else {
+                    download_completed = true;
+                    break;
+                };
+
+                if let Err(e) = file.write_all(&chunk) {
+                    eprintln!("Failed to write chunk: {}", e);
+                    break;
+                }
+
+                task.bytes_downloaded += chunk.len() as u64;
+
+                if !is_paused.load(Ordering::Relaxed) {
+                    if let Err(e) = handle.emit(
+                        "download-progress",
+                        serde_json::json!({
+                            "download_id": task.id,
+                            "bytes_downloaded": task.bytes_downloaded,
+                            "total_size": task.total_size
+                        }),
+                    ) {
+                        eprintln!("Failed to emit progress event: {}", e);
+                    }
+                }
+
+                if task.bytes_downloaded >= task.total_size {
+                    download_completed = true;
+                    break;
+                }
             }
 
-            let bytes_read = response.chunk().await?;
-            let Some(chunk) = bytes_read else {
-                break;
-            };
-
-            file.write_all(&chunk)?;
-            task.bytes_downloaded += chunk.len() as u64;
-
-            if !is_paused.load(Ordering::Relaxed) {
-                handle.emit(
-                    "download-progress",
-                    serde_json::json!({
-                        "download_id": task.id,
-                        "bytes_downloaded": task.bytes_downloaded,
-                        "total_size": task.total_size
-                    }),
-                )?;
+            if let Err(e) = file.flush() {
+                eprintln!("Failed to flush file at completion: {}", e);
             }
         }
 
-        let final_status = if task.bytes_downloaded >= task.total_size {
-            handle.emit(
+        let final_status = if download_completed || task.bytes_downloaded >= task.total_size {
+            if let Err(e) = handle.emit(
                 "download-complete",
                 serde_json::json!({
-                    "download_id": task.id
+                    "download_id": task.id,
+                    "bytes_downloaded": task.bytes_downloaded,
+                    "total_size": task.total_size
                 }),
-            )?;
+            ) {
+                eprintln!("Failed to emit complete event: {}", e);
+            }
             "completed".to_string()
         } else {
             "paused".to_string()
@@ -123,9 +175,32 @@ impl DownloadManager {
 
     pub fn delete_file(&self, download_path: &str, filename: &str) -> io::Result<()> {
         let file_path = Path::new(download_path).join(filename);
-        if file_path.exists() {
-            let _ = delete(&file_path).map_err(|e| format!("Failed to delete. {}", e));
+
+        for _ in 0..3 {
+            if file_path.exists() {
+                match trash::delete(&file_path) {
+                    Ok(_) => return Ok(()),
+                    Err(e) => {
+                        eprintln!("Failed to delete file: {}, retrying...", e);
+                        // Wait a moment before retrying
+                        std::thread::sleep(std::time::Duration::from_millis(500));
+                    }
+                }
+            } else {
+                return Ok(());
+            }
         }
-        Ok(())
+
+        if file_path.exists() {
+            match std::fs::remove_file(&file_path) {
+                Ok(_) => Ok(()),
+                Err(e) => {
+                    eprintln!("Force delete failed: {}", e);
+                    Err(e)
+                }
+            }
+        } else {
+            Ok(())
+        }
     }
 }

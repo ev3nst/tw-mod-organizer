@@ -81,13 +81,7 @@ export const Downloads = () => {
 		} catch (error) {
 			toastError(error);
 		}
-	}, [selectedGame!.steam_id, include_hidden_downloads]);
-
-	useEffect(() => {
-		loadDownloads();
-		const downloadManager = DownloadManager.getInstance();
-		downloadManager.resume();
-	}, [loadDownloads]);
+	}, [selectedGame?.steam_id, include_hidden_downloads]);
 
 	useEffect(() => {
 		const downloadManager = DownloadManager.getInstance();
@@ -99,48 +93,41 @@ export const Downloads = () => {
 			bytes_downloaded: number;
 			total_size: number;
 		}) => {
-			if (isPaused === true) {
-				setIsPaused(false);
-			}
 			const { download_id, bytes_downloaded, total_size } = payload;
 			const currentTime = Date.now();
 
 			if (currentTime - lastUpdateTime >= throttleInterval) {
-				setDownloads([...downloads]);
-				setDownloads(
-					downloads.map(download =>
+				lastUpdateTime = currentTime;
+				setDownloads(prevDownloads =>
+					prevDownloads.map(download =>
 						download.id === download_id
 							? {
 									...download,
-									bytes_downloaded:
-										download.bytes_downloaded <
-										bytes_downloaded
-											? bytes_downloaded
-											: download.bytes_downloaded,
+									bytes_downloaded: Math.max(
+										download.bytes_downloaded,
+										bytes_downloaded,
+									),
 									progress:
-										download.progress !== undefined
-											? total_size > 0
-												? ((download.bytes_downloaded <
-													bytes_downloaded
-														? bytes_downloaded
-														: download.bytes_downloaded) /
-														total_size) *
-													100
-												: 0
-											: download.progress,
+										total_size > 0
+											? (Math.max(
+													download.bytes_downloaded,
+													bytes_downloaded,
+												) /
+													total_size) *
+												100
+											: 0,
 								}
 							: download,
 					),
 				);
-
-				lastUpdateTime = currentTime;
 			}
 		};
 
 		downloadManager.onProgress(progressHandler);
-	}, [downloads, isPaused]);
+	}, [isPaused]);
 
 	useEffect(() => {
+		loadDownloads();
 		const handleNxmProtocol = async () => {
 			const unlisten = await listen<string>(
 				'nxm-protocol',
@@ -186,6 +173,7 @@ export const Downloads = () => {
 								g.nexus_slug ===
 								requestOptions.game_domain_name,
 						);
+
 						if (!targetGame) {
 							toast.error('Unsupported game.');
 							return;
@@ -206,43 +194,14 @@ export const Downloads = () => {
 						);
 
 						const downloadManager = DownloadManager.getInstance();
-						const lastInsertedId = await downloadManager.add(
+						await downloadManager.add(
 							selectedGame!.steam_id,
 							requestOptions.file_id,
 							fileName,
 							nxmLinkResponse,
 						);
 
-						const now = Date.now();
-						setDownloads(prev => {
-							const hasActiveDownloads = prev.some(
-								d =>
-									d.status === 'in_progress' ||
-									d.status === 'queued',
-							);
-
-							return [
-								...prev,
-								{
-									id: lastInsertedId,
-									app_id: selectedGame!.steam_id,
-									item_id: requestOptions.file_id,
-									filename: fileName,
-									url: nxmLinkResponse.download_url,
-									total_size: nxmLinkResponse.file_size,
-									bytes_downloaded: 0,
-									status:
-										prev.length === 0 || !hasActiveDownloads
-											? 'in_progress'
-											: 'queued',
-									hidden: 0,
-									progress: 0,
-									created_at: now,
-								},
-							];
-						});
-						setIsPaused(false);
-						await downloadManager.resume();
+						await loadDownloads();
 					} catch (error) {
 						toastError(error);
 					} finally {
@@ -256,29 +215,38 @@ export const Downloads = () => {
 
 		const cleanup = handleNxmProtocol();
 		return () => {
-			cleanup.then((fn: any) => fn());
+			cleanup.then(fn => fn());
 		};
-	}, [selectedGame!.steam_id]);
+	}, [selectedGame?.steam_id, loadDownloads]);
 
 	useEffect(() => {
 		const handleDownloadComplete = async () => {
 			const unlisten = await listen<string>(
 				'download-complete',
 				async event => {
-					const { download_id } = event.payload as any;
-					setDownloads(prevDownloads =>
-						prevDownloads.map(download =>
-							download.id === download_id
-								? {
-										...download,
-										bytes_downloaded: download.total_size,
-										progress: undefined,
-									}
-								: download,
-						),
-					);
+					try {
+						const { download_id } = event.payload as any;
 
-					await loadDownloads();
+						setDownloads(prevDownloads =>
+							prevDownloads.map(download =>
+								download.id === download_id
+									? {
+											...download,
+											bytes_downloaded:
+												download.total_size,
+											progress: 100,
+											status: 'completed',
+										}
+									: download,
+							),
+						);
+
+						setTimeout(async () => {
+							await loadDownloads();
+						}, 2000);
+					} catch (error) {
+						toastError(error);
+					}
 				},
 			);
 
@@ -287,9 +255,9 @@ export const Downloads = () => {
 
 		const cleanup = handleDownloadComplete();
 		return () => {
-			cleanup.then((fn: any) => fn());
+			cleanup.then(fn => fn());
 		};
-	}, []);
+	}, [loadDownloads]);
 
 	const handlePauseResume = async () => {
 		try {
@@ -302,8 +270,8 @@ export const Downloads = () => {
 				setIsPaused(true);
 			}
 
-			setTimeout(() => {
-				loadDownloads();
+			setTimeout(async () => {
+				await loadDownloads();
 			}, 500);
 		} catch (error) {
 			toastError(error);
@@ -366,6 +334,8 @@ export const Downloads = () => {
 		switch (download.status) {
 			case 'queued':
 				return <div className="ml-2 text-blue-500 text-xs">Queued</div>;
+			case 'paused':
+				return <div className="ml-2 text-blue-500 text-xs">Paused</div>;
 			case 'in_progress':
 				if (isPaused) {
 					return (
