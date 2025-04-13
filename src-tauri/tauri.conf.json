@@ -80,7 +80,12 @@
 		"resources": [
 			"./steam_api64.dll",
 			"./steam_api64.lib"
-		]
+		],
+		"windows": {
+			"webviewInstallMode": {
+				"type": "embedBootstrapper"
+			}
+		}
 	},
 	"plugins": {
 		"deep-link": {
