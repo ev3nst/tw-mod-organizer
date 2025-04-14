@@ -190,7 +190,7 @@ export const Header = () => {
 							<Button
 								variant="ghost"
 								size="icon"
-								className="h-6 w-6"
+								className="h-6 w-6 text-primary"
 							>
 								<RotateCcwIcon className="w-4 h-4" />
 							</Button>

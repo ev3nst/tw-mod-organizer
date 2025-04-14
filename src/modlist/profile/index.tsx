@@ -26,13 +26,13 @@ export const ProfileSwitcher = () => {
 
 	return (
 		<TableHead className="px-0">
-			<div className="flex justify-between gap-2 text-white ">
+			<div className="flex justify-between gap-2 text-foreground">
 				<Select
 					defaultValue={profile.name}
 					onValueChange={onGameChange}
 				>
 					<SelectTrigger
-						className="clickable-content border-0 flex-grow px-0"
+						className="clickable-content border-0 flex-grow px-0 shadow-none"
 						aria-label="Select Game"
 					>
 						<SelectValue placeholder="Select a game">

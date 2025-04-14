@@ -236,3 +236,64 @@ export const buttonVariants = cva(
 		},
 	},
 );
+
+export const availableThemes = [
+	{
+		name: 'Zinc',
+		slug: 'zinc',
+		activeColor: {
+			light: '240 5.9% 10%',
+			dark: '240 5.2% 33.9%',
+		},
+	},
+	{
+		name: 'Red',
+		slug: 'red',
+		activeColor: {
+			light: '0 72.2% 50.6%',
+			dark: '0 72.2% 50.6%',
+		},
+	},
+	{
+		name: 'Orange',
+		slug: 'orange',
+		activeColor: {
+			light: '24.6 95% 53.1%',
+			dark: '20.5 90.2% 48.2%',
+		},
+	},
+	{
+		name: 'Green',
+		slug: 'green',
+		activeColor: {
+			light: '142.1 76.2% 36.3%',
+			dark: '142.1 70.6% 45.3%',
+		},
+	},
+	{
+		name: 'Blue',
+		slug: 'blue',
+		activeColor: {
+			light: '221.2 83.2% 53.3%',
+			dark: '217.2 91.2% 59.8%',
+		},
+	},
+	{
+		name: 'Yellow',
+		slug: 'yellow',
+		activeColor: {
+			light: '47.9 95.8% 53.1%',
+			dark: '47.9 95.8% 53.1%',
+		},
+	},
+	{
+		name: 'Pink',
+		slug: 'pink',
+		activeColor: {
+			light: '292.1 83.3% 57.8%',
+			dark: '293.4 70% 50.4%',
+		},
+	},
+];
+
+export type AvailableThemeModes = 'light' | 'dark';

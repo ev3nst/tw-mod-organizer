@@ -30,7 +30,7 @@ export function GameSwitcher() {
 			}}
 		>
 			<SelectTrigger
-				className="clickable-content border-0 w-[240px]"
+				className="clickable-content border-0 w-[240px] shadow-none"
 				aria-label="Select Game"
 			>
 				<SelectValue placeholder="Select a game">

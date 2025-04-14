@@ -22,7 +22,11 @@ export const ProfileDialog = () => {
 	return (
 		<Dialog>
 			<DialogTrigger asChild>
-				<Button variant="ghost" size="icon" className="w-7 h-7">
+				<Button
+					variant="ghost"
+					size="icon"
+					className="w-7 h-7 text-primary"
+				>
 					<PlusIcon />
 				</Button>
 			</DialogTrigger>

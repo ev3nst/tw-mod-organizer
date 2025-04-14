@@ -350,7 +350,11 @@ export const ModActionDropdownRenderer = ({
 									className="text-xs py-2 my-0"
 									onClick={() =>
 										api.open_external_url(
-											`${currentMod.creator_id as string}/mods?gameId=${selectedGame!.nexus_id}`,
+											`${
+												currentMod.creator_id as string
+											}/mods?gameId=${
+												selectedGame!.nexus_id
+											}`,
 										)
 									}
 								>
@@ -410,7 +414,9 @@ export const ModActionContextMenuRenderer = ({
 	if (isModSeparator) {
 		return (
 			<ContextMenuGroup>
-				<ContextMenuLabel>{mod.title}</ContextMenuLabel>
+				<ContextMenuLabel className="text-primary">
+					{mod.title}
+				</ContextMenuLabel>
 				<ContextMenuSeparator />
 				<ContextMenuItem onSelect={handleEdit}>
 					<InfoIcon className="w-3 h-3 mr-2" />
@@ -438,7 +444,9 @@ export const ModActionContextMenuRenderer = ({
 
 	return (
 		<ContextMenuGroup>
-			<ContextMenuLabel>{mod.title}</ContextMenuLabel>
+			<ContextMenuLabel className="text-primary">
+				{mod.title}
+			</ContextMenuLabel>
 			<ContextMenuSeparator />
 			<ContextMenuItem onSelect={handleMetaInfo}>
 				<InfoIcon className="w-3 h-3 mr-2" />

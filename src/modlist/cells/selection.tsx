@@ -29,9 +29,14 @@ export const Selection = memo(
 		};
 		const checkboxClass = `
 			border-muted-foreground
-			data-[state=checked]:bg-green-500
 			data-[state=checked]:text-white
-			data-[state=checked]:border-green-800
+
+			dark:data-[state=checked]:bg-green-500
+			dark:data-[state=checked]:border-green-800
+
+			data-[state=checked]:bg-primary
+			data-[state=checked]:border-primary/80
+
 			shadow-none
 			h-4 w-4 flex items-center justify-center
 		`;

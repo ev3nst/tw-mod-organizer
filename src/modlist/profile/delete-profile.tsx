@@ -44,7 +44,11 @@ export const DeleteProfile = () => {
 	return (
 		<AlertDialog>
 			<AlertDialogTrigger asChild>
-				<Button variant="ghost" size="icon" className="w-7 h-7">
+				<Button
+					variant="ghost"
+					size="icon"
+					className="w-7 h-7 text-primary"
+				>
 					<XIcon />
 				</Button>
 			</AlertDialogTrigger>

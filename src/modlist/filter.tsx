@@ -42,14 +42,14 @@ export const Filter = ({
 		setSearchModText(event.currentTarget.value);
 
 	return (
-		<div className="fixed bottom-0 left-0 right-0 bg-zinc-900 w-full flex gap-4">
+		<div className="fixed bottom-0 left-0 right-0 bg-secondary-bg w-full flex gap-4">
 			<div>
 				<Select
 					value={activationFilter}
 					onValueChange={setActivationFilter}
 				>
 					<SelectTrigger
-						className="w-[100px] justify-center rounded-none h-full border-t-0 border-l-0 border-b-0"
+						className="w-[100px] justify-center rounded-none h-full border-t-0 border-l-0 border-b-0 border-secondary-border"
 						disableIcon
 					>
 						<SelectValue placeholder={activationFilter} />

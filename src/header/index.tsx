@@ -3,6 +3,7 @@ import { SidebarIcon } from 'lucide-react';
 import { useSidebar } from '@/components/sidebar';
 import { Separator } from '@/components/separator';
 import { Button } from '@/components/button';
+import { ThemeCustomizer } from '@/components/theme-customizer';
 
 import { Preferences } from './preferences';
 import { WindowActions } from './window-actions';
@@ -34,6 +35,7 @@ export function Header() {
 				>
 					<SidebarIcon />
 				</Button>
+				<ThemeCustomizer />
 				<Preferences />
 				<Separator orientation="vertical" className="mr-2 h-4" />
 				<WindowActions />

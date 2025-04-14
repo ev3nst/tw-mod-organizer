@@ -211,8 +211,8 @@ export const Saves = () => {
 				paginatedFiles.map((sf, sfi) => (
 					<div
 						key={`save_${sf.date}_${sfi}`}
-						className={`p-2 hover:cursor-pointer hover:bg-black/90 relative ${
-							saveFile?.path === sf.path ? 'bg-black/90' : ''
+						className={`p-2 hover:cursor-pointer hover:bg-secondary-bg relative ${
+							saveFile?.path === sf.path ? 'bg-secondary-bg' : ''
 						}`}
 						onClick={() =>
 							setSaveFile(

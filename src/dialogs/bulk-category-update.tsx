@@ -222,7 +222,7 @@ function BulkCategoryUpdateDialog() {
 								<div className="max-h-[180px] overflow-y-auto divide-y">
 									{filteredMods.map(m => (
 										<div
-											className="flex justify-between text-xs py-2 px-4  hover:bg-black/80"
+											className="flex justify-between text-xs py-2 px-4 hover:bg-secondary-bg border-secondary-border/60"
 											key={`bulk_c_filt_mod_${m.identifier}`}
 										>
 											<div className="flex gap-1">

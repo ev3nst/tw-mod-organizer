@@ -134,7 +134,7 @@ const RowComponent = ({
 					>
 						<div className="flex items-center justify-center h-full relative">
 							<GripVerticalIcon
-								className={`h-4 w-4 text-muted-foreground ${
+								className={`h-4 w-4 text-muted-foreground dark:text-primary/60 ${
 									isSortingEnabled ? '' : 'opacity-50'
 								}`}
 							/>

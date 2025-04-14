@@ -33,7 +33,7 @@ const LegendIconItem = ({
 	icon: JSX.Element;
 	label: string;
 }) => (
-	<div className="flex gap-4 items-center text-white">
+	<div className="flex gap-4 items-center text-foreground">
 		{icon}
 		<div>{label}</div>
 	</div>
@@ -96,14 +96,16 @@ export const LegendDialog = () => (
 							<Separator className="my-2" />
 
 							<div className="text-muted-foreground mt-1">
-								<span className="text-white me-1">Play</span>
+								<span className="text-foreground me-1">
+									Play
+								</span>
 								It will load the save with required mods and its
 								order. If there are new active mods they will be
 								pushed to bottom and also be loaded.
 							</div>
 						</div>
 						<div className="text-muted-foreground mt-2">
-							<span className="text-white me-1">
+							<span className="text-foreground me-1">
 								Load Exactly
 							</span>
 							This action will load the save with required mods
