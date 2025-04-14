@@ -41,7 +41,7 @@ pub fn create_app_default_paths(handle: tauri::AppHandle) -> Result<(), String> 
             .map_err(|e| format!("Failed to create default downloads directory: {}", e))?;
 
         let game_mods_path = default_mods_path.join(game.steam_id.to_string());
-        create_dir_all(&default_mods_path)
+        create_dir_all(&game_mods_path)
             .map_err(|e| format!("Failed to create default mods directory: {}", e))?;
     }
 
