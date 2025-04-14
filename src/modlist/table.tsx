@@ -10,10 +10,8 @@ import type { ModItemSeparatorUnion } from '@/lib/store/mod_separator';
 
 import { Header } from './header';
 import { Row } from './row';
-import { Footer } from './footer';
 
 type ModTableProps = {
-	totalMods: number;
 	modsResolved: ModItemSeparatorUnion[];
 	modIndices: Map<string, number>;
 	selectedRows: Set<string>;
@@ -26,7 +24,6 @@ type ModTableProps = {
 
 export const ModTable: React.FC<ModTableProps> = memo(
 	({
-		totalMods,
 		modsResolved,
 		modIndices,
 		selectedRows,
@@ -74,7 +71,6 @@ export const ModTable: React.FC<ModTableProps> = memo(
 						})}
 					</SortableContext>
 				</TableBody>
-				<Footer modCount={totalMods} />
 			</Table>
 		);
 	},

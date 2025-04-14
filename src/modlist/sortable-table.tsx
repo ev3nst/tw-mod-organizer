@@ -364,7 +364,6 @@ export const ModListSortableTable = () => {
 					onScroll={handleScroll}
 				>
 					<ModTable
-						totalMods={mods.length - separators.length}
 						modsResolved={modsResolved}
 						modIndices={modIndices}
 						selectedRows={selectedRows}
