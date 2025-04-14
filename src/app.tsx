@@ -20,6 +20,7 @@ const BulkCategoryUpdateDialog = lazy(
 );
 const RequiredItemsDialog = lazy(() => import('@/dialogs/required-items'));
 const SaveFileDetailsDialog = lazy(() => import('@/dialogs/save-file-details'));
+const TableManagerDialog = lazy(() => import('@/dialogs/table-manager'));
 
 import { Header } from './header';
 import { ModList } from './modlist';
@@ -66,6 +67,7 @@ function App() {
 						<SidebarInset>
 							<ModList />
 							<Suspense fallback={<Loading />}>
+								<TableManagerDialog />
 								<ConflictDetailsDialog />
 								<SetPriorityDialog />
 								<MetaInformationDialog />

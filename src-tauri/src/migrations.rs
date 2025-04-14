@@ -238,5 +238,13 @@ pub fn get_migrations() -> Vec<Migration> {
 			"#,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 19,
+            description: "add_preview_size_to_settings",
+            sql: r#"
+			ALTER TABLE settings ADD COLUMN preview_size INTEGER NOT NULL DEFAULT 6;
+			"#,
+            kind: MigrationKind::Up,
+        },
     ]
 }

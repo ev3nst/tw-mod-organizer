@@ -6,14 +6,7 @@ import {
 } from 'lucide-react';
 
 import { TableHead, TableHeader, TableRow } from '@/components/table';
-import {
-	DropdownMenu,
-	DropdownMenuCheckboxItem,
-	DropdownMenuContent,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from '@/components/dropdown-menu';
+
 import {
 	AlertDialog,
 	AlertDialogCancel,
@@ -69,11 +62,9 @@ export const Header = () => {
 	const toggle_creator = settingStore(state => state.toggle_creator);
 	const toggle_created_at = settingStore(state => state.toggle_created_at);
 	const toggle_updated_at = settingStore(state => state.toggle_updated_at);
-	const setColumnSelection = settingStore(state => state.setColumnSelection);
 	const sort_by = settingStore(state => state.sort_by);
 	const sort_by_direction = settingStore(state => state.sort_by_direction);
-	const setSortBy = settingStore(state => state.setSortBy);
-	const setSortByDirection = settingStore(state => state.setSortByDirection);
+	const toggleTableManager = settingStore(state => state.toggleTableManager);
 
 	const mods = modsStore(state => state.mods);
 	const setMods = modsStore(state => state.setMods);
@@ -171,16 +162,6 @@ export const Header = () => {
 		);
 	};
 
-	const handleSortByChange = (
-		column: 'load_order' | 'title' | 'version' | 'updated_at',
-	) => {
-		if (sort_by === column && column !== 'load_order') {
-			setSortByDirection(sort_by_direction === 'asc' ? 'desc' : 'asc');
-		} else {
-			setSortBy(column);
-		}
-	};
-
 	return (
 		<TableHeader>
 			<TableRow>
@@ -246,7 +227,7 @@ export const Header = () => {
 					<TableHead>
 						<div className="flex items-center gap-1">
 							VERSION
-							{sort_by === 'updated_at' &&
+							{sort_by === 'version' &&
 								(sort_by_direction === 'asc' ? (
 									<ArrowDownIcon className="w-4 h-4" />
 								) : (
@@ -271,123 +252,15 @@ export const Header = () => {
 						</div>
 					</TableHead>
 				)}
-				<TableHead className="flex justify-center w-[40px]">
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="link" size="icon">
-								<Grid2X2Icon />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent>
-							<DropdownMenuLabel>Columns</DropdownMenuLabel>
-							<DropdownMenuSeparator />
-							<DropdownMenuCheckboxItem
-								checked={toggle_type}
-								onCheckedChange={isChecked =>
-									setColumnSelection('type', isChecked)
-								}
-							>
-								Type
-							</DropdownMenuCheckboxItem>
-							<DropdownMenuCheckboxItem
-								checked={toggle_category}
-								onCheckedChange={isChecked =>
-									setColumnSelection('category', isChecked)
-								}
-							>
-								Categories
-							</DropdownMenuCheckboxItem>
-							<DropdownMenuCheckboxItem
-								checked={
-									selectedGame!.slug === 'mbbl'
-										? false
-										: toggle_conflict
-								}
-								onCheckedChange={isChecked =>
-									setColumnSelection('conflict', isChecked)
-								}
-								className={
-									selectedGame!.slug === 'mbbl'
-										? 'text-muted-foreground'
-										: ''
-								}
-							>
-								Conflict
-							</DropdownMenuCheckboxItem>
-							<DropdownMenuCheckboxItem
-								checked={toggle_version}
-								onCheckedChange={isChecked =>
-									setColumnSelection('version', isChecked)
-								}
-							>
-								Version
-							</DropdownMenuCheckboxItem>
-							<DropdownMenuCheckboxItem
-								checked={toggle_creator}
-								onCheckedChange={isChecked =>
-									setColumnSelection('creator', isChecked)
-								}
-							>
-								Creator
-							</DropdownMenuCheckboxItem>
-							<DropdownMenuCheckboxItem
-								checked={toggle_created_at}
-								onCheckedChange={isChecked =>
-									setColumnSelection('created_at', isChecked)
-								}
-							>
-								Created
-							</DropdownMenuCheckboxItem>
-							<DropdownMenuCheckboxItem
-								checked={toggle_updated_at}
-								onCheckedChange={isChecked =>
-									setColumnSelection('updated_at', isChecked)
-								}
-							>
-								Updated
-							</DropdownMenuCheckboxItem>
-							<DropdownMenuSeparator />
-							<DropdownMenuLabel className="flex items-center gap-1">
-								Sort By
-								<div className="text-xs">
-									({sort_by_direction.toUpperCase()})
-								</div>
-							</DropdownMenuLabel>
-							<DropdownMenuSeparator />
-							<DropdownMenuCheckboxItem
-								checked={sort_by === 'load_order'}
-								onCheckedChange={() =>
-									handleSortByChange('load_order')
-								}
-							>
-								Load Order
-							</DropdownMenuCheckboxItem>
-							<DropdownMenuCheckboxItem
-								checked={sort_by === 'title'}
-								onCheckedChange={() =>
-									handleSortByChange('title')
-								}
-							>
-								Title
-							</DropdownMenuCheckboxItem>
-							<DropdownMenuCheckboxItem
-								checked={sort_by === 'version'}
-								onCheckedChange={() =>
-									handleSortByChange('version')
-								}
-							>
-								Version
-							</DropdownMenuCheckboxItem>
-							<DropdownMenuCheckboxItem
-								checked={sort_by === 'updated_at'}
-								onCheckedChange={() =>
-									handleSortByChange('updated_at')
-								}
-							>
-								Updated
-							</DropdownMenuCheckboxItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+				<TableHead className="flex items-center justify-center w-[40px]">
+					<Button
+						variant="ghost"
+						size="icon"
+						className="h-7 w-7"
+						onClick={() => toggleTableManager(true)}
+					>
+						<Grid2X2Icon />
+					</Button>
 				</TableHead>
 			</TableRow>
 		</TableHeader>

@@ -46,6 +46,7 @@ export type Setting = {
 	dependency_confirmation: 1 | 0;
 	sort_by: SortColumn;
 	sort_by_direction: 'asc' | 'desc';
+	preview_size: number;
 	include_hidden_downloads: 1 | 0;
 	compact_archive_names: 1 | 0;
 	sidebar_accordion: 'saves' | 'downloads';
@@ -125,6 +126,7 @@ export class SettingModel {
 					dependency_confirmation: 1,
 					sort_by: 'load_order',
 					sort_by_direction: 'asc',
+					preview_size: 6,
 					include_hidden_downloads: 0,
 					compact_archive_names: 0,
 					sidebar_accordion: 'saves',
@@ -256,6 +258,15 @@ export class SettingModel {
 		this.props.sort_by_direction = value;
 	}
 
+	// Preview Size
+	get preview_size(): number {
+		return this.props.preview_size;
+	}
+
+	set preview_size(value: number) {
+		this.props.preview_size = value;
+	}
+
 	// Include Hidden Downloads
 	get include_hidden_downloads(): 1 | 0 {
 		return this.props.include_hidden_downloads;
@@ -321,6 +332,8 @@ type SettingStore = {
 	nexus_auth_params: NexusAuthParams;
 	setNexusAuthParams: (nexus_auth_params: NexusAuthParams) => void;
 
+	tableManagerOpen: boolean;
+	toggleTableManager: (tableManagerOpen: boolean) => void;
 	toggle_type: boolean;
 	toggle_category: boolean;
 	toggle_conflict: boolean;
@@ -348,6 +361,9 @@ type SettingStore = {
 
 	sort_by_direction: 'asc' | 'desc';
 	setSortByDirection: (sort_by: 'asc' | 'desc') => void;
+
+	preview_size: number;
+	setPreviewSize: (preview_size: number) => void;
 
 	include_hidden_downloads: 1 | 0;
 	setIncludeHiddenDownloads: (include_hidden_downloads: 1 | 0) => void;
@@ -448,6 +464,8 @@ export const settingStore = create<SettingStore>(set => ({
 		debounceCallback(syncSetting);
 	},
 
+	tableManagerOpen: false,
+	toggleTableManager: tableManagerOpen => set({ tableManagerOpen }),
 	toggle_type: true,
 	toggle_category: true,
 	toggle_conflict: true,
@@ -488,6 +506,12 @@ export const settingStore = create<SettingStore>(set => ({
 	sort_by_direction: 'asc',
 	setSortByDirection: sort_by_direction => {
 		set({ sort_by_direction });
+		debounceCallback(syncSetting);
+	},
+
+	preview_size: 6,
+	setPreviewSize: (preview_size: number) => {
+		set({ preview_size });
 		debounceCallback(syncSetting);
 	},
 
@@ -602,6 +626,11 @@ const syncSetting = async () => {
 
 	if (setting.sort_by_direction !== state.sort_by_direction) {
 		setting.sort_by_direction = state.sort_by_direction;
+		changed = true;
+	}
+
+	if (setting.preview_size !== state.preview_size) {
+		setting.preview_size = state.preview_size;
 		changed = true;
 	}
 

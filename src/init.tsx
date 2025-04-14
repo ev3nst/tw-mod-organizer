@@ -39,6 +39,8 @@ function Init() {
 	const setColumnSelection = settingStore(state => state.setColumnSelection);
 	const setSortBy = settingStore(state => state.setSortBy);
 	const setSortByDirection = settingStore(state => state.setSortByDirection);
+	const setPreviewSize = settingStore(state => state.setPreviewSize);
+
 	const setIncludeHiddenDownloads = settingStore(
 		state => state.setIncludeHiddenDownloads,
 	);
@@ -67,6 +69,7 @@ function Init() {
 		setColumnSelection('updated_at', setting.column_selections.updated_at);
 		setSortBy(setting.sort_by);
 		setSortByDirection(setting.sort_by_direction);
+		setPreviewSize(setting.preview_size);
 		setIncludeHiddenDownloads(setting.include_hidden_downloads);
 		setCompactArchiveNames(setting.compact_archive_names);
 		setSidebarAccordion(setting.sidebar_accordion);

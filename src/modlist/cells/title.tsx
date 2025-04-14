@@ -97,6 +97,7 @@ export const Title = memo(
 		const toggle_updated_at = settingStore(
 			state => state.toggle_updated_at,
 		);
+		const preview_size = settingStore(state => state.preview_size);
 
 		const metaData = modMetaStore(state => state.data);
 		const modActivationData = modActivationStore(state => state.data);
@@ -222,7 +223,7 @@ export const Title = memo(
 					<div className="flex items-center gap-2">
 						{imgSrc && (
 							<img
-								className="rounded-full object-cover h-6 w-6 select-none"
+								className={`object-cover h-${preview_size} ${preview_size < 10 ? `w-${preview_size} rounded-full` : ''} select-none`}
 								src={imgSrc}
 							/>
 						)}

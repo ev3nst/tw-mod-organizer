@@ -2,6 +2,7 @@
 export default {
 	darkMode: ['class'],
 	content: ['./index.html', './src/**/*.{ts,tsx,js,jsx}'],
+	safelist: ['h-6', 'h-8', 'h-10', 'h-12', 'h-16', 'h-20'],
 	theme: {
 		extend: {
 			borderRadius: {

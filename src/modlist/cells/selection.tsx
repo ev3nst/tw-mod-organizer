@@ -15,6 +15,20 @@ import {
 	type ModItemSeparatorUnion,
 } from '@/lib/store/mod_separator';
 
+const selectionCheckboxClass = `
+	border-muted-foreground
+	data-[state=checked]:text-white
+
+	dark:data-[state=checked]:bg-green-500
+	dark:data-[state=checked]:border-green-800
+
+	data-[state=checked]:bg-primary
+	data-[state=checked]:border-primary/80
+
+	shadow-none
+	h-4 w-4 flex items-center justify-center
+	`;
+
 export const Selection = memo(
 	({ mod }: { mod: ModItemSeparatorUnion }) => {
 		const mods = modsStore(state => state.mods);
@@ -27,19 +41,6 @@ export const Selection = memo(
 			backgroundColor: mod.background_color,
 			color: mod.text_color,
 		};
-		const checkboxClass = `
-			border-muted-foreground
-			data-[state=checked]:text-white
-
-			dark:data-[state=checked]:bg-green-500
-			dark:data-[state=checked]:border-green-800
-
-			data-[state=checked]:bg-primary
-			data-[state=checked]:border-primary/80
-
-			shadow-none
-			h-4 w-4 flex items-center justify-center
-		`;
 
 		if (isSeparator(mod)) {
 			const childMods = getChildMods(mods, mod.identifier);
@@ -52,7 +53,7 @@ export const Selection = memo(
 			return (
 				<TableCell className="select-none w-[40px]" style={cellStyle}>
 					<Checkbox
-						className={checkboxClass}
+						className={selectionCheckboxClass}
 						checked={childMods.length > 0 && allActive}
 						onCheckedChange={() => toggleSeparatorActivation(mod)}
 					/>
@@ -66,7 +67,9 @@ export const Selection = memo(
 				<TableCell className="select-none w-[40px]" style={cellStyle}>
 					<Checkbox
 						className={
-							isBaseAndAlwaysActive ? undefined : checkboxClass
+							isBaseAndAlwaysActive
+								? undefined
+								: selectionCheckboxClass
 						}
 						checked={
 							isBaseAndAlwaysActive

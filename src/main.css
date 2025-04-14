@@ -371,7 +371,7 @@
 	}
 
 	.dark .theme-red {
-		--background: 0 30% 3.9%;
+		--background: 0 20% 3.9%;
 		--foreground: 0 0% 98%;
 
 		--secondary-bg: 10 30% 7.5%;
