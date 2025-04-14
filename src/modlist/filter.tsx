@@ -34,7 +34,6 @@ export const Filter = memo(
 		const onlyMods = mods.filter(m => !isSeparator(m));
 		const separatorCount = mods.length - onlyMods.length;
 		const modActiveData = modActivationStore(state => state.data);
-		console.log(modActiveData, 'modActiveData');
 
 		useEffect(() => {
 			const handleKeyDown = (event: KeyboardEvent) => {
