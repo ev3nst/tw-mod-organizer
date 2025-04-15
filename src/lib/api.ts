@@ -367,11 +367,11 @@ class API {
 		});
 	}
 
-	async version_check(): Promise<{
+	async app_version_check(): Promise<{
 		timestamp: number;
 		version: string;
 	}> {
-		return invoke('version_check');
+		return invoke('app_version_check');
 	}
 }
 

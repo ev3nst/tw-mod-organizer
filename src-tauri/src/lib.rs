@@ -18,7 +18,7 @@ mod xml;
 mod export_profile;
 mod import_data;
 mod parse_profile_json;
-mod version_check;
+mod app_version_check;
 
 mod migrations;
 
@@ -74,7 +74,7 @@ pub fn run() {
             import_data::import_data,
             export_profile::export_profile,
             parse_profile_json::parse_profile_json,
-            version_check::version_check,
+            app_version_check::app_version_check,
             r#mod::conflicts::conflicts,
             r#mod::base_mods::base_mods,
             r#mod::local_mods::local_mods,

@@ -35,7 +35,7 @@ export const Version = () => {
 	useEffect(() => {
 		const fetchLatestVersion = async () => {
 			try {
-				const data = await api.version_check();
+				const data = await api.app_version_check();
 				if (compareVersions(currentVersion, data.version)) {
 					setNewVersion(data.version);
 				}
