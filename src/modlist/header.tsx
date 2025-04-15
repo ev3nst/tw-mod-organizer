@@ -29,6 +29,8 @@ import { ToggleAll } from '@/modlist/toggle-all';
 import { ModItem, modsStore } from '@/lib/store/mods';
 import { modOrderStore } from '@/lib/store/mod_order';
 import { isSeparator } from '@/lib/store/mod_separator';
+import { THVersion } from './version';
+import { memo } from 'react';
 
 const SortByIndicator = ({
 	title,
@@ -53,12 +55,11 @@ const SortByIndicator = ({
 	);
 };
 
-export const Header = () => {
+export const Header = memo(() => {
 	const selectedGame = settingStore(state => state.selectedGame);
 	const toggle_type = settingStore(state => state.toggle_type);
 	const toggle_category = settingStore(state => state.toggle_category);
 	const toggle_conflict = settingStore(state => state.toggle_conflict);
-	const toggle_version = settingStore(state => state.toggle_version);
 	const toggle_creator = settingStore(state => state.toggle_creator);
 	const toggle_created_at = settingStore(state => state.toggle_created_at);
 	const toggle_updated_at = settingStore(state => state.toggle_updated_at);
@@ -223,19 +224,7 @@ export const Header = () => {
 					</TableHead>
 				)}
 
-				{toggle_version && (
-					<TableHead>
-						<div className="flex items-center gap-1">
-							VERSION
-							{sort_by === 'version' &&
-								(sort_by_direction === 'asc' ? (
-									<ArrowDownIcon className="w-4 h-4" />
-								) : (
-									<ArrowUpIcon className="w-4 h-4" />
-								))}
-						</div>
-					</TableHead>
-				)}
+				<THVersion />
 
 				{toggle_creator && <TableHead>CREATOR</TableHead>}
 				{toggle_created_at && <TableHead>CREATED</TableHead>}
@@ -265,4 +254,4 @@ export const Header = () => {
 			</TableRow>
 		</TableHeader>
 	);
-};
+});

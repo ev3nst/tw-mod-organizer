@@ -9,6 +9,7 @@ import {
 	type ModItemSeparatorUnion,
 } from '@/lib/store/mod_separator';
 import { ModMetaModel } from '@/lib/store/mod_meta';
+import { ModVersionModel } from '@/lib/store/mod_version';
 import { normalizeOrder } from '@/lib/utils';
 
 export function sortMods(
@@ -328,5 +329,69 @@ export const initMeta = async (
 		});
 		await newModMeta.save();
 		return newMeta;
+	}
+};
+
+export const initVersion = async (
+	steamId: number,
+	mods: ModItemSeparatorUnion[],
+) => {
+	const modVersion = await ModVersionModel.retrieve(undefined, steamId);
+	if (typeof modVersion !== 'undefined' && modVersion.data !== null) {
+		let updatedVersion = [];
+		for (let mi = 0; mi < mods.length; mi++) {
+			const mod = mods[mi] as ModItem;
+			if (isSeparator(mod)) continue;
+
+			const currentVersion = modVersion.data.find(
+				f => f.mod_id === mod.identifier,
+			);
+			if (currentVersion) {
+				updatedVersion.push({
+					mod_id: mod.identifier,
+					mod_type: mod.item_type,
+					title: mod.title,
+					version: mod.version,
+					last_time_checked: currentVersion.last_time_checked,
+					latest_version: currentVersion.latest_version,
+					url: mod.url,
+				});
+			} else {
+				updatedVersion.push({
+					mod_id: mod.identifier,
+					mod_type: mod.item_type,
+					title: mod.title,
+					version: mod.version,
+					last_time_checked: mod.updated_at,
+					latest_version: mod.version,
+					url: mod.url,
+				});
+			}
+		}
+
+		return updatedVersion;
+	} else {
+		const newVersion = [];
+		for (let mi = 0; mi < mods.length; mi++) {
+			const mod = mods[mi] as ModItem;
+			if (isSeparator(mod)) continue;
+
+			newVersion.push({
+				mod_id: mod.identifier,
+				mod_type: mod.item_type,
+				title: mod.title,
+				version: mod.version,
+				last_time_checked: mod.updated_at,
+				latest_version: mod.version,
+				url: mod.url,
+			});
+		}
+		const newModVersion = new ModVersionModel({
+			id: null as any,
+			app_id: steamId,
+			data: newVersion,
+		});
+		await newModVersion.save();
+		return newVersion;
 	}
 };

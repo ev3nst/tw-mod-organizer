@@ -246,5 +246,20 @@ pub fn get_migrations() -> Vec<Migration> {
 			"#,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 20,
+            description: "create_mod_versions_table",
+            sql: r#"
+            CREATE TABLE IF NOT EXISTS mod_versions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                app_id INTEGER NOT NULL,
+                data TEXT
+            );
+
+            -- Indexes for performance on commonly queried fields
+            CREATE INDEX idx_mod_version_app_id ON mod_versions (app_id);
+            "#,
+            kind: MigrationKind::Up,
+        },
     ]
 }

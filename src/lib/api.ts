@@ -276,7 +276,19 @@ class API {
 		game_domain_name: string;
 		mod_id: number;
 	}): Promise<any> {
+		const setting = await SettingModel.retrieve();
+		if (
+			!setting.nexus_api_key ||
+			setting.nexus_api_key === null ||
+			setting.nexus_api_key === ''
+		) {
+			throw new Error(
+				'Nexus API KEY is not set, please initialize authentication process.',
+			);
+		}
+
 		return invoke('nexus_mod_details', {
+			nexus_api_key: setting.nexus_api_key,
 			request_options,
 		});
 	}

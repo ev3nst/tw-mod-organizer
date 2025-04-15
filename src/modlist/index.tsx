@@ -12,19 +12,27 @@ import {
 	type ModItemSeparatorUnion,
 } from '@/lib/store/mod_separator';
 import { modMetaStore } from '@/lib/store/mod_meta';
+import { modVersionStore } from '@/lib/store/mod_version';
 import { conflictsStore } from '@/lib/store/conflict';
 
 import api from '@/lib/api';
 import { normalizeOrder, toastError } from '@/lib/utils';
 
 import { ModListSortableTable } from './sortable-table';
-import { initActivation, initMeta, initOrder, initSeparator } from './utils';
+import {
+	initActivation,
+	initMeta,
+	initOrder,
+	initSeparator,
+	initVersion,
+} from './utils';
 
 export const ModList = () => {
 	const [fetchModsLoading, setFetchModsLoading] = useState(false);
 
 	const setMods = modsStore(state => state.setMods);
 	const setModOrder = modOrderStore(state => state.setData);
+	const setModVersion = modVersionStore(state => state.setData);
 	const setModActivation = modActivationStore(state => state.setData);
 	const setSeparators = modSeparatorStore(state => state.setData);
 	const setMetas = modMetaStore(state => state.setData);
@@ -94,6 +102,12 @@ export const ModList = () => {
 			}
 
 			setModOrder(finalModOrder);
+
+			const modVersion = await initVersion(
+				selectedGame!.steam_id,
+				modsWithSeparators,
+			);
+			setModVersion(modVersion);
 
 			let sortedMods: ModItemSeparatorUnion[] = [];
 			switch (sort_by) {
