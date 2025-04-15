@@ -6,7 +6,7 @@ import {
 	SelectValue,
 } from '@/components/select';
 
-import { settingStore } from '@/lib/store/setting';
+import { SettingModel, settingStore } from '@/lib/store/setting';
 
 export function GameSwitcher() {
 	const games = settingStore(state => state.games);
@@ -23,9 +23,12 @@ export function GameSwitcher() {
 				const findGame = games.find(f => f.slug === value);
 				if (findGame) {
 					setSelectedGame(undefined);
-					setTimeout(() => {
+					setTimeout(async () => {
 						setSelectedGame(findGame);
-					}, 100);
+						const setting = await SettingModel.retrieve()
+						setting.selected_game = findGame.steam_id;
+						await setting.save();
+					}, 200);
 				}
 			}}
 		>
