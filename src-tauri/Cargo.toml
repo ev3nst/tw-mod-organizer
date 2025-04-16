@@ -46,6 +46,7 @@ notify = "8.0.0"
 dirs = "6.0.0"
 xml = "0.8.20"
 runas = "1.2.0"
+base64 = "0.22.1"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-single-instance = "2"
