@@ -261,5 +261,52 @@ pub fn get_migrations() -> Vec<Migration> {
             "#,
             kind: MigrationKind::Up,
         },
+		Migration {
+			version: 21,
+			description: "cleanup_duplicates_and_add_unique_indexes",
+			sql: r#"
+			-- 1) mod_orders: (app_id, profile_id) composite unique
+			DELETE FROM mod_orders
+			WHERE id NOT IN (
+			  SELECT MAX(id) FROM mod_orders GROUP BY app_id, profile_id
+			);
+			CREATE UNIQUE INDEX IF NOT EXISTS idx_mod_orders_app_profile
+			  ON mod_orders (app_id, profile_id);
+		
+			-- 2) mod_activations: (app_id, profile_id) composite unique
+			DELETE FROM mod_activations
+			WHERE id NOT IN (
+			  SELECT MAX(id) FROM mod_activations GROUP BY app_id, profile_id
+			);
+			CREATE UNIQUE INDEX IF NOT EXISTS idx_mod_activations_app_profile
+			  ON mod_activations (app_id, profile_id);
+		
+			-- 3) mod_separators: (app_id, profile_id) composite unique
+			DELETE FROM mod_separators
+			WHERE id NOT IN (
+			  SELECT MAX(id) FROM mod_separators GROUP BY app_id, profile_id
+			);
+			CREATE UNIQUE INDEX IF NOT EXISTS idx_mod_separators_app_profile
+			  ON mod_separators (app_id, profile_id);
+		
+			-- 4) mod_metas: app_id unique
+			DELETE FROM mod_metas
+			WHERE id NOT IN (
+			  SELECT MAX(id) FROM mod_metas GROUP BY app_id
+			);
+			CREATE UNIQUE INDEX IF NOT EXISTS idx_mod_metas_app_id
+			  ON mod_metas (app_id);
+		
+			-- 5) mod_versions: app_id unique
+			DELETE FROM mod_versions
+			WHERE id NOT IN (
+			  SELECT MAX(id) FROM mod_versions GROUP BY app_id
+			);
+			CREATE UNIQUE INDEX IF NOT EXISTS idx_mod_versions_app_id
+			  ON mod_versions (app_id);
+			"#,
+			kind: MigrationKind::Up,
+		},
+		
     ]
 }

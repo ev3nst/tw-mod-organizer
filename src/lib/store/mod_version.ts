@@ -30,7 +30,11 @@ export class ModVersionModel extends ModGenericModel<
 const createSyncData = () => {
 	return async (dataToSync: ModVersionItem[]) => {
 		const setting = await SettingModel.retrieve();
-		if (!setting.selected_game) return;
+		if (
+			typeof setting.selected_game !== 'number' ||
+			setting.selected_game === null
+		)
+			return;
 
 		const instance = await ModVersionModel.retrieve(
 			undefined,
