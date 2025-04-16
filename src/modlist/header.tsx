@@ -22,7 +22,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/tooltip';
 import { Button } from '@/components/button';
 
 import { settingStore } from '@/lib/store/setting';
-import { ProfileSwitcher } from '@/modlist/profile';
 import { modMetaStore } from '@/lib/store/mod_meta';
 
 import { ToggleAll } from '@/modlist/toggle-all';
@@ -164,7 +163,7 @@ export const Header = memo(() => {
 	};
 
 	return (
-		<TableHeader>
+		<TableHeader className="sticky top-0 z-10 bg-background shadow-sm">
 			<TableRow>
 				<TableHead className="flex items-center justify-center w-[40px] overflow-hidden">
 					<AlertDialog>
@@ -209,7 +208,7 @@ export const Header = memo(() => {
 				{toggle_type && (
 					<TableHead className="text-center w-[40px]">TYPE</TableHead>
 				)}
-				<ProfileSwitcher />
+				<TableHead>TITLE</TableHead>
 				{toggle_category && (
 					<TableHead
 						className="hover:cursor-pointer hover:brightness-125"

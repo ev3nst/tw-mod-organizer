@@ -13,7 +13,7 @@ import { Refresh } from './refresh';
 import { Nexus } from './nexus';
 import { Version } from './version';
 
-export function Header() {
+export function AppHeader() {
 	const { toggleSidebar } = useSidebar();
 
 	return (

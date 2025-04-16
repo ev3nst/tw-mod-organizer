@@ -1,190 +1,379 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import {
+	DndContext,
+	closestCenter,
+	MouseSensor,
+	useSensor,
+	useSensors,
+	DragEndEvent,
+	DragStartEvent,
+	DragOverlay,
+} from '@dnd-kit/core';
 
-import { Loading } from '@/components/loading';
-
-import { settingStore } from '@/lib/store/setting';
-import { profileStore } from '@/lib/store/profile';
-import { modsStore } from '@/lib/store/mods';
+import { modsStore, type ModItem } from '@/lib/store/mods';
 import { modOrderStore } from '@/lib/store/mod_order';
-import { modActivationStore } from '@/lib/store/mod_activation';
+import {
+	modActivationStore,
+	toggleModActivation,
+} from '@/lib/store/mod_activation';
 import {
 	modSeparatorStore,
-	type ModItemSeparatorUnion,
+	isCollapsed,
+	isSeparator,
 } from '@/lib/store/mod_separator';
-import { modMetaStore } from '@/lib/store/mod_meta';
-import { modVersionStore } from '@/lib/store/mod_version';
-import { conflictsStore } from '@/lib/store/conflict';
+import { filterMods, modMetaStore } from '@/lib/store/mod_meta';
 
-import api from '@/lib/api';
-import { normalizeOrder, toastError } from '@/lib/utils';
-
-import { ModListSortableTable } from './sortable-table';
+import { settingStore } from '@/lib/store/setting';
 import {
-	initActivation,
-	initMeta,
-	initOrder,
-	initSeparator,
-	initVersion,
-} from './utils';
+	sortMods,
+	sortCollapsedSection,
+	sortGroup,
+	hasCircularDependency,
+} from '@/modlist/utils';
 
-export const ModList = () => {
-	const [fetchModsLoading, setFetchModsLoading] = useState(false);
+import { ModTable } from './table';
+import { Filter } from './filter';
 
-	const setMods = modsStore(state => state.setMods);
-	const setModOrder = modOrderStore(state => state.setData);
-	const setModVersion = modVersionStore(state => state.setData);
-	const setModActivation = modActivationStore(state => state.setData);
-	const setSeparators = modSeparatorStore(state => state.setData);
-	const setMetas = modMetaStore(state => state.setData);
-	const setConflicts = conflictsStore(state => state.setConflicts);
-	const profile = profileStore(state => state.profile);
+const ModListSortableTable = () => {
+	const [searchModText, setSearchModText] = useState<string>('');
+	const [activationFilter, setActivationFilter] = useState<string>('all');
+	const [activeId, setActiveId] = useState<string | null>(null);
+	const [dependencyViolations, setDependencyViolations] = useState<
+		Map<string, Set<string>>
+	>(new Map());
 
-	const init_reload = settingStore(state => state.init_reload);
-	const setLoading = settingStore(state => state.setLoading);
-	const selectedGame = settingStore(state => state.selectedGame);
-	const steam_library_paths = settingStore(
-		state => state.steam_library_paths,
-	);
-	const mod_installation_path = settingStore(
-		state => state.mod_installation_path,
-	);
 	const sort_by = settingStore(state => state.sort_by);
-	const sort_by_direction = settingStore(state => state.sort_by_direction);
 
-	const init = useCallback(async () => {
-		try {
-			setFetchModsLoading(true);
-			setLoading(true);
-			const mods = await api.get_mods(selectedGame!.steam_id);
-			const separators = await initSeparator(
-				selectedGame!.steam_id,
-				profile.id,
-			);
-			setSeparators(separators);
-			const modsWithSeparators = [...mods, ...separators];
+	const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
+	const mods = modsStore(state => state.mods);
+	const setMods = modsStore(state => state.setMods);
+	const toggleModRemove = modsStore(state => state.toggleModRemove);
 
-			const modPaths = [
-				`${mod_installation_path}\\${selectedGame!.steam_id}`,
-				steam_library_paths.game_workshop_paths[selectedGame!.slug],
-			];
+	const modOrderData = modOrderStore(state => state.data);
+	const setModOrder = modOrderStore(state => state.setData);
+	const selectedRows = modOrderStore(state => state.selectedRows);
+	const setSelectedRows = modOrderStore(state => state.setSelectedRows);
+	const toggleRow = modOrderStore(state => state.toggleRow);
+	const clearSelection = modOrderStore(state => state.clearSelection);
 
-			const conflicts = await api.conflicts(
-				selectedGame!.steam_id,
-				modPaths,
-			);
-			setConflicts(conflicts);
-
-			const currentModOrder = modOrderStore.getState().data;
-			const modOrder = await initOrder(
-				selectedGame!.steam_id,
-				profile.id,
-				modsWithSeparators,
-			);
-
-			const existingModIds = new Set(modOrder.map(item => item.mod_id));
-			const missingItems = currentModOrder.filter(
-				item => !existingModIds.has(item.mod_id),
-			);
-
-			let finalModOrder = modOrder;
-
-			if (missingItems.length > 0) {
-				const highestOrder = Math.max(
-					...modOrder.map(item => item.order),
-					0,
-				);
-
-				missingItems.forEach((item, idx) => {
-					item.order = highestOrder + idx + 1;
-				});
-
-				finalModOrder = normalizeOrder([...modOrder, ...missingItems]);
-			}
-
-			setModOrder(finalModOrder);
-
-			const modVersion = await initVersion(
-				selectedGame!.steam_id,
-				modsWithSeparators,
-			);
-			setModVersion(modVersion);
-
-			let sortedMods: ModItemSeparatorUnion[] = [];
-			switch (sort_by) {
-				case 'load_order':
-					const orderMap: Record<string, number> = modOrder.reduce(
-						(acc: any, item: any) => {
-							acc[item.mod_id] = item.order;
-							return acc;
-						},
-						{} as Record<string, number>,
-					);
-					sortedMods = [...modsWithSeparators].sort((a, b) => {
-						return orderMap[a.identifier] - orderMap[b.identifier];
-					});
-					break;
-				case 'title':
-					sortedMods = [...mods].sort((a, b) =>
-						a.title
-							.toLowerCase()
-							.localeCompare(b.title.toLowerCase()),
-					);
-					break;
-				case 'version':
-					sortedMods = [...mods].sort((a, b) => {
-						const numA = parseFloat(a.version as string);
-						const numB = parseFloat(b.version as string);
-
-						if (!isNaN(numA) && !isNaN(numB)) {
-							return numA - numB;
-						}
-
-						if (!isNaN(numA)) return -1;
-						if (!isNaN(numB)) return 1;
-
-						return 0;
-					});
-					break;
-				case 'updated_at':
-					sortedMods = [...mods].sort(
-						(a, b) => a.updated_at - b.updated_at,
-					);
-					break;
-
-				default:
-					break;
-			}
-
-			if (sort_by !== 'load_order' && sort_by_direction === 'desc') {
-				sortedMods.reverse();
-			}
-
-			setMods(sortedMods);
-			const modActivations = await initActivation(
-				selectedGame!.steam_id,
-				profile.id,
-				sortedMods,
-			);
-			setModActivation(modActivations);
-
-			const modMetaData = await initMeta(
-				selectedGame!.steam_id,
-				sortedMods,
-			);
-			setMetas(modMetaData);
-		} catch (error) {
-			toastError(error);
-		} finally {
-			setFetchModsLoading(false);
-			setLoading(false);
-		}
-	}, [selectedGame!.steam_id, sort_by, sort_by_direction, init_reload]);
+	const separators = modSeparatorStore(state => state.data);
+	const metaData = modMetaStore(state => state.data);
+	const modActiveData = modActivationStore(state => state.data);
 
 	useEffect(() => {
-		init();
-	}, [init]);
+		if (sort_by !== 'load_order') {
+			setDependencyViolations(new Map());
+			return;
+		}
 
-	if (fetchModsLoading) return <Loading />;
+		const actualMods = mods.filter(m => !isSeparator(m)) as ModItem[];
+		const violations = new Map<string, Set<string>>();
 
-	return <ModListSortableTable />;
+		const modPositionMap = new Map<string, number>();
+		mods.forEach((mod, index) => {
+			modPositionMap.set(mod.identifier, index);
+		});
+
+		actualMods.forEach(mod => {
+			if (
+				!mod.required_items ||
+				!Array.isArray(mod.required_items) ||
+				mod.required_items.length === 0
+			) {
+				return;
+			}
+
+			const childPosition = modPositionMap.get(mod.identifier) || 0;
+			mod.required_items.forEach(parentId => {
+				if (
+					hasCircularDependency(mod.identifier, parentId, actualMods)
+				) {
+					return;
+				}
+
+				const parentPosition = modPositionMap.get(parentId);
+				if (parentPosition !== undefined) {
+					if (childPosition < parentPosition) {
+						if (!violations.has(parentId)) {
+							violations.set(parentId, new Set<string>());
+						}
+						violations.get(parentId)?.add(mod.identifier);
+					}
+				} else {
+					if (!violations.has(parentId)) {
+						violations.set(parentId, new Set<string>());
+					}
+					violations.get(parentId)?.add(mod.identifier);
+				}
+			});
+		});
+
+		setDependencyViolations(violations);
+	}, [mods, sort_by]);
+
+	const handleSpaceBar = (event: KeyboardEvent) => {
+		const target = event.target as HTMLElement;
+		if (
+			target.tagName === 'INPUT' ||
+			target.tagName === 'TEXTAREA' ||
+			target.getAttribute('contenteditable') === 'true' ||
+			target.isContentEditable
+		) {
+			return;
+		}
+
+		if (event.key === ' ' && selectedRows.size > 0) {
+			event.preventDefault();
+			const selectedMods = mods.filter(
+				f => !isSeparator(f) && selectedRows.has(f.identifier),
+			) as ModItem[];
+			const shouldActivate = selectedMods.some(item =>
+				modActiveData.some(
+					ma => ma.mod_id === item.identifier && !ma.is_active,
+				),
+			);
+			for (let mi = 0; mi < selectedMods.length; mi++) {
+				const mod = selectedMods[mi];
+				toggleModActivation(
+					shouldActivate,
+					mod,
+					selectedMods.length > 1 ? false : true,
+				);
+			}
+		}
+	};
+	useEffect(() => {
+		window.addEventListener('keydown', handleSpaceBar);
+		return () => {
+			window.removeEventListener('keydown', handleSpaceBar);
+		};
+	}, [modActiveData, selectedRows]);
+
+	const handleEscKey = (event: KeyboardEvent) => {
+		if (event.key === 'Escape') {
+			clearSelection();
+		}
+	};
+	useEffect(() => {
+		window.addEventListener('keydown', handleEscKey);
+		return () => {
+			window.removeEventListener('keydown', handleEscKey);
+		};
+	}, []);
+
+	const handleDelete = (event: KeyboardEvent) => {
+		if (event.key === 'Delete' && selectedRows.size > 0) {
+			event.preventDefault();
+			toggleModRemove();
+		}
+	};
+	useEffect(() => {
+		window.addEventListener('keydown', handleDelete);
+		return () => {
+			window.removeEventListener('keydown', handleDelete);
+		};
+	}, [selectedRows]);
+
+	useEffect(() => {
+		if (sort_by !== 'load_order') {
+			clearSelection();
+		}
+	}, [sort_by]);
+
+	const filteredMods = useMemo(() => {
+		return filterMods(
+			searchModText,
+			activationFilter,
+			mods,
+			metaData,
+			modActiveData,
+		);
+	}, [mods, searchModText, activationFilter]);
+
+	const separatorPositions = useMemo(() => {
+		const positions: { id: string; index: number }[] = [];
+		mods.forEach((mod, index) => {
+			if (isSeparator(mod)) {
+				positions.push({ id: mod.identifier, index });
+			}
+		});
+		return positions;
+	}, [mods]);
+
+	const hiddenItems = useMemo(() => {
+		if (searchModText !== '' || activationFilter !== 'all')
+			return new Set<string>();
+
+		const hidden = new Set<string>();
+		for (let i = 0; i < separatorPositions.length; i++) {
+			const currentSeparator = separatorPositions[i];
+			if (isCollapsed(separators, currentSeparator.id)) {
+				const nextSeparatorIndex =
+					i < separatorPositions.length - 1
+						? separatorPositions[i + 1].index
+						: mods.length;
+
+				for (
+					let j = currentSeparator.index + 1;
+					j < nextSeparatorIndex;
+					j++
+				) {
+					hidden.add(mods[j].identifier);
+				}
+			}
+		}
+		return hidden;
+	}, [mods, separatorPositions, separators, searchModText, activationFilter]);
+
+	const modsResolved = useMemo(() => {
+		return filteredMods.filter(mod => !hiddenItems.has(mod.identifier));
+	}, [filteredMods, hiddenItems]);
+
+	const selectRange = useCallback(
+		(startId: string, endId: string) => {
+			const startIndex = modsResolved.findIndex(
+				mod => mod.identifier === startId,
+			);
+			const endIndex = modsResolved.findIndex(
+				mod => mod.identifier === endId,
+			);
+
+			if (startIndex === -1 || endIndex === -1) return;
+
+			const minIndex = Math.min(startIndex, endIndex);
+			const maxIndex = Math.max(startIndex, endIndex);
+
+			const newSelectedRows = new Set<string>();
+			for (let i = minIndex; i <= maxIndex; i++) {
+				const mod = modsResolved[i];
+				if (!isSeparator(mod)) {
+					newSelectedRows.add(mod.identifier);
+				}
+			}
+
+			setSelectedRows(newSelectedRows);
+		},
+		[modsResolved],
+	);
+
+	const sensors = useSensors(
+		useSensor(MouseSensor, {
+			activationConstraint: {
+				distance: 0.01, // double click bugfix
+			},
+		}),
+	);
+
+	const handleDragStart = useCallback((event: DragStartEvent) => {
+		const { active } = event;
+		setActiveId(active.id as string);
+	}, []);
+
+	const handleDragEnd = useCallback(
+		(event: DragEndEvent) => {
+			const { active, over } = event;
+			setActiveId(null);
+
+			if (!over || active.id === over.id) return;
+
+			const draggedId = active.id as string;
+			const draggedItem = mods.find(m => m.identifier === draggedId);
+
+			if (draggedItem) {
+				let result;
+				if (selectedRows.has(draggedId) && selectedRows.size > 1) {
+					result = sortGroup(mods, selectedRows, over);
+				} else if (
+					isSeparator(draggedItem) &&
+					isCollapsed(separators, draggedId)
+				) {
+					result = sortCollapsedSection(mods, active, over);
+				} else {
+					result = sortMods(mods, active, over);
+				}
+
+				if (result.modOrder !== modOrderData) {
+					setModOrder(result.modOrder);
+				}
+				if (result.mods !== mods) {
+					setMods(result.mods);
+				}
+			}
+		},
+		[mods, separators, selectedRows, setModOrder, setMods],
+	);
+
+	const modIndices = useMemo(() => {
+		const indices = new Map<string, number>();
+		mods.forEach((mod, index) => {
+			indices.set(mod.identifier, index);
+		});
+		return indices;
+	}, [mods]);
+
+	const activeMod = useMemo(() => {
+		if (!activeId) return null;
+		return mods.find(mod => mod.identifier === activeId);
+	}, [activeId, mods]);
+
+	const selectedCount = useMemo(() => {
+		if (!activeId) return 0;
+		return selectedRows.has(activeId) ? selectedRows.size : 0;
+	}, [activeId, selectedRows]);
+
+	return (
+		<div className="relative flex-1 mb-[41px]">
+			<DndContext
+				sensors={sensors}
+				collisionDetection={closestCenter}
+				onDragStart={handleDragStart}
+				onDragEnd={handleDragEnd}
+			>
+				<ModTable
+					modsResolved={modsResolved}
+					modIndices={modIndices}
+					selectedRows={selectedRows}
+					toggleRow={toggleRow}
+					selectRange={selectRange}
+					lastSelectedId={lastSelectedId}
+					setLastSelectedId={setLastSelectedId}
+					dependencyViolations={dependencyViolations}
+				/>
+
+				{selectedCount > 1 && (
+					<DragOverlay>
+						{activeId && activeMod && (
+							<div className="opacity-80">
+								<table className="w-full border-collapse">
+									<tbody>
+										<tr className="bg-white dark:bg-gray-800 shadow-md rounded-md">
+											<td className="border border-gray-200 dark:border-gray-700 p-2">
+												<div className="flex items-center gap-2">
+													<div className="font-medium text-sm">
+														{activeMod.title}
+													</div>
+													<div className="bg-blue-700 text-white text-xs px-2 py-1 rounded-full">
+														+{selectedCount - 1}{' '}
+														more
+													</div>
+												</div>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						)}
+					</DragOverlay>
+				)}
+			</DndContext>
+			<Filter
+				activationFilter={activationFilter}
+				setActivationFilter={setActivationFilter}
+				searchModText={searchModText}
+				setSearchModText={setSearchModText}
+			/>
+		</div>
+	);
 };
+
+export default ModListSortableTable;

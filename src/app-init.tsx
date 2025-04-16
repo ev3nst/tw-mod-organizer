@@ -21,7 +21,7 @@ const toasterOptions = {
 	},
 };
 
-function Init() {
+function AppInit() {
 	const [initLoading, setInitLoading] = useState(true);
 
 	const setGames = settingStore(state => state.setGames);
@@ -133,4 +133,4 @@ function Init() {
 	);
 }
 
-export default Init;
+export default AppInit;

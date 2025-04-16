@@ -25,7 +25,7 @@ export function GameSwitcher() {
 					setSelectedGame(undefined);
 					setTimeout(async () => {
 						setSelectedGame(findGame);
-						const setting = await SettingModel.retrieve()
+						const setting = await SettingModel.retrieve();
 						setting.selected_game = findGame.steam_id;
 						await setting.save();
 					}, 200);

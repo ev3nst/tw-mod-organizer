@@ -15,10 +15,10 @@ mod steam;
 mod utils;
 mod xml;
 
+mod app_version_check;
 mod export_profile;
 mod import_data;
 mod parse_profile_json;
-mod app_version_check;
 
 mod migrations;
 
@@ -80,6 +80,9 @@ pub fn run() {
             r#mod::local_mods::local_mods,
             r#mod::install::install_mod,
             r#mod::delete::delete_mod,
+            pack::pack_files::pack_files,
+            pack::pack_db_data::pack_db_data,
+            pack::pack_fetch_data::pack_fetch_data,
             game::save_files::save_files,
             game::delete_save_file::delete_save_file,
             game::set_watch_save_folder::set_watch_save_folder,

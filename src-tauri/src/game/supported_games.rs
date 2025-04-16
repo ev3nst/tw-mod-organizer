@@ -16,6 +16,7 @@ pub struct Game {
     pub nexus_slug: &'static str,
     pub nexus_id: u128,
     pub r#type: &'static str,
+    pub schema_file: &'static str,
 }
 
 pub const SUPPORTED_GAMES: &[Game] = &[
@@ -31,6 +32,7 @@ pub const SUPPORTED_GAMES: &[Game] = &[
         nexus_slug: "totalwarwarhammer2",
         nexus_id: 2436,
         r#type: "totalwar",
+        schema_file: "schema_wh2.ron",
     },
     Game {
         name: "Total War: WARHAMMER 3",
@@ -44,6 +46,7 @@ pub const SUPPORTED_GAMES: &[Game] = &[
         nexus_slug: "totalwarwarhammer3",
         nexus_id: 4717,
         r#type: "totalwar",
+        schema_file: "schema_wh3.ron",
     },
     Game {
         name: "Total War: Three Kingdoms",
@@ -57,6 +60,7 @@ pub const SUPPORTED_GAMES: &[Game] = &[
         nexus_slug: "totalwarthreekingdoms",
         nexus_id: 2847,
         r#type: "totalwar",
+        schema_file: "schema_3k.ron",
     },
     Game {
         name: "Mount & Blade: Bannerlord",
@@ -70,6 +74,7 @@ pub const SUPPORTED_GAMES: &[Game] = &[
         nexus_slug: "mountandblade2bannerlord",
         nexus_id: 3174,
         r#type: "bannerlord",
+        schema_file: "",
     },
 ];
 

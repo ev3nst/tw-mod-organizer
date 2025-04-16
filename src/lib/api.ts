@@ -385,6 +385,25 @@ class API {
 	}> {
 		return invoke('app_version_check');
 	}
+
+	async pack_files(pack_file_path: string): Promise<Record<string, any>> {
+		return invoke('pack_files', { pack_file_path });
+	}
+
+	async pack_fetch_data(
+		app_id: number,
+		pack_file_path: string,
+		path_in_container: string,
+	): Promise<{
+		type: string;
+		content: any;
+	}> {
+		return invoke('pack_fetch_data', {
+			app_id,
+			pack_file_path,
+			path_in_container,
+		});
+	}
 }
 
 const api = new API();

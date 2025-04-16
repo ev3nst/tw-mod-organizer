@@ -371,10 +371,10 @@
 	}
 
 	.dark .theme-red {
-		--background: 0 20% 3.9%;
+		--background: 0 20% 5.9%;
 		--foreground: 0 0% 98%;
 
-		--secondary-bg: 10 30% 7.5%;
+		--secondary-bg: 2 55% 11.5%;
 		--secondary-border: 1 11% 20%;
 
 		--muted: 0 0% 14.9%;
@@ -439,7 +439,7 @@
 	}
 
 	.dark .theme-orange {
-		--background: 20 14.3% 7.1%;
+		--background: 20 25.3% 7.1%;
 		--foreground: 60 9.1% 97.8%;
 
 		--secondary-bg: 15 11% 13.5%;
@@ -717,7 +717,7 @@
 	}
 
 	.dark .theme-pink {
-		--background: 0 0% 0%;
+		--background: 0 15% 4.5%;
 		--foreground: 292 20% 98%;
 
 		--secondary-bg: 292 11% 8.5%;

@@ -34,15 +34,9 @@ Requires Windows 10, Steam, 7z (for local mod installation).
 
 ## Planned Improvements
 
-Here are some ideas I might add in the future, depending on feedback and time:
+*There are some advanced features under consideration; however, since I don't currently have a need for them myself, I’d only look into adding them if there's sufficient interest or feedback from users.*
 
--   Selective file exclusion from conflicts — choose files to exclude or ignore specific conflicts
--   Load order patching — unit size multiplier, language fix etc.
--   Create Steam collections from mod lists — publish your load order as a Steam collection
--   Drag & Drop multiple local mod installation
--   Error tracking, script logging
--   Automatic mod installation via import & export for Nexus Mods
--   More games to support
+This mod manager "should" support wider range of Total War titles but i don't have them so if you want those games to be supported you can ask to be a tester for it.
 
 ## For Developers
 
@@ -60,7 +54,7 @@ bun tauri dev
 
 Build the Tauri app
 
-> You need Steam API SDK files. steamworks-rs dynamically loads without any manual setup while in development mode but for bundling you would want to put those files in ./src-tauri.
+> You need Steam API SDK files. steamworks-rs dynamically loads without any manual setup while in development mode but for bundling you would want to put those files in ./src-tauri. There is also schema files thats used to decode .pack file's database data which can be found in [rpfm-schemas](https://github.com/Frodo45127/rpfm-schemas).
 
 ```sh
 bun tauri build
@@ -72,8 +66,14 @@ bun tauri build
 
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
-## Credits
+## 🧾 Credits
 
-This project includes code from [steamworks.js](https://github.com/ceifa/steamworks.js), licensed under the MIT License.
+This project uses third-party libraries and resources, which are greatly appreciated:
 
-Thanks [Frodo45127](https://github.com/Frodo45127) for creating [rpfm](https://github.com/Frodo45127/rpfm) which is one of the fundamental part of this app.
+-   [steamworks.js](https://github.com/ceifa/steamworks.js)  
+    Licensed under the MIT License.
+
+-   Schema files from [rpfm-schemas](https://github.com/Frodo45127/rpfm-schemas)  
+    Licensed under the MIT License.
+
+Special thanks to Frodo45127 for creating [RPFM](https://github.com/Frodo45127/rpfm) — one of the key inspirations and tools behind this project.
