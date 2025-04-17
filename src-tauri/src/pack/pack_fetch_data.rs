@@ -4,7 +4,7 @@ use serde::Serialize;
 use serde_json::{json, Value};
 use std::path::PathBuf;
 
-use crate::utils::convert_dds_to_png::convert_dds_to_png;
+use crate::utils::convert_dds::{convert_dds, DDSOutputFormat};
 
 #[derive(Debug, Serialize)]
 pub struct FileContent {
@@ -58,8 +58,8 @@ pub async fn pack_fetch_data(
             RFileDecoded::Image(image) => {
                 let (image_data, mime_type) = if path_in_container.ends_with(".dds") {
                     let dds_data = image.data();
-                    let png_data = convert_dds_to_png(dds_data)?;
-                    (png_data, "image/png")
+                    let jpeg_data = convert_dds(dds_data, DDSOutputFormat::Jpeg(60))?;
+                    (jpeg_data, "image/jpeg")
                 } else {
                     (
                         image.data().to_vec(),
