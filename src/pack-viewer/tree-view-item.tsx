@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
 	BoxIcon,
+	BracesIcon,
 	ChevronDownIcon,
 	CircleHelpIcon,
 	ClapperboardIcon,
@@ -74,6 +75,8 @@ export function TreeViewItem({
 					return <CodeIcon className="text-orange-500 mt-0.5" />;
 				case '.xml':
 					return <CodeIcon className="text-orange-500 mt-0.5" />;
+				case '.json':
+					return <BracesIcon className="text-orange-500 mt-0.5" />;
 				case '.png':
 					return <ImageIcon className="text-purple-500 mt-0.5" />;
 				case '.dds':

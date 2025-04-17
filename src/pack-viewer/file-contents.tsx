@@ -20,7 +20,6 @@ export const FileContents = () => {
 
 	if (treeItemDataLoading) return <Loading />;
 
-	console.log('selectedTreeItemData', selectedTreeItemData);
 	switch (selectedTreeItemData?.type) {
 		case 'text':
 			if (selectedTreeItem?.id.endsWith('.lua')) {
