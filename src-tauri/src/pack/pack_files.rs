@@ -80,8 +80,14 @@ pub async fn pack_files(
 
     let mut raw_tree: serde_json::Map<String, serde_json::Value> = serde_json::Map::new();
 
-    for path in packfile.paths().keys() {
-        let parts: Vec<&str> = path.split('/').collect();
+    for (_lowercased, originals) in packfile.paths() {
+        if originals.is_empty() {
+            continue;
+        }
+
+        let original_path = &originals[0];
+
+        let parts: Vec<&str> = original_path.split('/').collect();
         if parts.is_empty() {
             continue;
         }

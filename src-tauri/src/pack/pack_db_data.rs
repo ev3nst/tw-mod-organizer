@@ -114,10 +114,7 @@ pub async fn pack_db_data(
             Ok(Some(decoded)) => {
                 if let RFileDecoded::DB(table_data) = decoded {
                     table_data_map.insert(
-                        file.path_in_container()
-                            .path_raw()
-                            .to_owned()
-                            .to_lowercase(),
+                        file.path_in_container().path_raw().to_owned(),
                         serde_json::to_value(table_data.table())
                             .map_err(|e| format!("Failed to serialize table data: {}", e))?,
                     );
