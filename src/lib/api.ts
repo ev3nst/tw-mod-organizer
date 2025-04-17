@@ -62,6 +62,14 @@ class API {
 		return invoke('supported_games');
 	}
 
+	async is_game_running(app_id: number): Promise<boolean> {
+		return invoke('is_game_running', { app_id });
+	}
+
+	async force_quit(app_id: number): Promise<void> {
+		return invoke('force_quit', { app_id });
+	}
+
 	async open_external_url(url: string): Promise<void> {
 		return invoke('open_external_url', {
 			url,

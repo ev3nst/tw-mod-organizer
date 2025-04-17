@@ -1,10 +1,22 @@
 import { useEffect } from 'react';
+import { SquareXIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
+import { Button } from '@/components/button';
 import { SidebarFooter } from '@/components/sidebar';
 import { RippleButton } from '@/components/ripple-button';
+import {
+	AlertDialog,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+	AlertDialogAction,
+} from '@/components/alert-dialog';
 import { Loading } from '@/components/loading';
-
-import { invoke } from '@tauri-apps/api/core';
 
 import { settingStore } from '@/lib/store/setting';
 import { modsStore, type ModItem } from '@/lib/store/mods';
@@ -19,7 +31,6 @@ import {
 	startGameTotalwar,
 	toastError,
 } from '@/lib/utils';
-import { toast } from 'sonner';
 
 export const Play = () => {
 	const setSaveFileDialogOpen = saveFilesStore(
@@ -47,9 +58,9 @@ export const Play = () => {
 	useEffect(() => {
 		const checkIfGameIsRunning = async () => {
 			try {
-				const result: boolean = await invoke('is_game_running', {
-					app_id: selectedGame!.steam_id,
-				});
+				const result = await api.is_game_running(
+					selectedGame!.steam_id,
+				);
 				if (isGameRunning !== result) {
 					setIsGameRunning(result);
 				}
@@ -217,22 +228,62 @@ export const Play = () => {
 
 	return (
 		<SidebarFooter className="mt-auto sticky bottom-0 bg-background pt-2 pb-2 z-10">
-			<RippleButton
-				className={`bg-gradient-to-r px-6 py-3 text-white font-medium transition-all duration-100 ease-in-out hover:from-green-500 hover:to-emerald-600 hover:shadow-[0_0_10px_rgba(16,185,129,0.8)] ${
-					isGameRunning || shouldLockScreen || isGameLoading
-						? 'disabled'
-						: ''
-				} ${
-					saveFile && saveFile?.path !== ''
-						? 'from-orange-500 to-red-600'
-						: 'from-blue-500 to-indigo-600'
-				}`}
-				onClick={handlePlay}
-				disabled={isGameRunning || shouldLockScreen || isGameLoading}
-			>
-				{playButtonText}
-				{isGameLoading && <Loading />}
-			</RippleButton>
+			<div className="flex items-center justify-between gap-2">
+				<RippleButton
+					className={`flex-grow bg-gradient-to-r px-6 py-3 text-white font-medium transition-all duration-100 ease-in-out hover:from-green-500 hover:to-emerald-600 hover:shadow-[0_0_10px_rgba(16,185,129,0.8)] ${
+						isGameRunning || shouldLockScreen || isGameLoading
+							? 'disabled'
+							: ''
+					} ${
+						saveFile && saveFile?.path !== ''
+							? 'from-orange-500 to-red-600'
+							: 'from-blue-500 to-indigo-600'
+					}`}
+					onClick={handlePlay}
+					disabled={
+						isGameRunning || shouldLockScreen || isGameLoading
+					}
+				>
+					{playButtonText}
+					{isGameLoading && <Loading />}
+				</RippleButton>
+				{isGameRunning && (
+					<AlertDialog>
+						<AlertDialogTrigger asChild>
+							<Button size="icon" variant="destructive">
+								<SquareXIcon />
+							</Button>
+						</AlertDialogTrigger>
+						<AlertDialogContent>
+							<AlertDialogHeader>
+								<AlertDialogTitle>Force Quit</AlertDialogTitle>
+								<AlertDialogDescription>
+									This action will force quit the game. Are
+									you sure you want to do this?
+									<span className="text-orange-500 mt-2 block">
+										This should only be used as a last
+										resort if mod organizer stuck as
+										"Running". You can also do this with
+										task manager and manually stop the
+										game's exe process.
+									</span>
+								</AlertDialogDescription>
+							</AlertDialogHeader>
+							<AlertDialogFooter>
+								<AlertDialogCancel>Cancel</AlertDialogCancel>
+								<AlertDialogAction
+									className="bg-red-500 text-white hover:bg-red-700"
+									onClick={() =>
+										api.force_quit(selectedGame!.steam_id)
+									}
+								>
+									Force Quit
+								</AlertDialogAction>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialog>
+				)}
+			</div>
 		</SidebarFooter>
 	);
 };

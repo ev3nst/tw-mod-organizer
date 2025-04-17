@@ -93,6 +93,7 @@ pub fn run() {
             game::totalwar::start::start_game_totalwar,
             game::bannerlord::start::start_game_bannerlord,
             game::is_running::is_game_running,
+            game::force_quit::force_quit,
             game::supported_games::supported_games,
             sevenz::zip_contents::zip_contents,
             nexus::auth_init::nexus_auth_init,
