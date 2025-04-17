@@ -16,10 +16,10 @@ mod utils;
 mod xml;
 
 mod app_version_check;
+mod clear_cache;
 mod export_profile;
 mod import_data;
 mod parse_profile_json;
-mod clear_cache;
 
 mod migrations;
 
@@ -76,7 +76,7 @@ pub fn run() {
             export_profile::export_profile,
             parse_profile_json::parse_profile_json,
             app_version_check::app_version_check,
-			clear_cache::clear_cache,
+            clear_cache::clear_cache,
             r#mod::conflicts::conflicts,
             r#mod::base_mods::base_mods,
             r#mod::local_mods::local_mods,
@@ -86,6 +86,7 @@ pub fn run() {
             pack::pack_db_data::pack_db_data,
             pack::pack_loc_data::pack_loc_data,
             pack::pack_fetch_data::pack_fetch_data,
+            pack::open_pack_file::open_pack_file,
             game::save_files::save_files,
             game::delete_save_file::delete_save_file,
             game::set_watch_save_folder::set_watch_save_folder,

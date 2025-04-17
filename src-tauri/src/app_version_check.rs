@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VersionResponse {
     version: String,
-	changelog: String,
+    changelog: String,
 }
 
 #[tauri::command(rename_all = "snake_case")]

@@ -112,7 +112,7 @@ export async function startGameTotalwar(
 	app_id: number,
 	mods: ModItemSeparatorUnion[],
 	modActivationData: ModActivationItem[],
-	saveFile?: SaveFile
+	saveFile?: SaveFile,
 ) {
 	const reverseLoadOrder = [...mods].slice().reverse();
 	let addDirectoryTxt = '';
@@ -122,7 +122,7 @@ export async function startGameTotalwar(
 
 		const mod = reverseLoadOrder[ri] as ModItem;
 		const isActive = modActivationData.some(
-			a => a.is_active === true && a.mod_id === mod.identifier
+			a => a.is_active === true && a.mod_id === mod.identifier,
 		);
 		if (!isActive) continue;
 
@@ -147,7 +147,7 @@ export async function startGameTotalwar(
 		app_id,
 		addDirectoryTxt,
 		usedModsTxt,
-		save_game
+		save_game,
 	);
 }
 
@@ -155,7 +155,7 @@ export async function startGameBannerlord(
 	app_id: number,
 	mods: ModItemSeparatorUnion[],
 	modActivationData: ModActivationItem[],
-	_saveFile?: SaveFile
+	_saveFile?: SaveFile,
 ): Promise<string> {
 	const modsToLoad = mods
 		.filter(
@@ -166,8 +166,8 @@ export async function startGameBannerlord(
 						ma.mod_id === m.identifier &&
 						!ma.is_active &&
 						(m as ModItem).item_type !== 'base_mod' &&
-						m.identifier !== 'BirthAndDeath'
-				)
+						m.identifier !== 'BirthAndDeath',
+				),
 		)
 		.map(m => {
 			const currentMod = m as ModItem;
@@ -240,7 +240,7 @@ export const buttonVariants = cva(
 			variant: 'default',
 			size: 'default',
 		},
-	}
+	},
 );
 
 export const availableThemes = [

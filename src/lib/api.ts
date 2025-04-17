@@ -437,6 +437,12 @@ class API {
 			pack_file_path,
 		});
 	}
+
+	async open_pack_file(pack_file_path: string): Promise<void> {
+		return invoke('open_pack_file', {
+			pack_file_path,
+		});
+	}
 }
 
 const api = new API();

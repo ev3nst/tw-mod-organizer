@@ -1,10 +1,12 @@
 import { memo, useCallback } from 'react';
 import {
+	AppWindowIcon,
 	ArrowRightIcon,
 	EllipsisVerticalIcon,
 	EyeIcon,
 	InfoIcon,
 	LinkIcon,
+	StarIcon,
 	TrashIcon,
 	UserIcon,
 } from 'lucide-react';
@@ -15,6 +17,10 @@ import {
 	DropdownMenuContent,
 	DropdownMenuGroup,
 	DropdownMenuItem,
+	DropdownMenuPortal,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from '@/components/dropdown-menu';
 import {
@@ -22,6 +28,9 @@ import {
 	ContextMenuItem,
 	ContextMenuLabel,
 	ContextMenuSeparator,
+	ContextMenuSub,
+	ContextMenuSubContent,
+	ContextMenuSubTrigger,
 } from '@/components/context-menu';
 
 import api from '@/lib/api';
@@ -291,35 +300,61 @@ export const ModActionDropdownRenderer = ({
 							Edit (Meta Information)
 						</DropdownMenuItem>
 
-						<DropdownMenuItem
-							className="text-xs py-2 my-0"
-							onClick={() =>
-								api.highlight_path(currentMod.mod_file_path)
-							}
-						>
-							<EyeIcon className="w-3 h-3" />
-							Open Mod Location
-						</DropdownMenuItem>
+						<DropdownMenuSub>
+							<DropdownMenuSubTrigger>
+								<StarIcon className="w-3 h-3" />
+								Open Mod
+							</DropdownMenuSubTrigger>
+							<DropdownMenuPortal>
+								<DropdownMenuSubContent>
+									<DropdownMenuItem
+										className="text-xs py-2 my-0"
+										onClick={() =>
+											api.highlight_path(
+												currentMod.mod_file_path,
+											)
+										}
+									>
+										<EyeIcon className="w-3 h-3" />
+										Mod Location
+									</DropdownMenuItem>
 
-						{showExternalLink && (
-							<DropdownMenuItem
-								className="text-xs py-2 my-0"
-								onClick={() => handleOpenModUrl(false)}
-							>
-								<LinkIcon className="w-3 h-3" />
-								Open Mod Page in Browser
-							</DropdownMenuItem>
-						)}
-
-						{currentMod.item_type === 'steam_mod' && (
-							<DropdownMenuItem
-								className="text-xs py-2 my-0"
-								onClick={() => handleOpenModUrl(true)}
-							>
-								<EyeIcon className="w-3 h-3" />
-								Open Mod Page in Steam Client
-							</DropdownMenuItem>
-						)}
+									{showExternalLink && (
+										<DropdownMenuItem
+											className="text-xs py-2 my-0"
+											onClick={() =>
+												handleOpenModUrl(false)
+											}
+										>
+											<LinkIcon className="w-3 h-3" />
+											Mod Page in Browser
+										</DropdownMenuItem>
+									)}
+									{currentMod.item_type === 'steam_mod' && (
+										<DropdownMenuItem
+											className="text-xs py-2 my-0"
+											onClick={() =>
+												handleOpenModUrl(true)
+											}
+										>
+											<EyeIcon className="w-3 h-3" />
+											Mod Page in Steam Client
+										</DropdownMenuItem>
+									)}
+									<DropdownMenuItem
+										className="text-xs py-2 my-0"
+										onClick={() =>
+											api.open_pack_file(
+												currentMod.mod_file_path,
+											)
+										}
+									>
+										<AppWindowIcon className="w-3 h-3" />
+										Mod in RPFM
+									</DropdownMenuItem>
+								</DropdownMenuSubContent>
+							</DropdownMenuPortal>
+						</DropdownMenuSub>
 
 						{currentMod.item_type === 'steam_mod' &&
 							typeof currentMod.creator_id === 'string' &&
@@ -453,46 +488,67 @@ export const ModActionContextMenuRenderer = ({
 				Edit (Meta Information)
 			</ContextMenuItem>
 
-			<ContextMenuItem
-				onSelect={() => api.highlight_path(currentMod.mod_file_path)}
-			>
-				<EyeIcon className="w-3 h-3 mr-2" />
-				Open Mod Location
-			</ContextMenuItem>
-
-			{showExternalLink && (
-				<ContextMenuItem onSelect={() => handleOpenModUrl(false)}>
-					<LinkIcon className="w-3 h-3 mr-2" />
-					Open Mod Page in Browser
-				</ContextMenuItem>
-			)}
-
-			{currentMod.item_type === 'steam_mod' && (
-				<>
-					<ContextMenuItem onSelect={() => handleOpenModUrl(true)}>
+			<ContextMenuSub>
+				<ContextMenuSubTrigger>
+					<StarIcon className="w-3 h-3 mr-2" />
+					Open Mod
+				</ContextMenuSubTrigger>
+				<ContextMenuSubContent>
+					<ContextMenuItem
+						onSelect={() =>
+							api.highlight_path(currentMod.mod_file_path)
+						}
+					>
 						<EyeIcon className="w-3 h-3 mr-2" />
-						Open Mod Page in Steam Client
+						Mod Location
 					</ContextMenuItem>
+					{showExternalLink && (
+						<ContextMenuItem
+							onSelect={() => handleOpenModUrl(false)}
+						>
+							<LinkIcon className="w-3 h-3 mr-2" />
+							Mod Page in Browser
+						</ContextMenuItem>
+					)}
 
-					{typeof currentMod.creator_id === 'string' &&
-						currentMod.creator_id !== null && (
-							<ContextMenuItem
-								onSelect={() =>
-									api.open_external_url(
-										`steam://openurl/https://steamcommunity.com/profiles/${
-											currentMod.creator_id
-										}/myworkshopfiles/?appid=${
-											selectedGame!.steam_id
-										}`,
-									)
-								}
-							>
-								<UserIcon className="w-3 h-3 mr-2" />
-								More from this Author
-							</ContextMenuItem>
-						)}
-				</>
-			)}
+					{currentMod.item_type === 'steam_mod' && (
+						<ContextMenuItem
+							onSelect={() => handleOpenModUrl(true)}
+						>
+							<EyeIcon className="w-3 h-3 mr-2" />
+							Mod Page in Steam Client
+						</ContextMenuItem>
+					)}
+
+					<ContextMenuItem
+						onSelect={() =>
+							api.open_pack_file(currentMod.mod_file_path)
+						}
+					>
+						<AppWindowIcon className="w-3 h-3 mr-2" />
+						Mod in RPFM
+					</ContextMenuItem>
+				</ContextMenuSubContent>
+			</ContextMenuSub>
+
+			{currentMod.item_type === 'steam_mod' &&
+				typeof currentMod.creator_id === 'string' &&
+				currentMod.creator_id !== null && (
+					<ContextMenuItem
+						onSelect={() =>
+							api.open_external_url(
+								`steam://openurl/https://steamcommunity.com/profiles/${
+									currentMod.creator_id
+								}/myworkshopfiles/?appid=${
+									selectedGame!.steam_id
+								}`,
+							)
+						}
+					>
+						<UserIcon className="w-3 h-3 mr-2" />
+						More from this Author
+					</ContextMenuItem>
+				)}
 
 			<ContextMenuItem onSelect={handleSetPriority}>
 				<ArrowRightIcon className="w-3 h-3 mr-2" />
