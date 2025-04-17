@@ -11,6 +11,7 @@ import { PackLocRenderer } from './file-types/loc';
 import { PackTextRenderer } from './file-types/text';
 import { PackVMDRenderer } from './file-types/vmd';
 import { PackVideoRenderer } from './file-types/video';
+import { PackJSONRenderer } from './file-types/json';
 
 export const FileContents = () => {
 	const treeItemDataLoading = packManagerStore(s => s.treeItemDataLoading);
@@ -19,6 +20,7 @@ export const FileContents = () => {
 
 	if (treeItemDataLoading) return <Loading />;
 
+	console.log('selectedTreeItemData', selectedTreeItemData);
 	switch (selectedTreeItemData?.type) {
 		case 'text':
 			if (selectedTreeItem?.id.endsWith('.lua')) {
@@ -29,6 +31,9 @@ export const FileContents = () => {
 			}
 			if (selectedTreeItem?.id.endsWith('.xml')) {
 				return <PackVMDRenderer />;
+			}
+			if (selectedTreeItem?.id.endsWith('.json')) {
+				return <PackJSONRenderer />;
 			}
 			return <PackTextRenderer />;
 

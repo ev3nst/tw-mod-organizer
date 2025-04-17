@@ -48,7 +48,8 @@ export function TreeViewItem({
 		if (selectedTreeItem) {
 			const parentPaths = getParentPaths(selectedTreeItem.id);
 			if (
-				parentPaths.includes(item.id) ||
+				(parentPaths.includes(item.id) &&
+					item.pack_file_name === selectedTreeItem.pack_file_name) ||
 				(item.pack_file_name === selectedTreeItem.pack_file_name &&
 					level === 0)
 			) {

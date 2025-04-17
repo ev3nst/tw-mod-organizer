@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { LightAsync } from 'react-syntax-highlighter';
 import monokaiSublime from 'react-syntax-highlighter/dist/esm/styles/hljs/monokai-sublime';
 import googlecode from 'react-syntax-highlighter/dist/esm/styles/hljs/googlecode';
-
+import { VariableSizeList as List } from 'react-window';
 import { ScrollArea } from '@/components/scroll-area';
 
 export const SyntaxHighlighter = ({
@@ -15,6 +15,14 @@ export const SyntaxHighlighter = ({
 	const [mode, setMode] = useState<'dark' | 'light'>(() => {
 		return (localStorage.getItem('mode') as 'dark' | 'light') || 'dark';
 	});
+	const [lines, setLines] = useState<string[]>([]);
+	const [containerHeight, setContainerHeight] = useState(500);
+	const [containerWidth, setContainerWidth] = useState(800);
+	const containerRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		setLines(content.split('\n'));
+	}, [content]);
 
 	useEffect(() => {
 		const observer = new MutationObserver(() => {
@@ -32,30 +40,102 @@ export const SyntaxHighlighter = ({
 		return () => observer.disconnect();
 	}, []);
 
+	useEffect(() => {
+		if (containerRef.current) {
+			const resizeObserver = new ResizeObserver(entries => {
+				for (let entry of entries) {
+					setContainerHeight(entry.contentRect.height);
+					setContainerWidth(entry.contentRect.width);
+				}
+			});
+
+			resizeObserver.observe(containerRef.current);
+			return () => resizeObserver.disconnect();
+		}
+	}, []);
+
+	const getLineHeight = (index: number) => {
+		const line = lines[index] || '';
+		const baseHeight = 21;
+		const estimatedLineLength = Math.floor(containerWidth / 8);
+		const wrappedLines = Math.ceil(line.length / estimatedLineLength);
+		return baseHeight * Math.max(1, wrappedLines);
+	};
+
+	const LineRenderer = ({
+		index,
+		style,
+	}: {
+		index: number;
+		style: React.CSSProperties;
+	}) => {
+		const line = lines[index] || '';
+
+		return (
+			<div style={style}>
+				<div style={{ display: 'flex' }}>
+					<span
+						style={{
+							minWidth: '2em',
+							paddingRight: '0.5em',
+							color: '#888',
+							userSelect: 'none',
+						}}
+					>
+						{index + 1}
+					</span>
+					<span
+						style={{
+							whiteSpace: 'pre-wrap',
+							wordBreak: 'break-all',
+						}}
+					>
+						<LightAsync
+							language={syntax}
+							style={
+								mode === 'dark' ? monokaiSublime : googlecode
+							}
+							customStyle={{
+								fontFamily:
+									'"Fira Code", Consolas, Menlo, Monaco, "Courier New", monospace',
+								fontSize: '13px',
+								background: 'transparent',
+								padding: 0,
+								margin: 0,
+							}}
+						>
+							{line}
+						</LightAsync>
+					</span>
+				</div>
+			</div>
+		);
+	};
+
 	return (
-		<ScrollArea className="overflow-y-auto h-full overflow-x-hidden">
-			<LightAsync
-				language={syntax}
-				style={mode === 'dark' ? monokaiSublime : googlecode}
-				wrapLongLines
-				wrapLines
-				showLineNumbers
-				customStyle={{
-					fontFamily:
-						'"Fira Code", Consolas, Menlo, Monaco, "Courier New", monospace',
-					fontSize: '13px',
-					borderRadius: 0,
-					background: 'hsl(var(--background))',
-				}}
-				lineProps={{ style: { flexWrap: 'wrap' } }}
-				lineNumberStyle={{
-					minWidth: '2em',
-					paddingRight: '0.5em',
-					color: '#888',
-				}}
-			>
-				{content}
-			</LightAsync>
-		</ScrollArea>
+		<div className="h-full w-full" ref={containerRef}>
+			<ScrollArea className="overflow-y-auto h-full overflow-x-hidden">
+				<div
+					style={{
+						fontFamily:
+							'"Fira Code", Consolas, Menlo, Monaco, "Courier New", monospace',
+						fontSize: '13px',
+						background: 'hsl(var(--background))',
+					}}
+				>
+					{lines.length > 0 && (
+						<List
+							height={containerHeight}
+							itemCount={lines.length}
+							itemSize={getLineHeight}
+							width="100%"
+							overscanCount={20}
+						>
+							{LineRenderer}
+						</List>
+					)}
+				</div>
+			</ScrollArea>
+		</div>
 	);
 };
