@@ -6,8 +6,10 @@ export const PackTextRenderer = () => {
 	if (typeof selectedTreeItemData === 'undefined') return null;
 
 	return (
-		<ScrollArea className="h-full w-full">
-			<pre className="p-5">{selectedTreeItemData.content}</pre>
+		<ScrollArea className="h-full">
+			<pre className="p-5 whitespace-pre-wrap break-words">
+				{selectedTreeItemData.content}
+			</pre>
 		</ScrollArea>
 	);
 };
