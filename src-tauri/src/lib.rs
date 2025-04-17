@@ -82,6 +82,7 @@ pub fn run() {
             r#mod::delete::delete_mod,
             pack::pack_files::pack_files,
             pack::pack_db_data::pack_db_data,
+            pack::pack_loc_data::pack_loc_data,
             pack::pack_fetch_data::pack_fetch_data,
             game::save_files::save_files,
             game::delete_save_file::delete_save_file,

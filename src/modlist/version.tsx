@@ -46,7 +46,6 @@ export const THVersion = memo(() => {
 								game_domain_name: selectedGame!.nexus_slug,
 								mod_id: Number(modNexusId),
 							});
-							console.log(nexusModDetail, 'nexusModDetail');
 							updatedModVersionData[vi].last_time_checked =
 								Date.now();
 							if (mv.latest_version !== nexusModDetail.version) {
@@ -65,6 +64,13 @@ export const THVersion = memo(() => {
 				const mv = modVersionData[vi];
 				switch (mv.mod_type) {
 					case 'steam_mod':
+						if (mv.version !== mv.latest_version) {
+							changed.push({
+								...mv,
+								url: `https://steamcommunity.com/sharedfiles/filedetails/?id=${mv.mod_id}`,
+							});
+						}
+						break;
 					case 'local_mod':
 						if (mv.version !== mv.latest_version) {
 							changed.push(mv);

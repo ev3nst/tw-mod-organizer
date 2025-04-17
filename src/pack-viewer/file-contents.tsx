@@ -1,9 +1,16 @@
-import { Loading } from '@/components/loading';
-import { ScrollArea } from '@/components/scroll-area';
-import { packManagerStore } from '@/lib/store/pack-manager';
 import { FileIcon } from 'lucide-react';
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { monokaiSublime } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+
+import { Loading } from '@/components/loading';
+
+import { packManagerStore } from '@/lib/store/pack-manager';
+
+import { PackImageRenderer } from './file-types/image';
+import { PackLuaRenderer } from './file-types/lua';
+import { PackDBRenderer } from './file-types/db';
+import { PackLocRenderer } from './file-types/loc';
+import { PackTextRenderer } from './file-types/text';
+import { PackVMDRenderer } from './file-types/vmd';
+import { PackVideoRenderer } from './file-types/video';
 
 export const FileContents = () => {
 	const treeItemDataLoading = packManagerStore(s => s.treeItemDataLoading);
@@ -12,55 +19,39 @@ export const FileContents = () => {
 
 	if (treeItemDataLoading) return <Loading />;
 
-	if (
-		selectedTreeItemData?.type === 'text' &&
-		selectedTreeItem?.id.endsWith('.lua')
-	) {
-		return (
-			<ScrollArea className="overflow-y-auto h-full overflow-x-hidden ">
-				<SyntaxHighlighter
-					language="lua"
-					style={monokaiSublime}
-					wrapLongLines
-					wrapLines
-					showLineNumbers
-					customStyle={{
-						fontFamily:
-							'"Fira Code", Consolas, Menlo, Monaco, "Courier New", monospace',
-						fontSize: '13px',
-						borderRadius: 0,
-						background: 'hsl(var(--background))',
-					}}
-					lineProps={{ style: { flexWrap: 'wrap' } }}
-					lineNumberStyle={{
-						minWidth: '2em',
-						paddingRight: '0.5em',
-						color: '#888',
-					}}
-				>
-					{selectedTreeItemData.content}
-				</SyntaxHighlighter>
-			</ScrollArea>
-		);
-	}
+	switch (selectedTreeItemData?.type) {
+		case 'text':
+			if (selectedTreeItem?.id.endsWith('.lua')) {
+				return <PackLuaRenderer />;
+			}
+			if (selectedTreeItem?.id.endsWith('.material')) {
+				return <PackVMDRenderer />;
+			}
+			return <PackTextRenderer />;
 
-	if (selectedTreeItemData?.type === 'image') {
-		return (
-			<div className="w-full h-full flex justify-center items-center">
-				<img
-					className="max-w-[1000px] h-auto"
-					src={selectedTreeItemData.content}
-				/>
-			</div>
-		);
-	}
+		case 'vmd':
+			return <PackVMDRenderer />;
 
-	return (
-		<div className="w-full h-full flex justify-center items-center text-center">
-			<div className="flex gap-3">
-				<FileIcon />
-				No file selected.
-			</div>
-		</div>
-	);
+		case 'image':
+			return <PackImageRenderer />;
+
+		case 'video':
+			return <PackVideoRenderer />;
+
+		case 'db':
+			return <PackDBRenderer />;
+
+		case 'loc':
+			return <PackLocRenderer />;
+
+		default:
+			return (
+				<div className="w-full h-full flex justify-center items-center text-center">
+					<div className="flex gap-3">
+						<FileIcon />
+						No file selected or rendering is not available.
+					</div>
+				</div>
+			);
+	}
 };

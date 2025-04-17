@@ -261,10 +261,10 @@ pub fn get_migrations() -> Vec<Migration> {
             "#,
             kind: MigrationKind::Up,
         },
-		Migration {
-			version: 21,
-			description: "cleanup_duplicates_and_add_unique_indexes",
-			sql: r#"
+        Migration {
+            version: 21,
+            description: "cleanup_duplicates_and_add_unique_indexes",
+            sql: r#"
 			-- 1) mod_orders: (app_id, profile_id) composite unique
 			DELETE FROM mod_orders
 			WHERE id NOT IN (
@@ -305,8 +305,7 @@ pub fn get_migrations() -> Vec<Migration> {
 			CREATE UNIQUE INDEX IF NOT EXISTS idx_mod_versions_app_id
 			  ON mod_versions (app_id);
 			"#,
-			kind: MigrationKind::Up,
-		},
-		
+            kind: MigrationKind::Up,
+        },
     ]
 }

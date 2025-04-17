@@ -12,6 +12,8 @@ import api from '@/lib/api';
 import { modVersionStore } from '@/lib/store/mod_version';
 
 const VersionTrackingDialog = () => {
+	const modVersionData = modVersionStore(state => state.data);
+	const setModVersionData = modVersionStore(state => state.setData);
 	const changedMods = modVersionStore(state => state.changedMods);
 	const setChangedMods = modVersionStore(state => state.setChangedMods);
 	const versionInfoOpen = modVersionStore(state => state.versionInfoOpen);
@@ -24,14 +26,19 @@ const VersionTrackingDialog = () => {
 		m => m.mod_type === 'nexus_mod',
 	);
 
-	const handleAcknowledge = (modId: string, version: string | number) => {
-		setChangedMods(
-			changedMods.map(mod =>
-				mod.mod_id === modId
-					? { ...mod, latest_version: version }
+	const handleAcknowledge = (
+		modId: string | number,
+		version: string | number,
+	) => {
+		setModVersionData(
+			modVersionData.map(mod =>
+				mod.mod_id === String(modId)
+					? { ...mod, latest_version: version, version }
 					: mod,
 			),
 		);
+
+		setChangedMods(changedMods.filter(mod => mod.mod_id !== modId));
 	};
 
 	const formatVersion = (mod: any, version: string | number) => {
@@ -101,7 +108,7 @@ const VersionTrackingDialog = () => {
 								<span
 									className="text-green-500 hover:opacity-75 transition-opacity"
 									onClick={e => {
-										e.stopPropagation(); // prevent parent click
+										e.stopPropagation();
 										handleAcknowledge(
 											mod.mod_id,
 											mod.version,

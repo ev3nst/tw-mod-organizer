@@ -33,9 +33,11 @@ import { toastError } from '@/lib/utils';
 
 function BulkCategoryUpdateDialog() {
 	const [modsToChange, setModsToChange] = useState<ModItem[]>([]);
+
 	const [searchModText, setSearchModText] = useState<string>('');
 	const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) =>
 		setSearchModText(event.currentTarget.value);
+	const [activationFilter, setActivationFilter] = useState<string>('all');
 
 	const [categoriesToAdd, setCategoriesToAdd] = useState<string>('');
 	const handleCategoryChange = (event: ChangeEvent<HTMLInputElement>) =>
@@ -44,8 +46,6 @@ function BulkCategoryUpdateDialog() {
 	const [categoriesToRemove, setCategoriesToRemove] = useState<string>('');
 	const handleCategoryRemoveChange = (event: ChangeEvent<HTMLInputElement>) =>
 		setCategoriesToRemove(event.currentTarget.value);
-
-	const [activationFilter, setActivationFilter] = useState<string>('all');
 
 	const mods = modsStore(state => state.mods);
 	const metaData = modMetaStore(state => state.data);
@@ -191,7 +191,6 @@ function BulkCategoryUpdateDialog() {
 						<Input
 							className="flex-grow"
 							placeholder="C: Category (Optional) - Search Term ..."
-							defaultValue={searchModText}
 							onChange={handleSearchChange}
 						/>
 					</div>

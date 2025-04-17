@@ -78,7 +78,6 @@ export const Filter = memo(
 							ref={searchInputRef}
 							className="rounded-none ps-6 h-10 border-0"
 							placeholder="C: Category (Optional) - Search Term ..."
-							defaultValue={searchModText}
 							onChange={handleSearchChange}
 						/>
 					</div>

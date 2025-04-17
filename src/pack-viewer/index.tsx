@@ -4,8 +4,9 @@ import {
 	ResizablePanelGroup,
 } from '@/components/resizable';
 
-import { ModTree } from './tree-view';
+import { TreeView } from './tree-view';
 import { FileContents } from './file-contents';
+import { LongTextDialog } from './long-text';
 
 const PackViewer = () => {
 	return (
@@ -14,13 +15,14 @@ const PackViewer = () => {
 			className="!h-[calc(100%-37px)]"
 		>
 			<ResizablePanel defaultSize={35}>
-				<div className="overflow-y-auto h-full overflow-x-hidden divide-y">
-					<ModTree />
+				<div className="overflow-y-auto h-full overflow-x-hidden divide-y dark-scrollbar">
+					<TreeView />
 				</div>
 			</ResizablePanel>
 			<ResizableHandle withHandle />
 			<ResizablePanel defaultSize={65}>
 				<FileContents />
+				<LongTextDialog />
 			</ResizablePanel>
 		</ResizablePanelGroup>
 	);

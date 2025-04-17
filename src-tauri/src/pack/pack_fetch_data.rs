@@ -1,8 +1,10 @@
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use rpfm_lib::files::{pack::Pack, Container, FileType, RFileDecoded};
 use serde::Serialize;
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::path::PathBuf;
+
+use crate::utils::convert_dds_to_png::convert_dds_to_png;
 
 #[derive(Debug, Serialize)]
 pub struct FileContent {
@@ -45,16 +47,50 @@ pub async fn pack_fetch_data(
                 file_type: "text".to_string(),
                 content: Value::String(text.contents().to_string()),
             }),
-            RFileDecoded::Image(image) => Some(FileContent {
-                file_type: "image".to_string(),
-                content: Value::String(format!(
-                    "data:image/png;base64,{}",
-                    BASE64.encode(image.data())
-                )),
+            RFileDecoded::VMD(vmd) => Some(FileContent {
+                file_type: "vmd".to_string(),
+                content: Value::String(vmd.contents().to_string()),
             }),
+            RFileDecoded::WSModel(ws_model) => Some(FileContent {
+                file_type: "ws_model".to_string(),
+                content: Value::String(ws_model.contents().to_string()),
+            }),
+            RFileDecoded::Image(image) => {
+                let (image_data, mime_type) = if path_in_container.ends_with(".dds") {
+                    let dds_data = image.data();
+                    let png_data = convert_dds_to_png(dds_data)?;
+                    (png_data, "image/png")
+                } else {
+                    (
+                        image.data().to_vec(),
+                        match path_in_container.split('.').last() {
+                            Some("png") => "image/png",
+                            Some("jpg") | Some("jpeg") => "image/jpeg",
+                            _ => "image/png",
+                        },
+                    )
+                };
+
+                Some(FileContent {
+                    file_type: "image".to_string(),
+                    content: Value::String(format!(
+                        "data:{};base64,{}",
+                        mime_type,
+                        BASE64.encode(&image_data)
+                    )),
+                })
+            }
             RFileDecoded::Video(video) => Some(FileContent {
                 file_type: "video".to_string(),
-                content: Value::String(BASE64.encode(video.frame_data())),
+                content: json!({
+                    "format": format!("{:#?}", video.format()),
+                    "version": video.version(),
+                    "codec": video.codec_four_cc(),
+                    "width": video.width(),
+                    "height": video.height(),
+                    "frames": video.num_frames(),
+                    "framerate": video.framerate()
+                }),
             }),
             RFileDecoded::AnimsTable(anims) => Some(FileContent {
                 file_type: "anims_table".to_string(),

@@ -20,14 +20,14 @@ export const AppNav = () => {
 		<div className="flex justify-between items-center border-b">
 			{wouterLocation === '/' && <ProfileSwitcher />}
 			{wouterLocation === '/pack-viewer' && (
-				<div className="flex gap-2 ps-1">
-					<div className="font-bold flex-shrink-0">
-						Selected File:{' '}
+				<div className="flex items-baseline gap-2 ps-1">
+					<div className="font-bold flex-shrink-0 mx-1">
+						Selected File:
 					</div>
-					<div className="font-semibold truncate">
+					<div className="font-semibold truncate text-primary">
 						{selectedTreeItem?.pack_file_name}
 					</div>
-					<div className="italic text-primary truncate">
+					<div className="italic text-sm text-primary truncate">
 						{selectedTreeItem?.id}
 					</div>
 				</div>
