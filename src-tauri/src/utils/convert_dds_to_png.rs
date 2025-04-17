@@ -152,7 +152,155 @@ pub fn convert_dds_to_png(dds_data: &[u8]) -> Result<Vec<u8>, String> {
             }
         }
     } else if dds.header.spf.flags.contains(PixelFormatFlags::RGB) {
-        return Err("Uncompressed RGB DDS formats are not yet supported".to_string());
+        let raw_data = dds
+            .get_data(0)
+            .map_err(|e| format!("Failed to get uncompressed RGB data: {:?}", e))?;
+
+        let bpp = dds.header.spf.rgb_bit_count;
+        let r_mask = dds.header.spf.r_bit_mask;
+        let g_mask = dds.header.spf.g_bit_mask;
+        let b_mask = dds.header.spf.b_bit_mask;
+        let a_mask = dds.header.spf.a_bit_mask;
+
+        let r_shift = calculate_shift(r_mask.unwrap_or(0));
+        let g_shift = calculate_shift(g_mask.unwrap_or(0));
+        let b_shift = calculate_shift(b_mask.unwrap_or(0));
+        let a_shift = if a_mask.is_some() {
+            calculate_shift(a_mask.unwrap_or(0))
+        } else {
+            0
+        };
+
+        match bpp {
+            Some(32) => {
+                if raw_data.len() != width * height * 4 {
+                    return Err(format!("Unexpected data size for 32-bit RGB format"));
+                }
+
+                for i in 0..width * height {
+                    let offset = i * 4;
+                    let pixel_value = u32::from_le_bytes([
+                        raw_data[offset],
+                        raw_data[offset + 1],
+                        raw_data[offset + 2],
+                        raw_data[offset + 3],
+                    ]);
+
+                    let r = if let Some(r_mask) = r_mask {
+                        ((pixel_value & r_mask) >> r_shift) as u8
+                    } else {
+                        0
+                    };
+                    let g = if let Some(g_mask) = g_mask {
+                        ((pixel_value & g_mask) >> g_shift) as u8
+                    } else {
+                        0
+                    };
+                    let b = if let Some(b_mask) = b_mask {
+                        ((pixel_value & b_mask) >> b_shift) as u8
+                    } else {
+                        0
+                    };
+                    let a = if let Some(a_mask) = a_mask {
+                        ((pixel_value & a_mask) >> a_shift) as u8
+                    } else {
+                        255
+                    };
+
+                    rgba_data[i] =
+                        (b as u32) | ((g as u32) << 8) | ((r as u32) << 16) | ((a as u32) << 24);
+                }
+            }
+            Some(24) => {
+                if raw_data.len() != width * height * 3 {
+                    return Err(format!("Unexpected data size for 24-bit RGB format"));
+                }
+
+                for i in 0..width * height {
+                    let offset = i * 3;
+                    let pixel_value = u32::from_le_bytes([
+                        raw_data[offset],
+                        raw_data[offset + 1],
+                        raw_data[offset + 2],
+                        0,
+                    ]);
+
+                    let r = if let Some(r_mask) = r_mask {
+                        ((pixel_value & r_mask) >> r_shift) as u8
+                    } else {
+                        0
+                    };
+                    let g = if let Some(g_mask) = g_mask {
+                        ((pixel_value & g_mask) >> g_shift) as u8
+                    } else {
+                        0
+                    };
+                    let b = if let Some(b_mask) = b_mask {
+                        ((pixel_value & b_mask) >> b_shift) as u8
+                    } else {
+                        0
+                    };
+
+                    rgba_data[i] =
+                        (b as u32) | ((g as u32) << 8) | ((r as u32) << 16) | (255 << 24);
+                }
+            }
+            Some(16) => {
+                if raw_data.len() != width * height * 2 {
+                    return Err(format!("Unexpected data size for 16-bit RGB format"));
+                }
+
+                for i in 0..width * height {
+                    let offset = i * 2;
+                    let pixel_value =
+                        u16::from_le_bytes([raw_data[offset], raw_data[offset + 1]]) as u32;
+
+                    let r = if let Some(r_mask) = r_mask {
+                        ((pixel_value & r_mask) >> r_shift) as u8
+                    } else {
+                        0
+                    };
+
+                    let g = if let Some(g_mask) = g_mask {
+                        ((pixel_value & g_mask) >> g_shift) as u8
+                    } else {
+                        0
+                    };
+                    let b = if let Some(b_mask) = b_mask {
+                        ((pixel_value & b_mask) >> b_shift) as u8
+                    } else {
+                        0
+                    };
+
+                    let a = if let Some(mask) = a_mask {
+                        ((pixel_value & mask) >> a_shift) as u8
+                    } else {
+                        255
+                    };
+
+                    let r_expanded = expand_color_depth(r, r_mask.unwrap_or(0));
+                    let g_expanded = expand_color_depth(g, g_mask.unwrap_or(0));
+                    let b_expanded = expand_color_depth(b, b_mask.unwrap_or(0));
+                    let a_expanded = if let Some(mask) = a_mask {
+                        expand_color_depth(a, mask)
+                    } else {
+                        255
+                    };
+
+                    // Store in BGRA order
+                    rgba_data[i] = (b_expanded as u32)
+                        | ((g_expanded as u32) << 8)
+                        | ((r_expanded as u32) << 16)
+                        | ((a_expanded as u32) << 24);
+                }
+            }
+            Some(8) => {
+                return Err("8-bit RGB formats are not supported yet".to_string());
+            }
+            _ => {
+                return Err(format!("Unsupported RGB bit depth: {:?}", bpp));
+            }
+        }
     } else {
         if let Some(d3d_format) = dds.get_d3d_format() {
             return Err(format!("Unsupported D3D format: {:?}", d3d_format));
@@ -191,4 +339,37 @@ pub fn convert_dds_to_png(dds_data: &[u8]) -> Result<Vec<u8>, String> {
         .map_err(|e| format!("Failed to encode PNG: {:?}", e))?;
 
     Ok(png_data)
+}
+
+fn calculate_shift(mask: u32) -> u32 {
+    if mask == 0 {
+        return 0;
+    }
+
+    let mut shift = 0;
+    let mut temp_mask = mask;
+
+    while (temp_mask & 1) == 0 {
+        shift += 1;
+        temp_mask >>= 1;
+    }
+
+    shift
+}
+
+fn expand_color_depth(value: u8, mask: u32) -> u8 {
+    let mut bit_count = 0;
+    let mut temp_mask = mask >> calculate_shift(mask);
+
+    while temp_mask != 0 {
+        bit_count += 1;
+        temp_mask >>= 1;
+    }
+
+    if bit_count >= 8 {
+        return value;
+    }
+
+    let max_value = (1 << bit_count) - 1;
+    ((value as f32 / max_value as f32) * 255.0) as u8
 }
