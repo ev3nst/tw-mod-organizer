@@ -26,6 +26,8 @@ Requires Windows 10, Steam, 7z (for local mod installation).
 -   Manual mod installation directly within the app, keeping your game folders clean
 -   Nexus Mods integration — direct download with deep links
 -   Force update for Steam Workshop mods — manually check for mod updates when Steam doesn’t
+-   Pack Viewer — to check the contents of a total war mod (beta)
+-   Version Checker — informs you about potential upgrades and automatic updates from steam
 -   Simple, user-friendly UI
 
 ## Known Bugs
