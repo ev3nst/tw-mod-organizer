@@ -27,6 +27,9 @@ export const FileContents = () => {
 			if (selectedTreeItem?.id.endsWith('.material')) {
 				return <PackVMDRenderer />;
 			}
+			if (selectedTreeItem?.id.endsWith('.xml')) {
+				return <PackVMDRenderer />;
+			}
 			return <PackTextRenderer />;
 
 		case 'vmd':

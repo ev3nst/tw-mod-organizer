@@ -71,6 +71,8 @@ export function TreeViewItem({
 			switch (idEndsWith) {
 				case '.lua':
 					return <CodeIcon className="text-orange-500 mt-0.5" />;
+				case '.xml':
+					return <CodeIcon className="text-orange-500 mt-0.5" />;
 				case '.png':
 					return <ImageIcon className="text-purple-500 mt-0.5" />;
 				case '.dds':

@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Light as ReactSyntaxHighlighter } from 'react-syntax-highlighter';
-import {
-	monokaiSublime,
-	googlecode,
-} from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { LightAsync } from 'react-syntax-highlighter';
+import monokaiSublime from 'react-syntax-highlighter/dist/esm/styles/hljs/monokai-sublime';
+import googlecode from 'react-syntax-highlighter/dist/esm/styles/hljs/googlecode';
 
 import { ScrollArea } from '@/components/scroll-area';
 
@@ -36,7 +34,7 @@ export const SyntaxHighlighter = ({
 
 	return (
 		<ScrollArea className="overflow-y-auto h-full overflow-x-hidden">
-			<ReactSyntaxHighlighter
+			<LightAsync
 				language={syntax}
 				style={mode === 'dark' ? monokaiSublime : googlecode}
 				wrapLongLines
@@ -57,7 +55,7 @@ export const SyntaxHighlighter = ({
 				}}
 			>
 				{content}
-			</ReactSyntaxHighlighter>
+			</LightAsync>
 		</ScrollArea>
 	);
 };
