@@ -73,6 +73,8 @@ export function TreeViewItem({
 					return <CodeIcon className="text-orange-500 mt-0.5" />;
 				case '.png':
 					return <ImageIcon className="text-purple-500 mt-0.5" />;
+				case '.dds':
+					return <ImageIcon className="text-purple-500 mt-0.5" />;
 				case '.loc':
 					return <TypeIcon className="text-red-500 mt-0.5" />;
 				case '.variantmeshdefinition':

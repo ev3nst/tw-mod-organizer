@@ -1,4 +1,4 @@
-import { CheckIcon, XIcon } from 'lucide-react';
+import { CheckIcon, FileIcon, XIcon } from 'lucide-react';
 
 import { ScrollArea } from '@/components/scroll-area';
 import {
@@ -41,6 +41,20 @@ export const PackLocRenderer = () => {
 		selectedTreeItemLoc.data,
 		selectedTreeItemData.content.replace('text/', 't/'),
 	);
+
+	if (typeof selectedTableData === 'undefined' || !selectedTableData[0]) {
+		console.log(selectedTreeItemLoc, 'selectedTreeItemLoc');
+		console.log(selectedTreeItemData, 'selectedTreeItemData');
+		return (
+			<div className="w-full h-full flex justify-center items-center text-center">
+				<div className="flex gap-3">
+					<FileIcon />
+					Data is empty or there was an unexpected error while
+					fetching the data.
+				</div>
+			</div>
+		);
+	}
 
 	const columns = Object.keys(selectedTableData[0]);
 

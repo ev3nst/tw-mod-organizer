@@ -5,7 +5,7 @@ export const PackImageRenderer = () => {
 	if (typeof selectedTreeItemData === 'undefined') return null;
 
 	return (
-		<div className="w-full h-full flex justify-center items-center">
+		<div className="w-full h-full flex justify-center items-center overflow-auto">
 			<img
 				className="max-w-[1000px] h-auto"
 				src={selectedTreeItemData.content}

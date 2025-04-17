@@ -1,4 +1,4 @@
-import { CheckIcon, XIcon } from 'lucide-react';
+import { CheckIcon, FileIcon, XIcon } from 'lucide-react';
 
 import { ScrollArea } from '@/components/scroll-area';
 import {
@@ -41,14 +41,18 @@ export const PackDBRenderer = () => {
 		console.log(selectedTreeItemDb, 'selectedTreeItemDb');
 		console.log(selectedTreeItemData, 'selectedTreeItemData');
 		return (
-			<div>
-				Data is empty or there was an unexpected error while fetching
-				the data.
+			<div className="w-full h-full flex justify-center items-center text-center">
+				<div className="flex gap-3">
+					<FileIcon />
+					Data is empty or there was an unexpected error while
+					fetching the data.
+				</div>
 			</div>
 		);
 	}
 
 	const columns = Object.keys(selectedTableData[0]);
+
 	return (
 		<ScrollArea className="h-full w-full">
 			<div className="min-w-max">
