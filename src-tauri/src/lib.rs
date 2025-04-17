@@ -19,6 +19,7 @@ mod app_version_check;
 mod export_profile;
 mod import_data;
 mod parse_profile_json;
+mod clear_cache;
 
 mod migrations;
 
@@ -75,6 +76,7 @@ pub fn run() {
             export_profile::export_profile,
             parse_profile_json::parse_profile_json,
             app_version_check::app_version_check,
+			clear_cache::clear_cache,
             r#mod::conflicts::conflicts,
             r#mod::base_mods::base_mods,
             r#mod::local_mods::local_mods,

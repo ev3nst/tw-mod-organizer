@@ -112,7 +112,7 @@ export async function startGameTotalwar(
 	app_id: number,
 	mods: ModItemSeparatorUnion[],
 	modActivationData: ModActivationItem[],
-	saveFile?: SaveFile,
+	saveFile?: SaveFile
 ) {
 	const reverseLoadOrder = [...mods].slice().reverse();
 	let addDirectoryTxt = '';
@@ -122,7 +122,7 @@ export async function startGameTotalwar(
 
 		const mod = reverseLoadOrder[ri] as ModItem;
 		const isActive = modActivationData.some(
-			a => a.is_active === true && a.mod_id === mod.identifier,
+			a => a.is_active === true && a.mod_id === mod.identifier
 		);
 		if (!isActive) continue;
 
@@ -147,7 +147,7 @@ export async function startGameTotalwar(
 		app_id,
 		addDirectoryTxt,
 		usedModsTxt,
-		save_game,
+		save_game
 	);
 }
 
@@ -155,7 +155,7 @@ export async function startGameBannerlord(
 	app_id: number,
 	mods: ModItemSeparatorUnion[],
 	modActivationData: ModActivationItem[],
-	_saveFile?: SaveFile,
+	_saveFile?: SaveFile
 ): Promise<string> {
 	const modsToLoad = mods
 		.filter(
@@ -166,8 +166,8 @@ export async function startGameBannerlord(
 						ma.mod_id === m.identifier &&
 						!ma.is_active &&
 						(m as ModItem).item_type !== 'base_mod' &&
-						m.identifier !== 'BirthAndDeath',
-				),
+						m.identifier !== 'BirthAndDeath'
+				)
 		)
 		.map(m => {
 			const currentMod = m as ModItem;
@@ -215,11 +215,13 @@ export const buttonVariants = cva(
 				success: 'bg-green-700 text-white shadow hover:bg-green-600',
 				info: 'bg-blue-700 text-white shadow hover:bg-blue-600',
 				'success-outline':
-					'border border-green-500 text-green-500 hover:border-green-600 hover:bg-green-600 hover:text-white',
+					'border border-green-500 text-green-500 hover:border-green-600 hover:bg-green-600 hover:text-foreground',
 				'info-outline':
-					'border border-blue-500 text-blue-500 hover:border-blue-600 hover:bg-blue-600 hover:text-white',
+					'border border-blue-500 text-blue-500 hover:border-blue-600 hover:bg-blue-600 hover:text-foreground',
 				destructive:
 					'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
+				'destructive-outline':
+					'border border-red-500 text-red-500 hover:border-red-600 hover:bg-red-600 hover:text-foreground',
 				outline:
 					'border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground',
 				secondary:
@@ -238,7 +240,7 @@ export const buttonVariants = cva(
 			variant: 'default',
 			size: 'default',
 		},
-	},
+	}
 );
 
 export const availableThemes = [

@@ -395,6 +395,10 @@ class API {
 		return invoke('app_version_check');
 	}
 
+	async clear_cache(): Promise<void> {
+		return invoke('clear_cache');
+	}
+
 	async pack_files(pack_file_path: string): Promise<Record<string, any>> {
 		return invoke('pack_files', { pack_file_path });
 	}

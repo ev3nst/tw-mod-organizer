@@ -15,6 +15,7 @@ import { Separator } from '@/components/separator';
 
 import api from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
+import { ClearCache } from './clear-cache';
 
 export function Settings() {
 	const [installPath, setInstallPath] = useState('');
@@ -182,21 +183,24 @@ export function Settings() {
 					</Button>
 				</div>
 				<Separator className="my-4" />
+				<div className="flex items-center justify-between">
+					<div className="flex items-center space-x-2">
+						<Checkbox
+							id="dependency_confirmation"
+							checked={dependency_confirmation === 1}
+							onCheckedChange={isChecked =>
+								setDependencyConfirmation(isChecked ? 1 : 0)
+							}
+						/>
+						<label
+							htmlFor="dependency_confirmation"
+							className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+						>
+							Mod dependency confirmation
+						</label>
+					</div>
 
-				<div className="flex items-center space-x-2">
-					<Checkbox
-						id="dependency_confirmation"
-						checked={dependency_confirmation === 1}
-						onCheckedChange={isChecked =>
-							setDependencyConfirmation(isChecked ? 1 : 0)
-						}
-					/>
-					<label
-						htmlFor="dependency_confirmation"
-						className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-					>
-						Mod dependency confirmation
-					</label>
+					<ClearCache />
 				</div>
 			</div>
 
