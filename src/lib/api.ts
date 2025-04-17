@@ -389,8 +389,8 @@ class API {
 	}
 
 	async app_version_check(): Promise<{
-		timestamp: number;
 		version: string;
+		changelog: string;
 	}> {
 		return invoke('app_version_check');
 	}

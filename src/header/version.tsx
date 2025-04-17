@@ -14,8 +14,9 @@ import api from '@/lib/api';
 
 export const Version = () => {
 	const [newVersion, setNewVersion] = useState<string | null>(null);
+	const [changeLog, setChangeLog] = useState<string | null>(null);
 
-	const currentVersion = '0.7.1';
+	const currentVersion = '0.5.1';
 	const compareVersions = (current: string, latest: string) => {
 		const currentParts = current.split('.').map(Number);
 		const latestParts = latest.split('.').map(Number);
@@ -38,6 +39,7 @@ export const Version = () => {
 				const data = await api.app_version_check();
 				if (compareVersions(currentVersion, data.version)) {
 					setNewVersion(data.version);
+					setChangeLog(data.changelog);
 				}
 			} catch (error) {
 				console.error('Failed to fetch the latest version', error);
@@ -82,6 +84,11 @@ export const Version = () => {
 							>
 								GitHub Releases
 							</p>
+
+							<div># Changelog</div>
+							<div className="whitespace-pre-wrap break-words max-h-[300px] overflow-y-auto text-sm">
+								{changeLog}
+							</div>
 						</div>
 					</DialogContent>
 				</Dialog>
