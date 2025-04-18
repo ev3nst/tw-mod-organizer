@@ -78,6 +78,7 @@
 			"icons/icon.ico"
 		],
 		"resources": [
+			"../LICENSE",
 			"./third_party_licenses.txt",
 			"./schema_wh3.ron",
 			"./schema_wh2.ron",
@@ -89,7 +90,9 @@
 			"webviewInstallMode": {
 				"type": "embedBootstrapper"
 			}
-		}
+		},
+		"copyright": "Copyright © 2025 TW Mod Organizer",
+		"licenseFile": "../LICENSE"
 	},
 	"plugins": {
 		"deep-link": {
