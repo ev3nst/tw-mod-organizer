@@ -113,6 +113,8 @@ pub fn run() {
             steam::subscribed_mods::subscribed_mods,
             steam::unsubscribe::unsubscribe,
             steam::update_workshop_item::update_workshop_item,
+            steam::get_collection_items::get_collection_items,
+            steam::check_item_download::check_item_download,
             utils::open_external_url::open_external_url,
             utils::highlight_path::highlight_path,
         ])

@@ -52,6 +52,16 @@ export const formatFileSize = (sizeInBytes: number): string => {
 	return `${size} ${units[sizeIndex]}`;
 };
 
+export const formatFileSizeSI = (sizeInBytes: number): string => {
+	if (sizeInBytes === 0) return 'Large file / Not provided';
+
+	const units = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+	const sizeIndex = Math.floor(Math.log(sizeInBytes) / Math.log(1000));
+
+	const size = (sizeInBytes / Math.pow(1000, sizeIndex)).toFixed(3);
+	return `${size} ${units[sizeIndex]}`;
+};
+
 export function isEmptyString(str?: string): boolean {
 	return typeof str === 'undefined' || str === null || str === '';
 }
@@ -201,6 +211,15 @@ export function normalizeTimestamp(timestamp: number): number {
 
 export function capitalize(str: string): string {
 	return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+export function isValidURL(string: string) {
+	try {
+		new URL(string);
+		return true;
+	} catch (_) {
+		return false;
+	}
 }
 
 export const buttonVariants = cva(

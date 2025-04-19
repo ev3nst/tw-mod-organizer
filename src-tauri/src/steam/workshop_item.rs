@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-// Modified by Burak Kartal on [26/03/2025]
+// Modified by Burak Kartal on [19/04/2025]
 
 use std::collections::HashSet;
 
@@ -43,6 +43,7 @@ fn is_filtered_tag(tag: &str) -> bool {
 
 pub mod workshop {
     use serde::Serialize;
+    use steamworks::FileType;
 
     use crate::steam::localplayer::PlayerSteamId;
     use crate::steam::workshop::workshop::UgcItemVisibility;
@@ -311,6 +312,8 @@ pub mod workshop {
         pub preview_url: Option<String>,
         pub statistics: WorkshopItemStatistic,
         pub required_items: Vec<u64>,
+        pub file_type: String,
+        pub file_size: u32,
     }
 
     impl WorkshopItem {
@@ -329,6 +332,25 @@ pub mod workshop {
                     .collect();
 
                 let published_file_id = u64::from(item.published_file_id.0);
+
+                let file_type = match item.file_type {
+                    FileType::Community => "Community",
+                    FileType::Microtransaction => "Microtransaction",
+                    FileType::Collection => "Collection",
+                    FileType::Art => "Art",
+                    FileType::Video => "Video",
+                    FileType::Screenshot => "Screenshot",
+                    FileType::Game => "Game",
+                    FileType::Software => "Software",
+                    FileType::Concept => "Concept",
+                    FileType::WebGuide => "WebGuide",
+                    FileType::IntegratedGuide => "IntegratedGuide",
+                    FileType::Merch => "Merch",
+                    FileType::ControllerBinding => "ControllerBinding",
+                    FileType::SteamworksAccessInvite => "SteamworksAccessInvite",
+                    FileType::SteamVideo => "SteamVideo",
+                    FileType::GameManagedItem => "GameManagedItem",
+                };
 
                 Self {
                     published_file_id,
@@ -358,6 +380,8 @@ pub mod workshop {
                     preview_url: results.preview_url(index),
                     statistics: WorkshopItemStatistic::from_query_results(results, index),
                     required_items,
+                    file_type: file_type.to_string(),
+                    file_size: item.file_size,
                 }
             })
         }

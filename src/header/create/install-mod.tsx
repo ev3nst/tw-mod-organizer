@@ -285,126 +285,126 @@ export const InstallMod = () => {
 	};
 
 	return (
-		<div className="flex flex-col w-full max-h-[380px] overflow-y-auto">
-			<div className="grid grid-cols-4 items-center gap-3 pt-3">
-				<Label>
-					Name <span className="text-red-500">*</span>
-				</Label>
-				<Input
-					autoComplete="off"
-					autoCorrect="off"
-					className="col-span-3"
-					placeholder="Provide name for this mod"
-					value={name}
-					onChange={e => setName(e.currentTarget.value)}
-				/>
-			</div>
-			{sameNameWithSeparators && (
-				<p className="text-red-500 text-sm mt-1">
-					A separator with this name already exists.
-				</p>
-			)}
+		<div className="flex flex-col w-full h-full justify-between">
+			<div>
+				<div className="grid grid-cols-4 items-center gap-3 pt-3">
+					<Label>
+						Name <span className="text-red-500">*</span>
+					</Label>
+					<Input
+						autoComplete="off"
+						autoCorrect="off"
+						className="col-span-3"
+						placeholder="Provide name for this mod"
+						value={name}
+						onChange={e => setName(e.currentTarget.value)}
+					/>
+				</div>
+				{sameNameWithSeparators && (
+					<p className="text-red-500 text-sm mt-1">
+						A separator with this name already exists.
+					</p>
+				)}
 
-			<div className="grid grid-cols-4 items-center gap-3 pt-3">
-				<Label>Categories</Label>
-				<Input
-					autoComplete="off"
-					autoCorrect="off"
-					className="col-span-3"
-					placeholder="(Optional)"
-					value={categories}
-					onChange={e => setCategories(e.currentTarget.value)}
-				/>
-			</div>
+				<div className="grid grid-cols-4 items-center gap-3 pt-3">
+					<Label>Categories</Label>
+					<Input
+						autoComplete="off"
+						autoCorrect="off"
+						className="col-span-3"
+						placeholder="(Optional)"
+						value={categories}
+						onChange={e => setCategories(e.currentTarget.value)}
+					/>
+				</div>
 
-			<div className="grid grid-cols-4 items-center gap-3 pt-3">
-				<Label>Version</Label>
-				<Input
-					autoComplete="off"
-					autoCorrect="off"
-					className="col-span-3"
-					placeholder="(Optional)"
-					value={version}
-					onChange={e => setVersion(e.currentTarget.value)}
-				/>
-			</div>
+				<div className="grid grid-cols-4 items-center gap-3 pt-3">
+					<Label>Version</Label>
+					<Input
+						autoComplete="off"
+						autoCorrect="off"
+						className="col-span-3"
+						placeholder="(Optional)"
+						value={version}
+						onChange={e => setVersion(e.currentTarget.value)}
+					/>
+				</div>
 
-			<div className="grid grid-cols-4 items-center gap-3 mt-4">
-				<Label>Archive</Label>
-				<NativeFileInput
-					key={archivePath}
-					className="col-span-3"
-					dialogTitle={
-						archivePath
-							? (archivePath.split('\\').pop() ??
-								'Select Archive')
-							: 'Select Archive'
-					}
-					extensionFilter={['zip', 'rar', '7z']}
-					onFileChange={file => {
-						setArchivePath(file.path);
-						return true;
-					}}
-				/>
-			</div>
+				<div className="grid grid-cols-4 items-center gap-3 mt-4">
+					<Label>Archive</Label>
+					<NativeFileInput
+						key={archivePath}
+						className="col-span-3"
+						dialogTitle={
+							archivePath
+								? (archivePath.split('\\').pop() ??
+									'Select Archive')
+								: 'Select Archive'
+						}
+						extensionFilter={['zip', 'rar', '7z']}
+						onFileChange={file => {
+							setArchivePath(file.path);
+							return true;
+						}}
+					/>
+				</div>
 
-			{typeof downloadedModMeta.preview_url !== 'undefined' &&
-				downloadedModMeta.preview_url !== null &&
-				downloadedModMeta.preview_url !== '' && (
-					<div>
-						<img
-							src={downloadedModMeta.preview_url}
-							className="h-[50px]"
-						/>
+				{typeof downloadedModMeta.preview_url !== 'undefined' &&
+					downloadedModMeta.preview_url !== null &&
+					downloadedModMeta.preview_url !== '' && (
+						<div>
+							<img
+								src={downloadedModMeta.preview_url}
+								className="h-[50px]"
+							/>
+						</div>
+					)}
+
+				{sameNameWithMods && (
+					<div className="grid items-center mt-4">
+						<Separator className="flex-grow mb-4" />
+						<p className="mb-4 text-sm ">
+							Mod with same name exists. If you proceed to install
+							it with this name and if its a local mod existing
+							mod will be replaced. If its a
+							<span className="text-blue-500 mx-1">steam</span>
+							mod action will fail.
+						</p>
 					</div>
 				)}
 
-			{sameNameWithMods && (
-				<div className="grid items-center mt-4">
-					<Separator className="flex-grow mb-4" />
-					<p className="mb-4 text-sm ">
-						Mod with same name exists. If you proceed to install it
-						with this name and if its a local mod existing mod will
-						be replaced. If its a
-						<span className="text-blue-500 mx-1">steam</span>
-						mod action will fail.
-					</p>
-				</div>
-			)}
-
-			{modFiles.length > 1 && (
-				<RadioGroup
-					className="mt-4"
-					defaultValue={modFiles[0].filename}
-					onValueChange={value => setModPath(value)}
-				>
-					<p className="text-sm mb-2">
-						Multiple mod files/folders found, please select which
-						one to install. You may install same archive multiple
-						times for different packs if desired.
-					</p>
-					{modFiles.map(pf => (
-						<div
-							key={`rgi_${pf}`}
-							className="flex items-center space-x-2 mt-1"
-						>
-							<RadioGroupItem
-								id={`rgi_${pf.filename}`}
-								value={pf.filename}
-							/>
-							<Label htmlFor={`rgi_${pf.filename}`}>
-								{pf.filename}
-							</Label>
-						</div>
-					))}
-				</RadioGroup>
-			)}
+				{modFiles.length > 1 && (
+					<RadioGroup
+						className="mt-4"
+						defaultValue={modFiles[0].filename}
+						onValueChange={value => setModPath(value)}
+					>
+						<p className="text-sm mb-2">
+							Multiple mod files/folders found, please select
+							which one to install. You may install same archive
+							multiple times for different packs if desired.
+						</p>
+						{modFiles.map(pf => (
+							<div
+								key={`rgi_${pf}`}
+								className="flex items-center space-x-2 mt-1"
+							>
+								<RadioGroupItem
+									id={`rgi_${pf.filename}`}
+									value={pf.filename}
+								/>
+								<Label htmlFor={`rgi_${pf.filename}`}>
+									{pf.filename}
+								</Label>
+							</div>
+						))}
+					</RadioGroup>
+				)}
+			</div>
 
 			<Button
 				variant="info"
-				className={`mt-4 ${
-					isFormNotValid || loading ? 'disabled' : ''
-				}`}
+				className={`${isFormNotValid || loading ? 'disabled' : ''}`}
 				disabled={isFormNotValid || loading}
 				onClick={handleSubmit}
 			>

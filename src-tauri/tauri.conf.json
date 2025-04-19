@@ -79,12 +79,12 @@
 		],
 		"resources": [
 			"../LICENSE",
-			"./third_party_licenses.txt",
-			"./schema_wh3.ron",
-			"./schema_wh2.ron",
-			"./schema_3k.ron",
-			"./steam_api64.dll",
-			"./steam_api64.lib"
+			"../third_party_licenses.txt",
+			"../resources/schema_wh3.ron",
+			"../resources/schema_wh2.ron",
+			"../resources/schema_3k.ron",
+			"../resources/steam_api64.dll",
+			"../resources/steam_api64.lib"
 		],
 		"windows": {
 			"webviewInstallMode": {

@@ -57,6 +57,52 @@ type ModMigrationResponse = {
 	>;
 };
 
+export interface WorkshopItem {
+	published_file_id: number;
+	creator_app_id?: number;
+	consumer_app_id?: number;
+	title: string;
+	description: string;
+	owner: string;
+	time_created: number;
+	time_updated: number;
+	time_added_to_user_list: number;
+	banned: boolean;
+	accepted_for_use: boolean;
+	tags: string;
+	tags_truncated: boolean;
+	url: string;
+	num_upvotes: number;
+	num_downvotes: number;
+	num_children: number;
+	preview_url?: string;
+	required_items: number[];
+	file_type: string;
+	file_size: number;
+}
+
+export type SteamCollection = {
+	details: {
+		id: number;
+		title: string;
+		description: string;
+		preview_url?: string;
+		time_created: number;
+		time_updated: number;
+		num_upvotes: number;
+		num_downvotes: number;
+	};
+	items: WorkshopItem[];
+};
+
+export type SteamDownloadState = {
+	is_downloading: boolean;
+	downloaded_bytes: number;
+	total_bytes: number;
+	progress_percentage: number;
+	download_complete: boolean;
+};
+
 class API {
 	async supported_games(): Promise<IGameMeta[]> {
 		return invoke('supported_games');
@@ -163,8 +209,28 @@ class API {
 		});
 	}
 
+	async check_item_download(
+		app_id: number,
+		item_id: number,
+	): Promise<SteamDownloadState> {
+		return invoke('check_item_download', {
+			app_id,
+			item_id,
+		});
+	}
+
 	async update_workshop_item(app_id: number, item_id: number): Promise<void> {
 		return invoke('update_workshop_item', {
+			app_id,
+			item_id,
+		});
+	}
+
+	async get_collection_items(
+		app_id: number,
+		item_id: number,
+	): Promise<SteamCollection> {
+		return invoke('get_collection_items', {
 			app_id,
 			item_id,
 		});

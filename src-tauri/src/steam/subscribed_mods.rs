@@ -4,17 +4,18 @@ use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::io::{Read, Write};
 use std::path::PathBuf;
-use steamworks::{Client, PublishedFileId};
+use steamworks::Client;
 use tauri::path::BaseDirectory;
 use tauri::Manager;
+use tokio::task::spawn_blocking;
 
 use crate::game::supported_games::SUPPORTED_GAMES;
 use crate::r#mod::base_mods::{ModItem, ModVersion};
 use crate::r#mod::totalwar;
-use crate::steam::workshop_item::workshop::WorkshopItemsResult;
 use crate::xml::submodule_contents::{submodule_contents, SubModuleContents};
 use crate::AppState;
 
+use super::get_workshop_items::get_workshop_items;
 use super::workshop_path_for_app::workshop_path_for_app;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -62,69 +63,19 @@ pub async fn subscribed_mods(
             .map_err(|e| format!("Failed to create cache directory: {}", e))?;
     }
 
-    let (tx, mut rx) = tokio::sync::mpsc::channel(32);
-    let items_task = tokio::task::spawn_blocking(move || {
-        let ugc = steam_client.ugc();
-        let subscribed_items = ugc.subscribed_items();
+    let subscribed_items: Vec<steamworks::PublishedFileId> = spawn_blocking({
+        let steam_client = steam_client.clone();
+        move || steam_client.ugc().subscribed_items()
+    })
+    .await
+    .map_err(|e| format!("Failed to fetch subscribed items: {}", e))?;
 
-        let item_ids: Vec<u64> = subscribed_items.iter().map(|id| id.0).collect();
-        if item_ids.is_empty() {
-            return Ok(WorkshopItemsResult {
-                items: Vec::new(),
-                was_cached: false,
-            });
-        }
-
-        let (tx_inner, rx_inner) = std::sync::mpsc::channel();
-        let query_handle = ugc
-            .query_items(item_ids.iter().map(|id| PublishedFileId(*id)).collect())
-            .map_err(|e| format!("Failed to create query handle: {}", e))?;
-
-        query_handle
-            .include_children(true)
-            .fetch(move |fetch_result| {
-                let _ = tx_inner.send(
-                    fetch_result
-                        .map(|query_results| WorkshopItemsResult::from_query_results(query_results))
-                        .map_err(|e| format!("Steam API error: {}", e)),
-                );
-            });
-
-        let start_time = std::time::Instant::now();
-        let timeout_duration = std::time::Duration::from_secs(30);
-
-        loop {
-            let _ = tx.blocking_send(());
-            if let Ok(result) = rx_inner.try_recv() {
-                return result;
-            }
-
-            if start_time.elapsed() > timeout_duration {
-                return Err("Operation timed out waiting for Steam response".to_string());
-            }
-
-            std::thread::sleep(std::time::Duration::from_millis(10));
-        }
-    });
-
-    let mut items_result = None;
-    let mut fused_task = items_task.fuse();
-
-    while items_result.is_none() {
-        tokio::select! {
-            Some(_) = rx.recv() => {
-                app_state.steam_state.run_callbacks(app_id)?;
-            }
-            task_result = &mut fused_task => {
-                items_result = Some(
-                    task_result.map_err(|e| format!("Task error: {}", e))?
-                );
-                break;
-            }
-        }
+    let item_ids: Vec<u64> = subscribed_items.iter().map(|id| id.0).collect();
+    if item_ids.is_empty() {
+        return Ok(Vec::new());
     }
+    let items_result = get_workshop_items(app_state.clone(), app_id, item_ids).await;
 
-    let items_result = items_result.unwrap()?;
     let workshop_base_path = workshop_path_for_app(app_id);
 
     let mut creator_ids = Vec::new();
@@ -135,7 +86,7 @@ pub async fn subscribed_mods(
     let (creator_tx, mut creator_rx) = tokio::sync::mpsc::channel(32);
 
     if let Some(ref base_path) = workshop_base_path {
-        for item in items_result.items.into_iter().flatten() {
+        for item in items_result.into_iter().flatten() {
             creator_ids.push(item.owner.raw);
 
             let item_path = PathBuf::from(base_path).join(&item.published_file_id.to_string());

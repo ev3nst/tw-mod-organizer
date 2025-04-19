@@ -25,6 +25,7 @@ Requires Windows 10, Steam, 7z (for local mod installation).
 -   Fast and smart filtering to quickly find your mods
 -   Manual mod installation directly within the app, keeping your game folders clean
 -   Nexus Mods integration — direct download with deep links
+-   Steam Collection — allows you to import whole collection of mods
 -   Force update for Steam Workshop mods — manually check for mod updates when Steam doesn’t
 -   Pack Viewer — to check the contents of a total war mod (beta)
 -   Version Checker — informs you about potential upgrades and automatic updates from steam
@@ -56,7 +57,7 @@ bun tauri dev
 
 Build the Tauri app
 
-> You need Steam API SDK files. steamworks-rs dynamically loads without any manual setup while in development mode but for bundling you would want to put those files in ./src-tauri. There is also schema files thats used to decode .pack file's database data which can be found in [rpfm-schemas](https://github.com/Frodo45127/rpfm-schemas).
+> You need Steam API SDK files. steamworks-rs dynamically loads without any manual setup while in development mode but for bundling you would want to put those files in ./resources. There is also schema files thats used to decode .pack file's database data which can be found in [rpfm-schemas](https://github.com/Frodo45127/rpfm-schemas).
 
 ```sh
 bun tauri build
