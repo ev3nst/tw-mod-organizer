@@ -1,7 +1,4 @@
-use std::{
-    os::windows::process::CommandExt,
-    process::Command,
-};
+use std::{os::windows::process::CommandExt, process::Command};
 
 #[tauri::command(rename_all = "snake_case")]
 pub fn open_pack_file(pack_file_path: String) -> Result<(), String> {
