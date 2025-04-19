@@ -96,13 +96,27 @@ const VersionTrackingDialog = () => {
 						<div>{mod.title}</div>
 
 						<div className="flex items-center gap-1">
-							<span className="text-xs italic">
-								{formatVersion(mod, mod.version)}
-							</span>
-							<span>-</span>
-							<span className="text-xs italic text-green-500">
-								{formatVersion(mod, mod.latest_version)}
-							</span>
+							{mod.mod_type === 'steam_mod' ? (
+								<>
+									<span className="text-xs italic">
+										{formatVersion(mod, mod.latest_version)}
+									</span>
+									<span>-</span>
+									<span className="text-xs italic text-green-500">
+										{formatVersion(mod, mod.version)}
+									</span>
+								</>
+							) : (
+								<>
+									<span className="text-xs italic">
+										{formatVersion(mod, mod.version)}
+									</span>
+									<span>-</span>
+									<span className="text-xs italic text-green-500">
+										{formatVersion(mod, mod.latest_version)}
+									</span>
+								</>
+							)}
 
 							{showAcknowledge && (
 								<span
