@@ -1,17 +1,25 @@
 import { useEffect, useState } from 'react';
-import { ArrowDownUpIcon, InfoIcon, XIcon } from 'lucide-react';
+import {
+	ArrowDownUpIcon,
+	FolderIcon,
+	InfoIcon,
+	RemoveFormattingIcon,
+	TypeIcon,
+	XIcon,
+} from 'lucide-react';
 
 import { listen } from '@tauri-apps/api/event';
 
 import { SidebarInput } from '@/components/sidebar';
 import { PaginationControls } from '@/components/pagination-controls';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/tooltip';
 import { Button } from '@/components/button';
 
 import api from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 import { modActivationStore } from '@/lib/store/mod_activation';
-import { formatFileSize, toastError } from '@/lib/utils';
 import { saveFilesStore, type SaveFile } from '@/lib/store/save_files';
+import { formatFileSize, toastError } from '@/lib/utils';
 
 export const Saves = () => {
 	const [saveFiles, setSaveFiles] = useState<SaveFile[]>([]);
@@ -19,6 +27,11 @@ export const Saves = () => {
 	const [searchQuery, setSearchQuery] = useState('');
 	const [currentPage, setCurrentPage] = useState(1);
 	const [perPage, setPerPage] = useState(5);
+
+	const compact_save_names = settingStore(state => state.compact_save_names);
+	const setCompactSaveNames = settingStore(
+		state => state.setCompactSaveNames,
+	);
 
 	const setSaveFileDialogOpen = saveFilesStore(
 		state => state.setSaveFileDialogOpen,
@@ -191,6 +204,21 @@ export const Saves = () => {
 		setSaveFiles([...saveFiles].reverse());
 	};
 
+	function cleanFileName(filename: string) {
+		if (filename.endsWith('.sav')) {
+			return filename
+				.replace(/\.[^/.]+$/, '')
+				.replace(/[0-9a-fA-F]+$/, '');
+		}
+
+		if (filename.includes('.')) {
+			let nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
+			let finalName = nameWithoutExt.split('.')[0];
+			return finalName;
+		}
+		return filename;
+	}
+
 	return (
 		<div>
 			<div className="flex gap-4 items-center px-3 mb-2">
@@ -203,9 +231,55 @@ export const Saves = () => {
 					<ArrowDownUpIcon />
 				</Button>
 			</div>
-			<p className="px-3 text-sm text-muted-foreground mb-2">
-				You can select a save file to continue.
-			</p>
+			<div className="flex items-center justify-between gap-4 mb-2">
+				<p className="px-3 text-sm text-muted-foreground">
+					You can select a save file to continue.
+				</p>
+				<div className="flex items-center gap-1 pe-2">
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								className="hover:text-blue-500 h-5 w-5 [&_svg]:size-3"
+								variant="ghost"
+								size="icon"
+								onClick={() =>
+									setCompactSaveNames(
+										compact_save_names === 0 ? 1 : 0,
+									)
+								}
+							>
+								{compact_save_names ? (
+									<RemoveFormattingIcon />
+								) : (
+									<TypeIcon />
+								)}
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							<p>Compact save names</p>
+						</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								className="hover:text-blue-500 h-5 w-5 [&_svg]:size-3"
+								variant="ghost"
+								size="icon"
+								onClick={() =>
+									api.highlight_path(
+										selectedGame?.save_path_folder as string,
+									)
+								}
+							>
+								<FolderIcon />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							<p>Open Saves Folder</p>
+						</TooltipContent>
+					</Tooltip>
+				</div>
+			</div>
 
 			{paginatedFiles.length > 0 ? (
 				paginatedFiles.map((sf, sfi) => (
@@ -234,7 +308,9 @@ export const Saves = () => {
 										: ''
 								}
 							>
-								{sf.filename}
+								{compact_save_names
+									? cleanFileName(sf.filename)
+									: sf.filename}
 							</div>
 							<div className="text-xs text-muted-foreground mt-1.5 flex justify-between">
 								<span>

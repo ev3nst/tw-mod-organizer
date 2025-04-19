@@ -307,5 +307,13 @@ pub fn get_migrations() -> Vec<Migration> {
 			"#,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 22,
+            description: "add_compact_save_names_to_settings",
+            sql: r#"
+			ALTER TABLE settings ADD COLUMN compact_save_names INTEGER DEFAULT 0 CHECK(compact_save_names IN (0, 1));
+			"#,
+            kind: MigrationKind::Up,
+        },
     ]
 }

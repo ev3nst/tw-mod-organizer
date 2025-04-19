@@ -49,6 +49,7 @@ export type Setting = {
 	preview_size: number;
 	include_hidden_downloads: 1 | 0;
 	compact_archive_names: 1 | 0;
+	compact_save_names: 1 | 0;
 	sidebar_accordion: 'saves' | 'downloads';
 	mod_table_scroll: number;
 };
@@ -129,6 +130,7 @@ export class SettingModel {
 					preview_size: 6,
 					include_hidden_downloads: 0,
 					compact_archive_names: 0,
+					compact_save_names: 0,
 					sidebar_accordion: 'saves',
 					mod_table_scroll: 0,
 				});
@@ -285,6 +287,15 @@ export class SettingModel {
 		this.props.compact_archive_names = value;
 	}
 
+	// Compact Save Names
+	get compact_save_names(): 1 | 0 {
+		return this.props.compact_save_names;
+	}
+
+	set compact_save_names(value: 1 | 0) {
+		this.props.compact_save_names = value;
+	}
+
 	// Sidebar Accordion
 	get sidebar_accordion(): 'saves' | 'downloads' {
 		return this.props.sidebar_accordion;
@@ -370,6 +381,9 @@ type SettingStore = {
 
 	compact_archive_names: 1 | 0;
 	setCompactArchiveNames: (compact_archive_names: 1 | 0) => void;
+
+	compact_save_names: 1 | 0;
+	setCompactSaveNames: (compact_save_names: 1 | 0) => void;
 
 	sidebar_accordion: 'saves' | 'downloads';
 	setSidebarAccordion: (sidebar_accordion: 'saves' | 'downloads') => void;
@@ -527,6 +541,12 @@ export const settingStore = create<SettingStore>(set => ({
 		debounceCallback(syncSetting);
 	},
 
+	compact_save_names: 0,
+	setCompactSaveNames: compact_save_names => {
+		set({ compact_save_names });
+		debounceCallback(syncSetting);
+	},
+
 	sidebar_accordion: 'saves',
 	setSidebarAccordion: sidebar_accordion => {
 		set({ sidebar_accordion });
@@ -643,6 +663,11 @@ const syncSetting = async () => {
 
 	if (setting.compact_archive_names !== state.compact_archive_names) {
 		setting.compact_archive_names = state.compact_archive_names ? 1 : 0;
+		changed = true;
+	}
+
+	if (setting.compact_save_names !== state.compact_save_names) {
+		setting.compact_save_names = state.compact_save_names ? 1 : 0;
 		changed = true;
 	}
 

@@ -47,6 +47,9 @@ function AppInit() {
 	const setCompactArchiveNames = settingStore(
 		state => state.setCompactArchiveNames,
 	);
+	const setCompactSaveNames = settingStore(
+		state => state.setCompactSaveNames,
+	);
 	const setSidebarAccordion = settingStore(
 		state => state.setSidebarAccordion,
 	);
@@ -72,6 +75,7 @@ function AppInit() {
 		setPreviewSize(setting.preview_size);
 		setIncludeHiddenDownloads(setting.include_hidden_downloads);
 		setCompactArchiveNames(setting.compact_archive_names);
+		setCompactSaveNames(setting.compact_save_names);
 		setSidebarAccordion(setting.sidebar_accordion);
 		setNexusAuthApi(setting.nexus_api_key ?? null);
 		setNexusAuthParams(

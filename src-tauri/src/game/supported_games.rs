@@ -103,7 +103,43 @@ impl Game {
     }
 }
 
+#[derive(Debug, Serialize)]
+pub struct GameWithPath<'a> {
+    pub name: &'a str,
+    pub slug: &'a str,
+    pub save_path_folder: Option<String>,
+    pub save_file_extension: &'a str,
+    pub exe_name: &'a str,
+    pub exe_folder: &'a str,
+    pub steam_id: u32,
+    pub steam_folder_name: &'a str,
+    pub nexus_slug: &'a str,
+    pub nexus_id: u128,
+    pub r#type: &'a str,
+    pub schema_file: &'a str,
+}
+
 #[tauri::command(rename_all = "snake_case")]
-pub fn supported_games() -> Result<&'static [Game], String> {
-    Ok(SUPPORTED_GAMES)
+pub fn supported_games() -> Result<Vec<GameWithPath<'static>>, String> {
+    let mut games_with_paths = Vec::new();
+
+    for game in SUPPORTED_GAMES.iter() {
+        let path_result = game.save_path_folder().ok();
+        games_with_paths.push(GameWithPath {
+            name: game.name,
+            slug: game.slug,
+            save_path_folder: path_result,
+            save_file_extension: game.save_file_extension,
+            exe_name: game.exe_name,
+            exe_folder: game.exe_folder,
+            steam_id: game.steam_id,
+            steam_folder_name: game.steam_folder_name,
+            nexus_slug: game.nexus_slug,
+            nexus_id: game.nexus_id,
+            r#type: game.r#type,
+            schema_file: game.schema_file,
+        });
+    }
+
+    Ok(games_with_paths)
 }
