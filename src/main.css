@@ -863,3 +863,7 @@ html.dark .w-color-alpha {
 .dark-scrollbar::-webkit-scrollbar {
 	width: 10px;
 }
+
+.dark-scrollbar::-webkit-scrollbar {
+	height: 10px;
+}

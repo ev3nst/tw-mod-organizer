@@ -36,8 +36,10 @@ function SendToSeparatorDialog() {
 	);
 
 	const separators = modSeparatorStore(state => state.data);
-	const filteredSeparators = separators.filter(separator =>
-		separator.title.toLowerCase().includes(search.toLowerCase()) || separator.title.toLowerCase() === search.toLowerCase(),
+	const filteredSeparators = separators.filter(
+		separator =>
+			separator.title.toLowerCase().includes(search.toLowerCase()) ||
+			separator.title.toLowerCase() === search.toLowerCase(),
 	);
 
 	const handleSend = () => {
@@ -94,76 +96,82 @@ function SendToSeparatorDialog() {
 
 	return (
 		<Dialog
-            open={sendToSeparatorOpen && typeof selectedMod !== 'undefined'}
-            onOpenChange={() => toggleSendToSeparator()}
-        >
-            <DialogContent className="min-w-[400px]">
-                <DialogHeader>
-                    <DialogTitle className="flex items-baseline gap-3">
-                        <div className="whitespace-nowrap">
-                            Send to Separator
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                            {selectedMod.title}
-                        </div>
-                    </DialogTitle>
-                    <DialogDescription className="text-xs mt-1 break-all">
-                        {typeof (selectedMod as ModItem)?.mod_file !== 'undefined'
-                            ? (selectedMod as ModItem)?.mod_file
-                            : selectedMod?.title}
-                    </DialogDescription>
-                </DialogHeader>
-                
-                <div className="flex flex-col gap-3">
-                    <Label>Select Separator</Label>
-                    
-                    <div className="flex flex-col gap-2">
-                        <Input
-                            type="text"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search separator..."
-                            className="w-full"
-                        />
-                        
-                        <div className="relative">
-                            {filteredSeparators.length === 0 ? (
-                                <div className="text-sm text-muted-foreground p-2 text-center">
-                                    No separator found.
-                                </div>
-                            ) : (
-                                <div className="max-h-[200px] overflow-y-auto border rounded-md">
-                                    {filteredSeparators.map(separator => (
-                                        <div
-                                            key={separator.identifier}
-                                            className={`
-                                                px-3 py-2 cursor-pointer hover:bg-secondary-bg
-                                                ${selectedSeparator?.identifier === separator.identifier 
-                                                    ? 'bg-secondary-bg' 
-                                                    : ''}
-                                            `}
-                                            onClick={() => setSelectedSeparator(separator)}
-                                        >
-                                            {separator.title}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
+			open={sendToSeparatorOpen && typeof selectedMod !== 'undefined'}
+			onOpenChange={() => toggleSendToSeparator()}
+		>
+			<DialogContent className="min-w-[400px]">
+				<DialogHeader>
+					<DialogTitle className="flex items-baseline gap-3">
+						<div className="whitespace-nowrap">
+							Send to Separator
+						</div>
+						<div className="text-sm text-muted-foreground">
+							{selectedMod.title}
+						</div>
+					</DialogTitle>
+					<DialogDescription className="text-xs mt-1 break-all">
+						{typeof (selectedMod as ModItem)?.mod_file !==
+						'undefined'
+							? (selectedMod as ModItem)?.mod_file
+							: selectedMod?.title}
+					</DialogDescription>
+				</DialogHeader>
 
-                <Button
-                    className="w-full"
-                    type="button"
-                    variant="info"
-                    onClick={handleSend}
-                    disabled={!selectedSeparator}
-                >
-                    Send
-                </Button>
-            </DialogContent>
-        </Dialog>
+				<div className="flex flex-col gap-3">
+					<Label>Select Separator</Label>
+
+					<div className="flex flex-col gap-2">
+						<Input
+							type="text"
+							value={search}
+							onChange={e => setSearch(e.target.value)}
+							placeholder="Search separator..."
+							className="w-full"
+						/>
+
+						<div className="relative">
+							{filteredSeparators.length === 0 ? (
+								<div className="text-sm text-muted-foreground p-2 text-center">
+									No separator found.
+								</div>
+							) : (
+								<div className="max-h-[200px] overflow-y-auto border rounded-md">
+									{filteredSeparators.map(separator => (
+										<div
+											key={separator.identifier}
+											className={`
+                                                px-3 py-2 cursor-pointer hover:bg-secondary-bg
+                                                ${
+													selectedSeparator?.identifier ===
+													separator.identifier
+														? 'bg-secondary-bg'
+														: ''
+												}
+                                            `}
+											onClick={() =>
+												setSelectedSeparator(separator)
+											}
+										>
+											{separator.title}
+										</div>
+									))}
+								</div>
+							)}
+						</div>
+					</div>
+				</div>
+
+				<Button
+					className="w-full"
+					type="button"
+					variant="info"
+					onClick={handleSend}
+					disabled={!selectedSeparator}
+				>
+					Send
+				</Button>
+			</DialogContent>
+		</Dialog>
 	);
 }
 

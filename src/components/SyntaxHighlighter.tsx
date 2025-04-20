@@ -1,9 +1,8 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { LightAsync } from 'react-syntax-highlighter';
 import monokaiSublime from 'react-syntax-highlighter/dist/esm/styles/hljs/monokai-sublime';
 import googlecode from 'react-syntax-highlighter/dist/esm/styles/hljs/googlecode';
 import { VariableSizeList as List } from 'react-window';
-import { ScrollArea } from '@/components/scroll-area';
 
 export const SyntaxHighlighter = ({
 	syntax,
@@ -54,12 +53,17 @@ export const SyntaxHighlighter = ({
 		}
 	}, []);
 
+	const lineHeights = useMemo(() => {
+		return lines.map(line => {
+			const baseHeight = 21;
+			const estimatedLineLength = Math.floor(containerWidth / 8);
+			const wrappedLines = Math.ceil(line.length / estimatedLineLength);
+			return baseHeight * Math.max(1, wrappedLines);
+		});
+	}, [lines, containerWidth]);
+
 	const getLineHeight = (index: number) => {
-		const line = lines[index] || '';
-		const baseHeight = 21;
-		const estimatedLineLength = Math.floor(containerWidth / 8);
-		const wrappedLines = Math.ceil(line.length / estimatedLineLength);
-		return baseHeight * Math.max(1, wrappedLines);
+		return lineHeights[index] || 21;
 	};
 
 	const LineRenderer = ({
@@ -78,6 +82,7 @@ export const SyntaxHighlighter = ({
 						style={{
 							minWidth: '2em',
 							paddingRight: '0.5em',
+							paddingLeft: '1em',
 							color: '#888',
 							userSelect: 'none',
 						}}
@@ -114,28 +119,30 @@ export const SyntaxHighlighter = ({
 
 	return (
 		<div className="h-full w-full" ref={containerRef}>
-			<ScrollArea className="overflow-y-auto h-full overflow-x-hidden">
-				<div
-					style={{
-						fontFamily:
-							'"Fira Code", Consolas, Menlo, Monaco, "Courier New", monospace',
-						fontSize: '13px',
-						background: 'hsl(var(--background))',
-					}}
-				>
-					{lines.length > 0 && (
-						<List
-							height={containerHeight}
-							itemCount={lines.length}
-							itemSize={getLineHeight}
-							width="100%"
-							overscanCount={20}
-						>
-							{LineRenderer}
-						</List>
-					)}
-				</div>
-			</ScrollArea>
+			<div
+				className="h-full w-full"
+				style={{
+					fontFamily:
+						'"Fira Code", Consolas, Menlo, Monaco, "Courier New", monospace',
+					fontSize: '13px',
+					background: 'hsl(var(--background))',
+				}}
+			>
+				{lines.length > 0 && (
+					<List
+						className="dark-scrollbar"
+						height={containerHeight}
+						itemCount={lines.length}
+						itemSize={getLineHeight}
+						width="100%"
+						overscanCount={5}
+						estimatedItemSize={21}
+						useIsScrolling
+					>
+						{LineRenderer}
+					</List>
+				)}
+			</div>
 		</div>
 	);
 };
