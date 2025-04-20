@@ -39,8 +39,6 @@ function SendToSeparatorDialog() {
 	const filteredSeparators = separators.filter(separator =>
 		separator.title.toLowerCase().includes(search.toLowerCase()) || separator.title.toLowerCase() === search.toLowerCase(),
 	);
-	console.log(search, 'search')
-	console.log(filteredSeparators, 'filteredSeparators')
 
 	const handleSend = () => {
 		if (!selectedSeparator || !selectedMod) return;
