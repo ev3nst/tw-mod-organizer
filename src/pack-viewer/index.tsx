@@ -14,14 +14,19 @@ const PackViewer = () => {
 			direction="horizontal"
 			className="!h-[calc(100%-37px)]"
 		>
-			<ResizablePanel defaultSize={35}>
+			<ResizablePanel defaultSize={25}>
 				<div className="overflow-y-auto h-full overflow-x-hidden divide-y dark-scrollbar">
 					<TreeView />
 				</div>
 			</ResizablePanel>
 			<ResizableHandle withHandle />
-			<ResizablePanel defaultSize={65}>
-				<FileContents />
+			<ResizablePanel
+				defaultSize={75}
+				className="relative overflow-hidden"
+			>
+				<div className="h-full w-full overflow-auto dark-scrollbar">
+					<FileContents />
+				</div>
 				<LongTextDialog />
 			</ResizablePanel>
 		</ResizablePanelGroup>

@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import { ChevronFirst, ChevronLast } from 'lucide-react';
 
 import {
@@ -18,6 +18,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/select';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/popover';
+import { Input } from '@/components/input';
 
 interface PaginationControlsProps {
 	currentPage: number;
@@ -38,19 +40,18 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
 	perPageOptions = [5, 10, 20, 30, 50],
 	isCompact,
 }) => {
+	const [goToPage, setGoToPage] = useState<string>('');
+
 	const totalPages = Math.ceil(totalItems / perPage);
 	const startItem = (currentPage - 1) * perPage + 1;
 	const endItem = Math.min(currentPage * perPage, totalItems);
 
-	// Calculate which page numbers to show
 	const getPageNumbers = () => {
 		const pageNumbers: number[] = [];
-		const maxVisible = 3; // Show 3 page numbers at a time
-
+		const maxVisible = 3;
 		let startPage = Math.max(currentPage - Math.floor(maxVisible / 2), 1);
 		const endPage = Math.min(startPage + maxVisible - 1, totalPages);
 
-		// Adjust start page if end page is maxed out
 		startPage = Math.max(endPage - maxVisible + 1, 1);
 
 		for (let i = startPage; i <= endPage; i++) {
@@ -67,7 +68,9 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
 			<div className="flex flex-col sm:flex-row items-center justify-between">
 				<div className="flex items-center gap-2">
 					{!isCompact && (
-						<span className="text-sm font-medium">Per Page:</span>
+						<span className="text-sm font-medium whitespace-nowrap">
+							Per Page:
+						</span>
 					)}
 					<Select
 						value={perPage.toString()}
@@ -75,7 +78,9 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
 					>
 						<SelectTrigger
 							className={
-								isCompact ? 'w-[50px] justify-center' : ''
+								isCompact
+									? 'w-[50px] justify-center'
+									: 'w-[80px] mx-1'
 							}
 							disableIcon={isCompact}
 						>
@@ -95,80 +100,129 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
 				</div>
 
 				{!isCompact && (
-					<div className="text-sm text-gray-500">
+					<div className="text-sm text-muted-foreground ms-4">
 						Viewing {totalItems > 0 ? startItem : 0}-{endItem} of{' '}
 						{totalItems} items
 					</div>
 				)}
 			</div>
 
-			<Pagination>
-				<PaginationContent>
-					<PaginationItem>
-						<Button
-							className="[&_svg]:size-3.5 w-8 h-8"
-							variant="ghost"
-							size="icon"
-							onClick={() => onPageChange(1)}
-							disabled={currentPage === 1}
-							aria-label="Go to first page"
-						>
-							<ChevronFirst className="h-4 w-4" />
+			<div className="flex items-center gap-2">
+				{/* Go To Page Popover */}
+				<Popover>
+					<PopoverTrigger asChild>
+						<Button variant="outline" size="sm" className="w-30">
+							Go To Page
 						</Button>
-					</PaginationItem>
-
-					<PaginationItem>
-						<PaginationPrevious
-							onClick={() => onPageChange(currentPage - 1)}
-							disabled={currentPage === 1}
-						/>
-					</PaginationItem>
-
-					{!isCompact && pageNumbers[0] > 1 && (
-						<PaginationItem>
-							<PaginationEllipsis />
-						</PaginationItem>
-					)}
-
-					{pageNumbers.map(page => (
-						<PaginationItem key={page}>
-							<PaginationLink
-								isActive={page === currentPage}
-								onClick={() => onPageChange(page)}
+					</PopoverTrigger>
+					<PopoverContent className="w-40">
+						<div className="flex flex-col gap-2">
+							<Input
+								type="number"
+								placeholder={`Page # (1-${totalPages})`}
+								value={goToPage}
+								onChange={e => {
+									let page = parseInt(e.target.value, 10);
+									if (page > totalPages) {
+										page = totalPages;
+									}
+									setGoToPage(String(page));
+								}}
+								className="w-full"
+								min={1}
+								max={totalPages}
+							/>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => {
+									const page = parseInt(goToPage, 10);
+									if (
+										!isNaN(page) &&
+										page >= 1 &&
+										page <= totalPages
+									) {
+										onPageChange(page);
+										setGoToPage('');
+									}
+								}}
 							>
-								{page}
-							</PaginationLink>
-						</PaginationItem>
-					))}
+								Go
+							</Button>
+						</div>
+					</PopoverContent>
+				</Popover>
 
-					{!isCompact &&
-						pageNumbers[pageNumbers.length - 1] < totalPages && (
+				<Pagination>
+					<PaginationContent>
+						<PaginationItem>
+							<Button
+								className="[&_svg]:size-3.5 w-8 h-8"
+								variant="ghost"
+								size="icon"
+								onClick={() => onPageChange(1)}
+								disabled={currentPage === 1}
+								aria-label="Go to first page"
+							>
+								<ChevronFirst className="h-4 w-4" />
+							</Button>
+						</PaginationItem>
+
+						<PaginationItem>
+							<PaginationPrevious
+								onClick={() => onPageChange(currentPage - 1)}
+								disabled={currentPage === 1}
+							/>
+						</PaginationItem>
+
+						{!isCompact && pageNumbers[0] > 1 && (
 							<PaginationItem>
 								<PaginationEllipsis />
 							</PaginationItem>
 						)}
 
-					<PaginationItem>
-						<PaginationNext
-							onClick={() => onPageChange(currentPage + 1)}
-							disabled={currentPage >= totalPages}
-						/>
-					</PaginationItem>
+						{pageNumbers.map(page => (
+							<PaginationItem key={page}>
+								<PaginationLink
+									isActive={page === currentPage}
+									onClick={() => onPageChange(page)}
+								>
+									{page}
+								</PaginationLink>
+							</PaginationItem>
+						))}
 
-					<PaginationItem>
-						<Button
-							className="[&_svg]:size-3.5 w-8 h-8"
-							variant="ghost"
-							size="icon"
-							onClick={() => onPageChange(totalPages)}
-							disabled={currentPage >= totalPages}
-							aria-label="Go to last page"
-						>
-							<ChevronLast className="h-4 w-4" />
-						</Button>
-					</PaginationItem>
-				</PaginationContent>
-			</Pagination>
+						{!isCompact &&
+							pageNumbers[pageNumbers.length - 1] <
+								totalPages && (
+								<PaginationItem>
+									<PaginationEllipsis />
+								</PaginationItem>
+							)}
+
+						<PaginationItem>
+							<PaginationNext
+								onClick={() => onPageChange(currentPage + 1)}
+								disabled={currentPage >= totalPages}
+							/>
+						</PaginationItem>
+
+						<PaginationItem>
+							<Button
+								className="[&_svg]:size-3.5 w-8 h-8"
+								variant="ghost"
+								size="icon"
+								onClick={() => onPageChange(totalPages)}
+								disabled={currentPage >= totalPages}
+								aria-label="Go to last page"
+							>
+								<ChevronLast className="h-4 w-4" />
+							</Button>
+						</PaginationItem>
+						<div className="text-sm">Total: {totalPages}</div>
+					</PaginationContent>
+				</Pagination>
+			</div>
 		</div>
 	);
 };
