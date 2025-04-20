@@ -16,15 +16,10 @@ export const Order = memo(
 		const toggleCollapse = modSeparatorStore(state => state.toggleCollapse);
 
 		if (isSeparator(mod)) {
-			const cellStyle = {
-				backgroundColor: mod.background_color,
-				color: mod.text_color,
-			};
-
 			const modCollapsed = isCollapsed(separators, mod.identifier);
 
 			return (
-				<TableCell className="select-none w-[40px]" style={cellStyle}>
+				<TableCell className="select-none w-[40px]">
 					<div
 						className="flex items-center justify-center hover:cursor-pointer hover:opacity-70"
 						onClick={() => toggleCollapse(mod.identifier)}

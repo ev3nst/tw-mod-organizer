@@ -112,13 +112,11 @@ const RowComponent = ({
 					ref={setNodeRef}
 					style={{
 						...style,
-						...(isSelected
-							? { backgroundColor: 'rgba(59, 130, 246, 0.1)' }
-							: {}),
+						...(isSeparator(mod) ? cellStyle : {}),
 					}}
 					key={mod.identifier}
 					onClick={handleRowClick}
-					className={`${isSelected ? 'ring-1 ring-blue-800' : ''} ${
+					className={`${isSelected ? '!ring-1 !ring-blue-800 !bg-blue-500/10' : ''} ${
 						showViolation
 							? 'ring-1 ring-red-500 bg-red-50 dark:bg-red-900/20'
 							: ''
@@ -128,7 +126,6 @@ const RowComponent = ({
 						className={`select-none w-[40px] ${
 							isSortingEnabled ? 'cursor-move' : 'cursor-default'
 						}`}
-						style={cellStyle}
 						{...(isSortingEnabled ? attributes : {})}
 						{...(isSortingEnabled ? listeners : {})}
 					>

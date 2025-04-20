@@ -37,11 +37,6 @@ export const Selection = memo(
 			ma => ma.mod_id === mod.identifier,
 		);
 
-		const cellStyle = {
-			backgroundColor: mod.background_color,
-			color: mod.text_color,
-		};
-
 		if (isSeparator(mod)) {
 			const childMods = getChildMods(mods, mod.identifier);
 			const allActive = childMods.every(
@@ -51,7 +46,7 @@ export const Selection = memo(
 			);
 
 			return (
-				<TableCell className="select-none w-[40px]" style={cellStyle}>
+				<TableCell className="select-none w-[40px]">
 					<Checkbox
 						className={selectionCheckboxClass}
 						checked={childMods.length > 0 && allActive}
@@ -64,7 +59,7 @@ export const Selection = memo(
 				(mod as ModItem).item_type === 'base_mod' &&
 				mod.identifier !== 'BirthAndDeath';
 			return (
-				<TableCell className="select-none w-[40px]" style={cellStyle}>
+				<TableCell className="select-none w-[40px]">
 					<Checkbox
 						className={
 							isBaseAndAlwaysActive

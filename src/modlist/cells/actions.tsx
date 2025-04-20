@@ -112,17 +112,10 @@ const SeparatorActions = ({
 		toggleEditSeparator();
 	}, [mod, setSelectedSeparator, toggleEditSeparator]);
 
-	const { background_color, text_color } = mod;
-	const cellStyle = {
-		backgroundColor: background_color,
-		color: text_color,
-	};
-
 	return (
 		<ModActionRenderer
 			isModSeparator={true}
 			mod={mod}
-			cellStyle={cellStyle}
 			handleEdit={handleEdit}
 			handleSetPriority={handleSetPriority}
 			handleDelete={handleDelete}

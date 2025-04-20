@@ -83,8 +83,6 @@ export const Title = memo(
 		dependentCount?: number;
 		dependentModIds?: string[];
 	}) => {
-		const { title, background_color, text_color } = mod;
-
 		const selectedGame = settingStore(state => state.selectedGame);
 		const toggle_type = settingStore(state => state.toggle_type);
 		const toggle_category = settingStore(state => state.toggle_category);
@@ -122,11 +120,6 @@ export const Title = memo(
 		const parentTriggerRef = useRef<HTMLSpanElement | null>(null);
 
 		if (isSeparator(mod)) {
-			const cellStyle = {
-				backgroundColor: background_color,
-				color: text_color,
-			};
-
 			let separatorColSpan = 8;
 			if (!toggle_type) separatorColSpan--;
 			if (!toggle_category) separatorColSpan--;
@@ -141,9 +134,8 @@ export const Title = memo(
 				<TableCell
 					className="p-0 m-0 ps-5 select-none flex-grow"
 					colSpan={separatorColSpan}
-					style={cellStyle}
 				>
-					{title}
+					{mod.title}
 				</TableCell>
 			);
 		} else {
@@ -153,7 +145,7 @@ export const Title = memo(
 				'preview_url' in mod ? mod.preview_url : undefined;
 			const imgSrc = preview_local !== '' ? preview_local : preview_url;
 
-			let titleTxt = title;
+			let titleTxt = mod.title;
 			if (selectedModMeta?.title) {
 				titleTxt = selectedModMeta.title;
 			}
