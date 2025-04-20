@@ -32,7 +32,6 @@ const TableManagerDialog = lazy(() => import('@/dialogs/table-manager'));
 const VersionTrackingDialog = lazy(() => import('@/dialogs/version-tracking'));
 
 import { SettingModel } from '@/lib/store/setting';
-import { debounceCallback } from '@/lib/utils';
 
 import { AppData } from './app-data';
 import { AppHeader } from './header';
@@ -43,112 +42,69 @@ const ModListSortableTable = lazy(() => import('@/modlist'));
 const PackViewer = lazy(() => import('@/pack-viewer'));
 
 function AppContent() {
-	// some aggressive scroll positioning logic
 	const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-	const scrollPositionRef = useRef<number | null>(null);
-	const scrollAttemptRef = useRef<NodeJS.Timeout | null>(null);
-	const scrollAppliedRef = useRef<boolean>(false);
+	const scrollPositionRef = useRef<number>(0);
+	const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-	useEffect(() => {
-		const loadScrollPosition = async () => {
-			try {
-				const setting = await SettingModel.retrieve();
-				scrollPositionRef.current = setting.mod_table_scroll;
-				attemptApplyScrollPosition();
-			} catch (error) {
-				console.error('Failed to load scroll position:', error);
-			}
-		};
+	const restoreScrollPosition = useCallback(async () => {
+		try {
+			const setting = await SettingModel.retrieve();
+			scrollPositionRef.current = setting.mod_table_scroll || 0;
 
-		loadScrollPosition();
-
-		return () => {
-			if (scrollAttemptRef.current) {
-				clearTimeout(scrollAttemptRef.current);
-			}
-		};
+			requestAnimationFrame(() => {
+				if (scrollContainerRef.current) {
+					console.log(
+						'Restoring scroll to:',
+						scrollPositionRef.current,
+					);
+					scrollContainerRef.current.scrollTop =
+						scrollPositionRef.current;
+				} else {
+					console.log('Ref still null after data loaded');
+				}
+			});
+		} catch (error) {
+			console.error('Failed to load scroll position:', error);
+		}
 	}, []);
 
-	const attemptApplyScrollPosition = () => {
-		if (
-			!scrollContainerRef.current ||
-			scrollAppliedRef.current ||
-			scrollPositionRef.current === null
-		) {
-			return;
-		}
+	const handleScroll = useCallback(
+		async (e: React.UIEvent<HTMLDivElement>) => {
+			const position = e.currentTarget.scrollTop;
+			console.log('Scroll position:', position);
 
-		const container = scrollContainerRef.current;
-
-		if (container.scrollHeight > container.clientHeight) {
-			container.scrollTop = scrollPositionRef.current;
-			if (
-				Math.abs(container.scrollTop - scrollPositionRef.current) < 10
-			) {
-				scrollAppliedRef.current = true;
-				return;
+			if (scrollTimeoutRef.current) {
+				clearTimeout(scrollTimeoutRef.current);
 			}
-		}
 
-		scrollAttemptRef.current = setTimeout(attemptApplyScrollPosition, 100);
-	};
+			scrollTimeoutRef.current = setTimeout(async () => {
+				try {
+					const setting = await SettingModel.retrieve();
+					setting.mod_table_scroll = position;
+					console.log('Saving scroll position:', position);
+					await setting.save();
+				} catch (error) {
+					console.error('Failed to save scroll position:', error);
+				}
+			}, 100);
+		},
+		[],
+	);
 
 	useEffect(() => {
-		const container = scrollContainerRef.current;
-		if (!container) return;
-
-		const mutationObserver = new MutationObserver(() => {
-			attemptApplyScrollPosition();
-		});
-
-		const resizeObserver = new ResizeObserver(() => {
-			attemptApplyScrollPosition();
-		});
-
-		mutationObserver.observe(container, {
-			childList: true,
-			subtree: true,
-			attributes: true,
-			characterData: true,
-		});
-		resizeObserver.observe(container);
-
-		const handleRouteChange = () => {
-			scrollAppliedRef.current = false;
-			attemptApplyScrollPosition();
-		};
-
-		window.addEventListener('popstate', handleRouteChange);
-
 		return () => {
-			mutationObserver.disconnect();
-			resizeObserver.disconnect();
-			window.removeEventListener('popstate', handleRouteChange);
+			if (scrollTimeoutRef.current) {
+				clearTimeout(scrollTimeoutRef.current);
+			}
 		};
-	}, []);
-
-	useEffect(() => {
-		const container = scrollContainerRef.current;
-		if (!container) return;
-
-		const handleScroll = () => {
-			const newPosition = container.scrollTop;
-			debounceCallback(async () => {
-				const setting = await SettingModel.retrieve();
-				setting.mod_table_scroll = newPosition;
-				await setting.save();
-			}, 500);
-		};
-
-		container.addEventListener('scroll', handleScroll);
-		return () => container.removeEventListener('scroll', handleScroll);
 	}, []);
 
 	return (
-		<AppData>
+		<AppData onContentLoaded={restoreScrollPosition}>
 			<div
 				className="absolute inset-0 overflow-y-auto dark-scrollbar"
 				ref={scrollContainerRef}
+				onScroll={handleScroll}
 			>
 				<AppNav />
 				<Suspense fallback={<Loading />}>

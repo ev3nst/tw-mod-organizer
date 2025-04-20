@@ -26,7 +26,13 @@ import {
 	initVersion,
 } from '@/modlist/utils';
 
-export const AppData = ({ children }: { children: React.ReactNode }) => {
+export const AppData = ({
+	onContentLoaded,
+	children,
+}: {
+	onContentLoaded: () => void;
+	children: React.ReactNode;
+}) => {
 	const [fetchModsLoading, setFetchModsLoading] = useState(false);
 
 	const setMods = modsStore(state => state.setMods);
@@ -172,6 +178,7 @@ export const AppData = ({ children }: { children: React.ReactNode }) => {
 				sortedMods,
 			);
 			setMetas(modMetaData);
+			onContentLoaded();
 		} catch (error) {
 			toastError(error);
 		} finally {
