@@ -125,8 +125,8 @@ export const PackDBRenderer = () => {
 	});
 
 	return (
-		<>
-			<div className="sticky bg-background z-10 w-full flex items-center justify-between px-3 py-2.5 border-b">
+		<div className="relative h-full w-full overflow-auto dark-scrollbar">
+			<div className="sticky bg-background left-0 top-0 z-10 w-full flex items-center justify-between px-3 py-2.5 border-b">
 				<PaginationControls
 					currentPage={currentPage}
 					totalItems={table.getFilteredRowModel().rows.length}
@@ -275,6 +275,6 @@ export const PackDBRenderer = () => {
 					</TableBody>
 				</Table>
 			</div>
-		</>
+		</div>
 	);
 };

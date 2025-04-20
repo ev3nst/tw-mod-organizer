@@ -20,13 +20,8 @@ const PackViewer = () => {
 				</div>
 			</ResizablePanel>
 			<ResizableHandle withHandle />
-			<ResizablePanel
-				defaultSize={75}
-				className="relative overflow-hidden"
-			>
-				<div className="h-full w-full overflow-auto dark-scrollbar">
-					<FileContents />
-				</div>
+			<ResizablePanel defaultSize={75}>
+				<FileContents />
 				<LongTextDialog />
 			</ResizablePanel>
 		</ResizablePanelGroup>
