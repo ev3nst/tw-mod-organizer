@@ -8,6 +8,7 @@ import {
 	LinkIcon,
 	StarIcon,
 	TrashIcon,
+	UngroupIcon,
 	UserIcon,
 } from 'lucide-react';
 
@@ -137,6 +138,9 @@ const ModActions = ({
 
 	const toggleSetPriority = modOrderStore(state => state.toggleSetPriority);
 	const setSelectedPriorityMod = modOrderStore(state => state.setSelectedMod);
+	const toggleSendToSeparator = modOrderStore(
+		state => state.toggleSendToSeparator,
+	);
 
 	const toggleModRemove = modsStore(state => state.toggleModRemove);
 	const setSelectedRemoveMod = modsStore(state => state.setSelectedMod);
@@ -173,6 +177,11 @@ const ModActions = ({
 		toggleSetPriority();
 	}, [mod, setSelectedPriorityMod, toggleSetPriority]);
 
+	const handleSendToSeparator = useCallback(() => {
+		setSelectedPriorityMod(mod);
+		toggleSendToSeparator();
+	}, [mod, setSelectedPriorityMod, toggleSendToSeparator]);
+
 	const handleRemove = useCallback(() => {
 		setSelectedRemoveMod(mod);
 		toggleModRemove();
@@ -191,6 +200,7 @@ const ModActions = ({
 			handleMetaInfo={handleMetaInfo}
 			handleRemove={handleRemove}
 			handleSetPriority={handleSetPriority}
+			handleSendToSeparator={handleSendToSeparator}
 			deleteText={deleteText}
 			showExternalLink={showExternalLink}
 		/>
@@ -205,6 +215,7 @@ export const ModActionDropdownRenderer = ({
 	selectedGame,
 	showExternalLink,
 	handleSetPriority,
+	handleSendToSeparator,
 	handleRemove,
 	deleteText,
 
@@ -217,6 +228,7 @@ export const ModActionDropdownRenderer = ({
 	handleMetaInfo?: () => void;
 	handleOpenModUrl?: (inBrowser: boolean) => void;
 	handleSetPriority?: () => void;
+	handleSendToSeparator?: () => void;
 	handleRemove?: () => void;
 	deleteText?: string;
 	selectedGame?: IGameMeta;
@@ -391,13 +403,30 @@ export const ModActionDropdownRenderer = ({
 								</DropdownMenuItem>
 							)}
 
-						<DropdownMenuItem
-							className="text-xs py-2 my-0"
-							onClick={handleSetPriority}
-						>
-							<ArrowRightIcon className="w-3 h-3" />
-							Set Priority
-						</DropdownMenuItem>
+						<DropdownMenuSub>
+							<DropdownMenuSubTrigger>
+								<ArrowRightIcon className="w-3 h-3" />
+								Send Mod to
+							</DropdownMenuSubTrigger>
+							<DropdownMenuPortal>
+								<DropdownMenuSubContent>
+									<DropdownMenuItem
+										className="text-xs py-2 my-0"
+										onClick={handleSetPriority}
+									>
+										<ArrowRightIcon className="w-3 h-3" />
+										Set Priority
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										className="text-xs py-2 my-0"
+										onClick={handleSendToSeparator}
+									>
+										<UngroupIcon className="w-3 h-3" />
+										Send to Separator
+									</DropdownMenuItem>
+								</DropdownMenuSubContent>
+							</DropdownMenuPortal>
+						</DropdownMenuSub>
 
 						<DropdownMenuItem
 							className="text-xs py-2 my-0"
@@ -421,6 +450,7 @@ export const ModActionContextMenuRenderer = ({
 	selectedGame,
 	showExternalLink,
 	handleSetPriority,
+	handleSendToSeparator,
 	handleRemove,
 	deleteText,
 	handleEdit,
@@ -431,6 +461,7 @@ export const ModActionContextMenuRenderer = ({
 	handleMetaInfo?: () => void;
 	handleOpenModUrl?: (inBrowser: boolean) => void;
 	handleSetPriority?: () => void;
+	handleSendToSeparator?: () => void;
 	handleRemove?: () => void;
 	deleteText?: string;
 	selectedGame?: IGameMeta;
@@ -543,10 +574,23 @@ export const ModActionContextMenuRenderer = ({
 					</ContextMenuItem>
 				)}
 
-			<ContextMenuItem onSelect={handleSetPriority}>
-				<ArrowRightIcon className="w-3 h-3 mr-2" />
-				Set Priority
-			</ContextMenuItem>
+			<ContextMenuSub>
+				<ContextMenuSubTrigger>
+					<ArrowRightIcon className="w-3 h-3 mr-2" />
+					Send Mod to
+				</ContextMenuSubTrigger>
+				<ContextMenuSubContent>
+					<ContextMenuItem onSelect={handleSetPriority}>
+						<ArrowRightIcon className="w-3 h-3 mr-2" />
+						Set Priority
+					</ContextMenuItem>
+
+					<ContextMenuItem onSelect={handleSendToSeparator}>
+						<UngroupIcon className="w-3 h-3 mr-2" />
+						Send to Separator
+					</ContextMenuItem>
+				</ContextMenuSubContent>
+			</ContextMenuSub>
 
 			<ContextMenuItem onSelect={handleRemove}>
 				<TrashIcon className="w-3 h-3 mr-2 text-red-500" />

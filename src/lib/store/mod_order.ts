@@ -39,8 +39,10 @@ export const modOrderStore = createStore<
 	ModOrderItem,
 	{
 		priorityOpen: boolean;
+		sendToSeparatorOpen: boolean;
 		selectedMod: ModItemSeparatorUnion;
 		toggleSetPriority: () => void;
+		toggleSendToSeparator: () => void;
 		setSelectedMod: (selectedMod: ModItemSeparatorUnion) => void;
 		selectedRows: Set<string>;
 		setSelectedRows: (selectedRows: Set<string>) => void;
@@ -53,6 +55,7 @@ export const modOrderStore = createStore<
 	customSyncData,
 	extend: (set, get) => ({
 		priorityOpen: false,
+		sendToSeparatorOpen: false,
 		selectedMod: {
 			title: '',
 			mod_file: '',
@@ -60,6 +63,10 @@ export const modOrderStore = createStore<
 		toggleSetPriority: () => {
 			const priorityOpen = !get().priorityOpen;
 			set({ priorityOpen });
+		},
+		toggleSendToSeparator: () => {
+			const sendToSeparatorOpen = !get().sendToSeparatorOpen;
+			set({ sendToSeparatorOpen });
 		},
 		setSelectedMod: selectedMod => set({ selectedMod }),
 		selectedRows: new Set(),

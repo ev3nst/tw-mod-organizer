@@ -20,6 +20,7 @@ import { toastError } from '@/lib/utils';
 
 const ConflictDetailsDialog = lazy(() => import('@/dialogs/conflict-details'));
 const SetPriorityDialog = lazy(() => import('@/dialogs/set-priority'));
+const SendToSeparatorDialog = lazy(() => import('@/dialogs/send-to-separator'));
 const MetaInformationDialog = lazy(() => import('@/dialogs/meta-information'));
 const RemoveModDialog = lazy(() => import('@/dialogs/remove-mod'));
 const EditSeparatorDialog = lazy(() => import('@/dialogs/edit-separator'));
@@ -53,14 +54,8 @@ function AppContent() {
 
 			requestAnimationFrame(() => {
 				if (scrollContainerRef.current) {
-					console.log(
-						'Restoring scroll to:',
-						scrollPositionRef.current,
-					);
 					scrollContainerRef.current.scrollTop =
 						scrollPositionRef.current;
-				} else {
-					console.log('Ref still null after data loaded');
 				}
 			});
 		} catch (error) {
@@ -71,7 +66,6 @@ function AppContent() {
 	const handleScroll = useCallback(
 		async (e: React.UIEvent<HTMLDivElement>) => {
 			const position = e.currentTarget.scrollTop;
-			console.log('Scroll position:', position);
 
 			if (scrollTimeoutRef.current) {
 				clearTimeout(scrollTimeoutRef.current);
@@ -81,7 +75,6 @@ function AppContent() {
 				try {
 					const setting = await SettingModel.retrieve();
 					setting.mod_table_scroll = position;
-					console.log('Saving scroll position:', position);
 					await setting.save();
 				} catch (error) {
 					console.error('Failed to save scroll position:', error);
@@ -163,6 +156,7 @@ function App() {
 								<VersionTrackingDialog />
 								<ConflictDetailsDialog />
 								<SetPriorityDialog />
+								<SendToSeparatorDialog />
 								<MetaInformationDialog />
 								<EditSeparatorDialog />
 								<RemoveModDialog />
