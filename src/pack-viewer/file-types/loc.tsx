@@ -75,7 +75,7 @@ export const PackLocRenderer = () => {
 		if (value.length > 300) {
 			return (
 				<div
-					className="truncate hover:text-blue-500 hover:cursor-pointer underline"
+					className="truncate max-w-[400px] hover:text-blue-500 hover:cursor-pointer underline"
 					onClick={() => {
 						setLongText({
 							key,

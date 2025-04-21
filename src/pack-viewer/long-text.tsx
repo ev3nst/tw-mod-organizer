@@ -32,13 +32,13 @@ export function LongTextDialog() {
 						</div>
 					</DialogTitle>
 
-					<DialogDescription className="text-xs mt-1 flex flex-col space-y-1 max-w-full overflow-hidden">
-						<div className="font-semibold text-primary break-words max-w-full overflow-hidden">
+					<DialogDescription className="mt-1 flex flex-col space-y-1 max-w-full overflow-hidden">
+						<span className="font-semibold text-primary break-words max-w-full overflow-hidden text-lg">
 							{selectedTreeItem?.pack_file_name}
-						</div>
-						<div className="italic text-sm text-primary break-words max-w-full overflow-hidden">
+						</span>
+						<span className="italic text-sm text-primary break-words max-w-full overflow-hidden">
 							{selectedTreeItem?.id}
-						</div>
+						</span>
 					</DialogDescription>
 				</DialogHeader>
 
