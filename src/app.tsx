@@ -40,7 +40,7 @@ import { AppSidebar } from './sidebar';
 import { AppNav } from './nav';
 
 const ModListSortableTable = lazy(() => import('@/modlist'));
-const PackViewer = lazy(() => import('@/pack-viewer'));
+const PackViewer = lazy(() => import('@/pack/viewer'));
 
 function AppContent() {
 	const scrollContainerRef = useRef<HTMLDivElement | null>(null);
