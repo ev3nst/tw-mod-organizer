@@ -86,6 +86,7 @@ pub fn run() {
             pack::pack_db_data::pack_db_data,
             pack::pack_db_data_raw::pack_db_data_raw,
             pack::pack_loc_data::pack_loc_data,
+            pack::pack_loc_data_raw::pack_loc_data_raw,
             pack::pack_fetch_data::pack_fetch_data,
             pack::open_pack_file::open_pack_file,
             game::save_files::save_files,

@@ -12,17 +12,17 @@ use tauri::Manager;
 
 use crate::game::supported_games::SUPPORTED_GAMES;
 
-#[derive(Serialize, Deserialize)]
-struct FileMetadata {
-    size: u64,
-    modified: u64,
+#[derive(Clone, Serialize, Deserialize)]
+pub struct FileMetadata {
+    pub size: u64,
+    pub modified: u64,
 }
 
 #[derive(Serialize, Deserialize)]
-struct CacheEntry {
-    file_path: String,
-    file_metadata: FileMetadata,
-    loc_data: HashMap<String, serde_json::Value>,
+pub struct CacheEntry {
+    pub file_path: String,
+    pub file_metadata: FileMetadata,
+    pub loc_data: HashMap<String, serde_json::Value>,
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -39,8 +39,6 @@ pub async fn pack_loc_data_raw(
     if pack_file_path.extension().map_or(true, |ext| ext != "pack") {
         return Err(format!("File is not a .pack file: {:?}", pack_file_path));
     }
-
-    let pack_file_path_str = pack_file_path.to_string_lossy().to_string();
 
     let app_cache_dir = handle
         .path()
@@ -70,6 +68,7 @@ pub async fn pack_loc_data_raw(
             .unwrap_or(0),
     };
 
+    let pack_file_path_str = pack_file_path.to_string_lossy().to_string();
     if cache_file.exists() {
         if let Ok(cache_content) = fs::read_to_string(&cache_file) {
             if let Ok(cache_entry) = serde_json::from_str::<CacheEntry>(&cache_content) {
@@ -83,6 +82,34 @@ pub async fn pack_loc_data_raw(
         }
     }
 
+    let table_data_map = get_pack_loc_table_data(
+        app_id,
+        pack_file_path,
+        pack_file_path_str.clone(),
+        current_metadata.clone(),
+        cache_file.clone(),
+    )?;
+
+    let cache_entry = CacheEntry {
+        file_path: pack_file_path_str,
+        file_metadata: current_metadata,
+        loc_data: table_data_map.clone(),
+    };
+
+    if let Ok(cache_json) = serde_json::to_string(&cache_entry) {
+        let _ = fs::write(&cache_file, cache_json);
+    }
+
+    Ok(table_data_map)
+}
+
+pub fn get_pack_loc_table_data(
+    app_id: u32,
+    pack_file_path: PathBuf,
+    pack_file_path_str: String,
+    current_metadata: FileMetadata,
+    cache_file: PathBuf,
+) -> Result<HashMap<String, serde_json::Value>, String> {
     let game = SUPPORTED_GAMES
         .iter()
         .find(|game| game.steam_id == app_id)
@@ -100,6 +127,16 @@ pub async fn pack_loc_data_raw(
 
     let loc_files = packfile.files_by_type_mut(&[FileType::Loc]);
     if loc_files.is_empty() {
+        let cache_entry = CacheEntry {
+            file_path: pack_file_path_str.clone(),
+            file_metadata: current_metadata,
+            loc_data: HashMap::new(),
+        };
+
+        if let Ok(cache_json) = serde_json::to_string(&cache_entry) {
+            let _ = fs::write(&cache_file, cache_json);
+        }
+
         return Ok(HashMap::new());
     }
 
@@ -123,16 +160,6 @@ pub async fn pack_loc_data_raw(
             Ok(None) => println!("File could not be decoded: {:?}", file.path_in_container()),
             Err(e) => println!("Error decoding file {:?}: {}", file.path_in_container(), e),
         }
-    }
-
-    let cache_entry = CacheEntry {
-        file_path: pack_file_path_str,
-        file_metadata: current_metadata,
-        loc_data: table_data_map.clone(),
-    };
-
-    if let Ok(cache_json) = serde_json::to_string(&cache_entry) {
-        let _ = fs::write(&cache_file, cache_json);
     }
 
     Ok(table_data_map)

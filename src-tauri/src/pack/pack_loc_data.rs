@@ -1,24 +1,13 @@
-use rpfm_lib::files::pack::Pack;
-use rpfm_lib::files::{Container, DecodeableExtraData, FileType, RFileDecoded};
-use rpfm_lib::schema::Schema;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::env;
 use std::fs;
 use std::path::PathBuf;
 use std::time::SystemTime;
 use tauri::path::BaseDirectory;
 use tauri::Manager;
 
-use crate::game::supported_games::SUPPORTED_GAMES;
-
 use super::pack_db_data::parse_raw_pack_db;
-
-#[derive(Serialize, Deserialize)]
-struct FileMetadata {
-    size: u64,
-    modified: u64,
-}
+use super::pack_loc_data_raw::get_pack_loc_table_data;
+use super::pack_loc_data_raw::FileMetadata;
 
 #[derive(Serialize, Deserialize)]
 struct CacheEntry {
@@ -85,58 +74,13 @@ pub async fn pack_loc_data(
         }
     }
 
-    let game = SUPPORTED_GAMES
-        .iter()
-        .find(|game| game.steam_id == app_id)
-        .ok_or_else(|| format!("Given app_id {} is not supported", app_id))?;
-
-    let exe_path = env::current_exe().unwrap();
-    let exe_dir = exe_path.parent().unwrap().to_str().unwrap();
-
-    let schema_file_path = PathBuf::from(exe_dir).join(game.schema_file);
-    let schema = Schema::load(&schema_file_path, None)
-        .map_err(|e| format!("Failed to load schema: {}", e))?;
-
-    let mut packfile = Pack::read_and_merge(&[pack_file_path], true, false, false)
-        .map_err(|e| format!("Failed to read pack file: {:?}", e))?;
-
-    let loc_files = packfile.files_by_type_mut(&[FileType::Loc]);
-    if loc_files.is_empty() {
-        let cache_entry = CacheEntry {
-            file_path: pack_file_path_str.clone(),
-            file_metadata: current_metadata,
-            loc_data: serde_json::Value::Object(serde_json::Map::new()),
-        };
-
-        if let Ok(cache_json) = serde_json::to_string(&cache_entry) {
-            let _ = fs::write(&cache_file, cache_json);
-        }
-
-        return Ok(serde_json::Value::Object(serde_json::Map::new()));
-    }
-
-    let mut decode_extra_data = DecodeableExtraData::default();
-    decode_extra_data.set_schema(Some(&schema));
-    let extra_data = Some(decode_extra_data);
-
-    let mut table_data_map = HashMap::new();
-
-    for file in loc_files {
-        match file.decode(&extra_data, false, true) {
-            Ok(Some(decoded)) => {
-                if let RFileDecoded::Loc(table_data) = decoded {
-                    table_data_map.insert(
-                        file.path_in_container().path_raw().to_owned(),
-                        serde_json::to_value(table_data.table())
-                            .map_err(|e| format!("Failed to serialize table data: {}", e))?,
-                    );
-                }
-            }
-            Ok(None) => println!("File could not be decoded: {:?}", file.path_in_container()),
-            Err(e) => println!("Error decoding file {:?}: {}", file.path_in_container(), e),
-        }
-    }
-
+    let table_data_map = get_pack_loc_table_data(
+        app_id,
+        pack_file_path,
+        pack_file_path_str.clone(),
+        current_metadata.clone(),
+        cache_file.clone(),
+    )?;
     let parsed_data = parse_raw_pack_db(&table_data_map)?;
 
     let cache_entry = CacheEntry {
