@@ -28,19 +28,9 @@ import {
 } from '@/components/table';
 import { PaginationControls } from '@/components/pagination-controls';
 import { Input } from '@/components/input';
-
-import { packManagerStore } from '@/lib/store/pack-manager';
 import { RadioGroup, RadioGroupItem } from '@/components/radio-group';
 
-function getTableByPath(obj: any, path: string): any {
-	const prefixToRemove = 'db/';
-	if (prefixToRemove && path.startsWith(prefixToRemove)) {
-		path = path.slice(prefixToRemove.length);
-	}
-
-	const keys = path.split('/').filter(Boolean);
-	return keys.reduce<any>((acc, key) => acc?.[key], obj);
-}
+import { getDbTableByPath, packManagerStore } from '@/lib/store/pack-manager';
 
 export const PackDBRenderer = () => {
 	const [sorting, setSorting] = useState<SortingState>([]);
@@ -57,7 +47,7 @@ export const PackDBRenderer = () => {
 	)
 		return null;
 
-	const selectedTableData = getTableByPath(
+	const selectedTableData = getDbTableByPath(
 		selectedTreeItemDb.data,
 		selectedTreeItemData.content,
 	);
@@ -77,7 +67,7 @@ export const PackDBRenderer = () => {
 	}
 
 	const data = useMemo(() => {
-		return getTableByPath(
+		return getDbTableByPath(
 			selectedTreeItemDb.data,
 			selectedTreeItemData.content,
 		);

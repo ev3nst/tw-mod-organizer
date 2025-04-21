@@ -8,7 +8,7 @@ import {
 import type { ProfileExportData } from '@/lib/store/profile-model';
 import type { ModItem } from '@/lib/store/mods';
 import type { SaveFile, SaveFileLoadOrderData } from '@/lib/store/save_files';
-import type { PackDBRow } from '@/lib/store/pack-manager';
+import type { PackDBRow, ParsedDB } from '@/lib/store/pack-manager';
 import { normalizeTimestamp } from '@/lib/utils';
 
 export type ModConflicts = {
@@ -487,8 +487,18 @@ class API {
 	async pack_db_data(
 		app_id: number,
 		pack_file_path: string,
-	): Promise<{ [key: string]: PackDBRow }> {
+	): Promise<ParsedDB> {
 		return invoke('pack_db_data', {
+			app_id,
+			pack_file_path,
+		});
+	}
+
+	async pack_db_data_raw(
+		app_id: number,
+		pack_file_path: string,
+	): Promise<{ [key: string]: PackDBRow }> {
+		return invoke('pack_db_data_raw', {
 			app_id,
 			pack_file_path,
 		});
@@ -497,8 +507,18 @@ class API {
 	async pack_loc_data(
 		app_id: number,
 		pack_file_path: string,
-	): Promise<{ [key: string]: PackDBRow }> {
+	): Promise<ParsedDB> {
 		return invoke('pack_loc_data', {
+			app_id,
+			pack_file_path,
+		});
+	}
+
+	async pack_loc_data_raw(
+		app_id: number,
+		pack_file_path: string,
+	): Promise<{ [key: string]: PackDBRow }> {
+		return invoke('pack_loc_data_raw', {
 			app_id,
 			pack_file_path,
 		});

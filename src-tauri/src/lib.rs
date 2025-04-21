@@ -84,6 +84,7 @@ pub fn run() {
             r#mod::delete::delete_mod,
             pack::pack_files::pack_files,
             pack::pack_db_data::pack_db_data,
+            pack::pack_db_data_raw::pack_db_data_raw,
             pack::pack_loc_data::pack_loc_data,
             pack::pack_fetch_data::pack_fetch_data,
             pack::open_pack_file::open_pack_file,

@@ -42,6 +42,10 @@ export type PackDBRow = {
 	}[];
 };
 
+export type ParsedDB = {
+	[key: string]: ParsedDB | { [fieldName: string]: any }[];
+};
+
 type PackManagerStore = {
 	packTree: TreeItem[];
 	setPackTree: (packTree: TreeItem[]) => void;
@@ -111,50 +115,6 @@ export const packManagerStore = create<PackManagerStore>(set => ({
 	setLongText: longText => set({ longText }),
 }));
 
-export async function parseRawPackDB(db_data_raw: {
-	[key: string]: PackDBRow;
-}) {
-	let modDbParsed: any = {};
-
-	const dbTablePaths = Object.keys(db_data_raw);
-
-	for (let dbi = 0; dbi < dbTablePaths.length; dbi++) {
-		const rawPath = dbTablePaths[dbi];
-		const db_path_clean = rawPath.substring(3);
-		const db_path_split = db_path_clean.split('/');
-
-		const definition = db_data_raw[rawPath].definition;
-		definition.fields.sort((a, b) => a.ca_order - b.ca_order);
-
-		const parsedRows = db_data_raw[rawPath].table_data.map(rowArray => {
-			let rowObj: any = {};
-			for (let fi = 0; fi < definition.fields.length; fi++) {
-				const field = definition.fields[fi];
-				const cell = rowArray[fi];
-
-				if (cell !== undefined && cell !== null) {
-					rowObj[field.name] = Object.values(cell)[0];
-				}
-			}
-			return rowObj;
-		});
-
-		let current = modDbParsed;
-		for (let i = 0; i < db_path_split.length; i++) {
-			const part = db_path_split[i];
-
-			if (i === db_path_split.length - 1) {
-				current[part] = parsedRows;
-			} else {
-				if (!current[part]) current[part] = {};
-				current = current[part];
-			}
-		}
-	}
-
-	return modDbParsed;
-}
-
 export function convertPackFilesToTree(
 	packFiles: Record<string, any>,
 	parentPath: string = '',
@@ -213,4 +173,19 @@ export function getParentPaths(itemId: string): string[] {
 	}
 
 	return paths;
+}
+
+export function getDbTableByPath(obj: any, path: string): any {
+	const prefixToRemove = 'db/';
+	if (prefixToRemove && path.startsWith(prefixToRemove)) {
+		path = path.slice(prefixToRemove.length);
+	}
+
+	const keys = path.split('/').filter(Boolean);
+	return keys.reduce<any>((acc, key) => acc?.[key], obj);
+}
+
+export function getLocTableByPath(obj: any, path: string): any {
+	const keys = path.split('/').filter(Boolean);
+	return keys.reduce<any>((acc, key) => acc?.[key], obj);
 }

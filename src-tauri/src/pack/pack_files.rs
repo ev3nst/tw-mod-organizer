@@ -80,18 +80,20 @@ pub async fn pack_files(
 
     let mut raw_tree: serde_json::Map<String, serde_json::Value> = serde_json::Map::new();
 
+    let mut all_paths: Vec<String> = Vec::new();
     for (_lowercased, originals) in packfile.paths() {
-        if originals.is_empty() {
-            continue;
+        if !originals.is_empty() {
+            all_paths.push(originals[0].clone());
         }
+    }
 
-        let original_path = &originals[0];
+    all_paths.sort();
 
-        let parts: Vec<&str> = original_path.split('/').collect();
-        if parts.is_empty() {
-            continue;
+    for path in all_paths {
+        let parts: Vec<&str> = path.split('/').collect();
+        if !parts.is_empty() {
+            insert_path_recursive(&mut raw_tree, &parts, 1);
         }
-        insert_path_recursive(&mut raw_tree, &parts, 1);
     }
 
     collect_files_in_leaf_nodes(&mut raw_tree, 1);
@@ -124,11 +126,22 @@ fn insert_path_recursive(
     match path_parts.split_first() {
         Some((first, rest)) if rest.is_empty() => {
             if let Some(existing) = map.get_mut(&first.to_string()) {
-                if existing.is_array() {
-                    // Valid state: array of files.
+                if let serde_json::Value::Array(arr) = existing {
+                    let file_name = first.to_string();
+                    if !arr
+                        .iter()
+                        .any(|v| v.as_str().map_or(false, |s| s == file_name))
+                    {
+                        arr.push(serde_json::Value::String(file_name));
+                        arr.sort_by(|a, b| {
+                            let a_str = a.as_str().unwrap_or("");
+                            let b_str = b.as_str().unwrap_or("");
+                            a_str.cmp(b_str)
+                        });
+                    }
                 }
             } else {
-                map.insert(first.to_string(), serde_json::json!([]));
+                map.insert(first.to_string(), serde_json::Value::Array(vec![]));
             }
         }
         Some((first, rest)) => {
@@ -148,29 +161,30 @@ fn collect_files_in_leaf_nodes(map: &mut serde_json::Map<String, serde_json::Val
         return;
     }
 
-    for (key, value) in map.clone().iter() {
-        match value {
-            serde_json::Value::Object(sub_map) => {
-                let mut files = vec![];
-                let mut folders = serde_json::Map::new();
+    let keys: Vec<String> = map.keys().cloned().collect();
+    for key in keys {
+        if let Some(value) = map.get(&key) {
+            if let serde_json::Value::Object(sub_map) = value {
+                let mut files = Vec::new();
+                let mut has_folders = false;
 
                 for (sub_key, sub_value) in sub_map.iter() {
                     if sub_value.is_object() {
-                        folders.insert(sub_key.clone(), sub_value.clone());
+                        has_folders = true;
                     } else if sub_value.is_array() {
                         files.push(sub_key.clone());
                     }
                 }
 
-                if folders.is_empty() && !files.is_empty() {
+                if !has_folders && !files.is_empty() {
+                    files.sort();
                     map.insert(key.clone(), serde_json::json!(files));
-                } else {
-                    if let serde_json::Value::Object(ref mut obj) = map.get_mut(key).unwrap() {
+                } else if has_folders {
+                    if let serde_json::Value::Object(ref mut obj) = map.get_mut(&key).unwrap() {
                         collect_files_in_leaf_nodes(obj, depth + 1);
                     }
                 }
             }
-            _ => {}
         }
     }
 }

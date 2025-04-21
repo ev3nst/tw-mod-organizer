@@ -1,11 +1,16 @@
 import { Link, useLocation } from 'wouter';
-import { FileCode2Icon, FolderArchiveIcon } from 'lucide-react';
+import {
+	ExternalLinkIcon,
+	FileCode2Icon,
+	FolderArchiveIcon,
+} from 'lucide-react';
 
 import { ProfileSwitcher } from '@/nav/profile';
 
+import api from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
-import { cn } from '@/lib/utils';
 import { packManagerStore } from '@/lib/store/pack-manager';
+import { cn } from '@/lib/utils';
 
 export const AppNav = () => {
 	const [wouterLocation] = useLocation();
@@ -23,8 +28,21 @@ export const AppNav = () => {
 						<div className="font-bold flex-shrink-0 mx-1">
 							Selected File:
 						</div>
-						<div className="font-semibold truncate text-primary">
+						<div className="font-semibold truncate text-primary flex items-center gap-2">
 							{selectedTreeItem?.pack_file_name}
+							{typeof selectedTreeItem?.pack_file_path ===
+								'string' && (
+								<div
+									className="hover:cursor-pointer hover:brightness-125"
+									onClick={() =>
+										api.open_pack_file(
+											selectedTreeItem.pack_file_path,
+										)
+									}
+								>
+									<ExternalLinkIcon className="w-4 h-4" />
+								</div>
+							)}
 						</div>
 						<div className="italic text-sm text-primary truncate">
 							{selectedTreeItem?.id}

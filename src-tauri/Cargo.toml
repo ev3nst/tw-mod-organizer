@@ -28,7 +28,7 @@ tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-deep-link = "2"
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+serde_json = { version = "1", features = ["preserve_order"] }
 tokio = { version = "1.43.0", features = ["sync", "time", "rt-multi-thread", "macros"] }
 tokio-tungstenite = { version = "0.26.2", features = ["native-tls"] }
 futures-util = "0.3.31"

@@ -20,7 +20,6 @@ import { isSeparator } from '@/lib/store/mod_separator';
 import {
 	convertPackFilesToTree,
 	packManagerStore,
-	parseRawPackDB,
 } from '@/lib/store/pack-manager';
 import { filterMods, modMetaStore } from '@/lib/store/mod_meta';
 import { modActivationStore } from '@/lib/store/mod_activation';
@@ -122,7 +121,7 @@ export function TreeView() {
 							);
 							setSelectedTreeItemDb({
 								pack_file: selectedTreeItem.pack_file_path,
-								data: await parseRawPackDB(data),
+								data,
 							});
 						}
 						setSelectedTreeItemData({
@@ -143,7 +142,7 @@ export function TreeView() {
 							);
 							setSelectedTreeItemLoc({
 								pack_file: selectedTreeItem.pack_file_path,
-								data: await parseRawPackDB(data),
+								data,
 							});
 						}
 						setSelectedTreeItemData({

@@ -12,8 +12,6 @@ use tauri::Manager;
 
 use crate::game::supported_games::SUPPORTED_GAMES;
 
-use super::pack_db_data::parse_raw_pack_db;
-
 #[derive(Serialize, Deserialize)]
 struct FileMetadata {
     size: u64,
@@ -24,15 +22,15 @@ struct FileMetadata {
 struct CacheEntry {
     file_path: String,
     file_metadata: FileMetadata,
-    loc_data: serde_json::Value,
+    db_data: HashMap<String, serde_json::Value>,
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn pack_loc_data(
+pub async fn pack_db_data_raw(
     handle: tauri::AppHandle,
     app_id: u32,
     pack_file_path: String,
-) -> Result<serde_json::Value, String> {
+) -> Result<HashMap<String, serde_json::Value>, String> {
     let pack_file_path = PathBuf::from(&pack_file_path);
     if !pack_file_path.exists() {
         return Err(format!("Pack file does not exist: {:?}", pack_file_path));
@@ -55,7 +53,7 @@ pub async fn pack_loc_data(
     }
 
     let cache_filename = format!(
-        "pack_loc_data_{}.json",
+        "pack_db_data_raw_{}.json",
         pack_file_path.file_name().unwrap().to_string_lossy()
     );
     let cache_file = app_cache_dir.join(cache_filename);
@@ -79,7 +77,7 @@ pub async fn pack_loc_data(
                     && cache_entry.file_metadata.size == current_metadata.size
                     && cache_entry.file_metadata.modified == current_metadata.modified
                 {
-                    return Ok(cache_entry.loc_data);
+                    return Ok(cache_entry.db_data);
                 }
             }
         }
@@ -100,19 +98,19 @@ pub async fn pack_loc_data(
     let mut packfile = Pack::read_and_merge(&[pack_file_path], true, false, false)
         .map_err(|e| format!("Failed to read pack file: {:?}", e))?;
 
-    let loc_files = packfile.files_by_type_mut(&[FileType::Loc]);
-    if loc_files.is_empty() {
+    let db_files = packfile.files_by_type_mut(&[FileType::DB]);
+    if db_files.is_empty() {
         let cache_entry = CacheEntry {
             file_path: pack_file_path_str.clone(),
             file_metadata: current_metadata,
-            loc_data: serde_json::Value::Object(serde_json::Map::new()),
+            db_data: HashMap::new(),
         };
 
         if let Ok(cache_json) = serde_json::to_string(&cache_entry) {
             let _ = fs::write(&cache_file, cache_json);
         }
 
-        return Ok(serde_json::Value::Object(serde_json::Map::new()));
+        return Ok(HashMap::new());
     }
 
     let mut decode_extra_data = DecodeableExtraData::default();
@@ -121,10 +119,10 @@ pub async fn pack_loc_data(
 
     let mut table_data_map = HashMap::new();
 
-    for file in loc_files {
+    for file in db_files {
         match file.decode(&extra_data, false, true) {
             Ok(Some(decoded)) => {
-                if let RFileDecoded::Loc(table_data) = decoded {
+                if let RFileDecoded::DB(table_data) = decoded {
                     table_data_map.insert(
                         file.path_in_container().path_raw().to_owned(),
                         serde_json::to_value(table_data.table())
@@ -137,17 +135,15 @@ pub async fn pack_loc_data(
         }
     }
 
-    let parsed_data = parse_raw_pack_db(&table_data_map)?;
-
     let cache_entry = CacheEntry {
         file_path: pack_file_path_str,
         file_metadata: current_metadata,
-        loc_data: parsed_data.clone(),
+        db_data: table_data_map.clone(),
     };
 
     if let Ok(cache_json) = serde_json::to_string(&cache_entry) {
         let _ = fs::write(&cache_file, cache_json);
     }
 
-    Ok(parsed_data)
+    Ok(table_data_map)
 }
