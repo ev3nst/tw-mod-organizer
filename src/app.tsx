@@ -41,6 +41,8 @@ import { AppNav } from './nav';
 
 const ModListSortableTable = lazy(() => import('@/modlist'));
 const PackViewer = lazy(() => import('@/pack/viewer'));
+const PackFilesTree = lazy(() => import('@/pack/files-tree'));
+const PackConflicts = lazy(() => import('@/pack/conflicts'));
 
 function AppContent() {
 	const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -104,6 +106,14 @@ function AppContent() {
 					<Switch>
 						<Route path="/" component={ModListSortableTable} />
 						<Route path="/pack-viewer" component={PackViewer} />
+						<Route
+							path="/pack-files-tree"
+							component={PackFilesTree}
+						/>
+						<Route
+							path="/pack-conflicts"
+							component={PackConflicts}
+						/>
 					</Switch>
 				</Suspense>
 			</div>

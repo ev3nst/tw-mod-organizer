@@ -189,3 +189,214 @@ export function getLocTableByPath(obj: any, path: string): any {
 	const keys = path.split('/').filter(Boolean);
 	return keys.reduce<any>((acc, key) => acc?.[key], obj);
 }
+
+const PackPriorityLogic =
+	"!#$%&'()+,-;=@0123456789abcdefghijklmnopqrstuvwxyz[]^_`{}~";
+
+export const comparePriority = (a: string, b: string): number => {
+	const minLength = Math.min(a.length, b.length);
+	for (let i = 0; i < minLength; i++) {
+		const indexA = PackPriorityLogic.indexOf(a[i]);
+		const indexB = PackPriorityLogic.indexOf(b[i]);
+
+		if (indexA !== indexB) {
+			return indexB - indexA;
+		}
+	}
+	return a.length - b.length;
+};
+
+export type MergedTableData = {
+	[tableName: string]:
+		| any[]
+		| {
+				[key: string]: any;
+		  };
+};
+
+export const mergeModsDbData = (
+	modsDbData: Record<string, ParsedDB>,
+): MergedTableData => {
+	const mergedData: Record<string, ParsedDB> = {};
+
+	for (const [_modFile, modData] of Object.entries(modsDbData)) {
+		for (const [tableName, tableData] of Object.entries(modData)) {
+			if (!mergedData[tableName]) {
+				mergedData[tableName] = {};
+			}
+
+			for (const [customTableName, rows] of Object.entries(tableData)) {
+				const existingCustomTables = Object.keys(mergedData[tableName]);
+				let shouldAdd = true;
+
+				for (const existingCustomTable of existingCustomTables) {
+					if (customTableName === existingCustomTable) {
+						const comparisonResult = comparePriority(
+							customTableName,
+							existingCustomTable,
+						);
+						if (comparisonResult <= 0) {
+							mergedData[tableName][customTableName] = rows;
+						}
+						shouldAdd = false;
+						break;
+					}
+				}
+
+				if (shouldAdd) {
+					mergedData[tableName][customTableName] = rows;
+				}
+			}
+		}
+	}
+
+	const finalMergedData: Record<string, any> = {};
+	for (const [tableName, customTables] of Object.entries(mergedData)) {
+		finalMergedData[tableName] = {};
+
+		for (const [_, rows] of Object.entries(customTables)) {
+			if (Array.isArray(rows)) {
+				if (!Array.isArray(finalMergedData[tableName])) {
+					finalMergedData[tableName] = [];
+				}
+				finalMergedData[tableName] = [
+					...finalMergedData[tableName],
+					...rows,
+				];
+			} else if (typeof rows === 'object' && rows !== null) {
+				if (!finalMergedData[tableName]) {
+					finalMergedData[tableName] = {};
+				}
+				finalMergedData[tableName] = {
+					...finalMergedData[tableName],
+					...rows,
+				};
+			}
+		}
+	}
+
+	return finalMergedData;
+};
+
+export const detectModConflicts = (modsDbData: Record<string, ParsedDB>) => {
+	const conflicts: Record<string, Record<string, Record<string, any[]>>> = {};
+
+	const modFiles = Object.keys(modsDbData);
+
+	for (let i = 0; i < modFiles.length; i++) {
+		const modA = modFiles[i];
+		const modDataA = modsDbData[modA];
+
+		for (let j = i + 1; j < modFiles.length; j++) {
+			const modB = modFiles[j];
+			const modDataB = modsDbData[modB];
+
+			for (const tableNameA in modDataA) {
+				if (tableNameA in modDataB) {
+					const tableA = modDataA[tableNameA];
+					const tableB = modDataB[tableNameA];
+
+					for (const customTableA in tableA) {
+						for (const customTableB in tableB) {
+							// @ts-ignore
+							const rowsA = tableA[customTableA];
+							// @ts-ignore
+							const rowsB = tableB[customTableB];
+
+							if (
+								!Array.isArray(rowsA) ||
+								!Array.isArray(rowsB)
+							) {
+								continue;
+							}
+
+							const conflictedRows: any[] = [];
+
+							const sampleRowA = rowsA[0];
+							const idKeys = ['key', 'id', 'group'];
+							let idKey = null;
+
+							for (const key of idKeys) {
+								if (sampleRowA && key in sampleRowA) {
+									idKey = key;
+									break;
+								}
+							}
+
+							if (idKey) {
+								for (const rowA of rowsA) {
+									const idValueA = rowA[idKey];
+									for (const rowB of rowsB) {
+										if (rowB[idKey] === idValueA) {
+											const comparisonResult =
+												comparePriority(
+													customTableA,
+													customTableB,
+												);
+
+											const winningTable =
+												comparisonResult <= 0
+													? customTableA
+													: customTableB;
+											const losingTable =
+												comparisonResult <= 0
+													? customTableB
+													: customTableA;
+											const winnerData =
+												comparisonResult <= 0
+													? rowA
+													: rowB;
+											const loserData =
+												comparisonResult <= 0
+													? rowB
+													: rowA;
+
+											conflictedRows.push({
+												idKey,
+												idValue: idValueA,
+												winningTable,
+												losingTable,
+												winnerData,
+												loserData,
+											});
+										}
+									}
+								}
+							}
+
+							if (conflictedRows.length > 0) {
+								if (!conflicts[modA]) conflicts[modA] = {};
+								if (!conflicts[modA][modB])
+									conflicts[modA][modB] = {};
+								if (!conflicts[modA][modB][tableNameA])
+									conflicts[modA][modB][tableNameA] = [];
+
+								conflicts[modA][modB][tableNameA].push(
+									...conflictedRows,
+								);
+
+								if (!conflicts[modB]) conflicts[modB] = {};
+								if (!conflicts[modB][modA])
+									conflicts[modB][modA] = {};
+								if (!conflicts[modB][modA][tableNameA])
+									conflicts[modB][modA][tableNameA] = [];
+
+								conflicts[modB][modA][tableNameA].push(
+									...conflictedRows.map(row => ({
+										...row,
+										winningTable: row.losingTable,
+										losingTable: row.winningTable,
+										winnerData: row.loserData,
+										loserData: row.winnerData,
+									})),
+								);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return conflicts;
+};
