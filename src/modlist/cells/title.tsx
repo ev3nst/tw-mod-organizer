@@ -246,8 +246,8 @@ export const Title = memo(
 								triggerRef={dependencyTriggerRef}
 							>
 								<>
-									<h4 className="font-semibold mb-1 text-base">
-										Dependency Violation
+									<h4 className="font-semibold mb-1 text-base text-red-600">
+										Dependency Order Violation
 									</h4>
 									<p className="text-sm mb-2 text-muted-foreground">
 										These mods depend on this mod but are
@@ -294,8 +294,8 @@ export const Title = memo(
 									triggerRef={parentTriggerRef}
 								>
 									<>
-										<h4 className="font-semibold mb-1 text-base">
-											Dependency Violation
+										<h4 className="font-semibold mb-1 text-base text-orange-600">
+											Dependency Not Active
 										</h4>
 										<p className="text-sm mb-2 text-muted-foreground">
 											These mods are required for this mod
