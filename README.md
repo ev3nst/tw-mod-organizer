@@ -22,12 +22,12 @@ Requires Windows 10, Steam, 7z (for local mod installation).
 -   View mod conflicts to spot compatibility issues
 -   Smart mod dependency tracking
 -   Use separators to group mods for better organization
--   Fast and smart filtering to quickly find your mods
+-   Fast and easy filtering to quickly find your mods
 -   Manual mod installation directly within the app, keeping your game folders clean
 -   Nexus Mods integration — direct download with deep links
 -   Steam Collection — allows you to import whole collection of mods
 -   Force update for Steam Workshop mods — manually check for mod updates when Steam doesn’t
--   Pack Viewer — to check the contents of a total war mod (beta)
+-   Pack File Magic — you can check the contents of a .pack file, parse your whole mod list to see final result or have a conflict view showing you which values are being overriden by each other. (beta)
 -   Version Checker — informs you about potential upgrades and automatic updates from steam
 -   Simple, user-friendly UI
 
