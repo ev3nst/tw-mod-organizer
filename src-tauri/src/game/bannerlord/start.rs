@@ -36,10 +36,9 @@ fn create_symlinks_with_elevation(
         for entry in entries.flatten() {
             let path = entry.path();
             if path.is_dir() && path.read_link().is_ok() {
-                script_content.push_str(&format!(
-                    "rmdir \"{}\"\r\n",
-                    path.to_string_lossy().replace("/", "\\")
-                ));
+                if let Err(e) = fs::remove_dir(&path) {
+                    return Err(format!("Failed to remove existing symlink: {}", e));
+                }
             }
         }
     }
@@ -58,13 +57,6 @@ fn create_symlinks_with_elevation(
                 continue;
             }
             Ok(false) => {
-                if link_path.exists() {
-                    script_content.push_str(&format!(
-                        "rmdir \"{}\"\r\n",
-                        link_path.to_string_lossy().replace("/", "\\")
-                    ));
-                }
-
                 let link_path_str = link_path.to_string_lossy().replace("/", "\\");
                 let target_path_str = target_path.to_string_lossy().replace("/", "\\");
 
