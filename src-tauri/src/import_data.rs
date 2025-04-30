@@ -8,24 +8,19 @@ use crate::pack::migrate_local_mod::migrate_local_mod;
 use crate::utils::create_app_default_paths::create_app_default_paths;
 use crate::utils::protected_paths::PROTECTED_PATHS;
 
-#[derive(Deserialize)]
+#[allow(dead_code)]
+#[derive(Deserialize, Debug)]
 struct InputMod {
     #[serde(rename = "workshopId")]
     workshop_id: String,
-
     #[serde(rename = "isEnabled")]
     is_enabled: bool,
-
     path: String,
     name: String,
-
+    #[serde(rename = "humanName")]
+    human_name: String,
     #[serde(default)]
     categories: Option<Vec<String>>,
-}
-
-#[derive(Deserialize)]
-struct InputGameMods {
-    mods: Vec<InputMod>,
 }
 
 #[derive(Deserialize)]
@@ -36,8 +31,6 @@ struct InputModPreset {
 
 #[derive(Deserialize)]
 struct InputData {
-    #[serde(rename = "gameToCurrentPreset")]
-    game_to_current_preset: HashMap<String, InputGameMods>,
     #[serde(rename = "gameToPresets")]
     game_to_presets: HashMap<String, Vec<InputModPreset>>,
 }
@@ -80,13 +73,14 @@ pub async fn import_data(
         .iter()
         .find(|game| game.steam_id == app_id)
         .ok_or_else(|| format!("Given app_id {} is not supported", app_id))?;
+    println!("Looking for game slug: {}", game.slug_opt); // Debug print
+
     if game.r#type != "totalwar" {
         return Err("This game type is not supported for this function".to_string());
     }
 
     let _ = create_app_default_paths(handle.clone());
 
-    // json validation
     let path = Path::new(&json_file_path);
     if is_path_protected(path) {
         return Err("Access to the specified path is not allowed.".to_string());
@@ -105,106 +99,99 @@ pub async fn import_data(
         return Err("File size exceeds the maximum limit of 200MB.".to_string());
     }
 
-    // Read and parse JSON.
     let file_content =
         fs::read_to_string(path).map_err(|e| format!("Failed to read the file: {}", e))?;
     let input_data: InputData =
         serde_json::from_str(&file_content).map_err(|e| format!("Failed to parse JSON: {}", e))?;
 
+    println!(
+        "Available games in JSON: {:?}",
+        input_data.game_to_presets.keys()
+    );
     let mut output_data = OutputData {
         mod_meta_information: HashMap::new(),
         mod_profiles: HashMap::new(),
     };
 
-    let mut local_mod_lookup: HashMap<String, String> = HashMap::new();
-    for (game_key, game_mods) in &input_data.game_to_current_preset {
-        let game_info = SUPPORTED_GAMES.iter().find(|game| game.slug == game_key);
-        if game_info.is_none() {
-            continue;
-        }
+    if let Some(presets) = input_data
+        .game_to_presets
+        .get(&game.slug_opt.to_string().clone())
+    {
+        println!("Found presets for game: {}", game.slug_opt);
+        println!("Number of presets: {}", presets.len());
+        let mut output_profiles = Vec::new();
+        let mut mod_info_list = Vec::new();
+        let mut local_mod_lookup: HashMap<String, String> = HashMap::new();
 
-        let game_info = game_info.unwrap();
-        let app_id = game_info.steam_id;
+        for preset in presets {
+            let mut mods = Vec::new();
 
-        output_data
-            .mod_meta_information
-            .entry(game_key.clone())
-            .or_insert_with(Vec::new);
-        let mod_info_list = output_data.mod_meta_information.get_mut(game_key).unwrap();
+            for m in &preset.mods {
+                let identifier = if m.workshop_id.chars().all(char::is_numeric) {
+                    m.workshop_id.clone()
+                } else {
+                    match migrate_local_mod(
+                        app_id,
+                        &m.path,
+                        &m.name,
+                        m.categories.clone(),
+                        &mod_installation_path,
+                    ) {
+                        Ok(uuid) => {
+                            local_mod_lookup.insert(m.path.clone(), uuid.clone());
+                            uuid
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to migrate local mod ({}): {}", m.name, e);
+                            continue;
+                        }
+                    }
+                };
 
-        for m in &game_mods.mods {
-            if !m.workshop_id.is_empty() && m.workshop_id.chars().all(char::is_numeric) {
-                mod_info_list.push(OutputModInfo {
-                    identifier: m.workshop_id.clone(),
-                    name: m.name.clone(),
-                    categories: m.categories.clone().unwrap_or_default().join(", "),
-                });
-            } else {
-                match migrate_local_mod(
-                    app_id,
-                    &m.path,
-                    &m.name,
-                    m.categories.clone(),
-                    &mod_installation_path,
-                ) {
-                    Ok(uuid) => {
-                        local_mod_lookup.insert(m.path.clone(), uuid.clone());
+                if !mod_info_list
+                    .iter()
+                    .any(|info: &OutputModInfo| info.identifier == identifier)
+                {
+                    let categories = m.categories.clone().unwrap_or_default().join(", ");
+                    if !categories.is_empty() {
                         mod_info_list.push(OutputModInfo {
-                            identifier: uuid,
+                            identifier: identifier.clone(),
                             name: m.name.clone(),
-                            categories: m.categories.clone().unwrap_or_default().join(", "),
+                            categories,
                         });
                     }
-                    Err(e) => {
-                        eprintln!("Failed to migrate local mod ({}): {}", m.name, e);
-                    }
                 }
-            }
-        }
-    }
-
-    for (game_key, presets) in &input_data.game_to_presets {
-        if !SUPPORTED_GAMES.iter().any(|game| game.slug == game_key) {
-            continue;
-        }
-
-        let mut output_profiles = Vec::new();
-        for profile in presets {
-            let mut mods = Vec::new();
-            for m in &profile.mods {
-                let is_local_mod =
-                    m.workshop_id.is_empty() || !m.workshop_id.chars().all(char::is_numeric);
-                let identifier = if is_local_mod {
-                    if let Some(uuid) = local_mod_lookup.get(&m.path) {
-                        uuid.clone()
-                    } else {
-                        continue;
-                    }
-                } else {
-                    m.workshop_id.clone()
-                };
-
-                let title = if is_local_mod {
-                    &m.name
-                } else {
-                    &m.workshop_id
-                };
 
                 mods.push(OutputModActive {
                     identifier,
-                    title: title.to_string(),
+                    title: m.name.clone(),
                     mod_file_path: m.path.clone(),
                     is_active: m.is_enabled,
                 });
             }
-            output_profiles.push(OutputProfile {
-                profile_name: profile.name.clone(),
-                mods,
-            });
+
+            if !mods.is_empty() {
+				mods.reverse();
+                output_profiles.push(OutputProfile {
+                    profile_name: preset.name.clone(),
+                    mods,
+                });
+            }
         }
-        output_data
-            .mod_profiles
-            .insert(game_key.clone(), output_profiles);
+
+        if !mod_info_list.is_empty() {
+            output_data
+                .mod_meta_information
+                .insert(game.slug_opt.to_string().clone(), mod_info_list);
+        }
+
+        if !output_profiles.is_empty() {
+            output_data
+                .mod_profiles
+                .insert(game.slug_opt.to_string().clone(), output_profiles);
+        }
+    } else {
+        println!("No presets found for game: {}", game.slug_opt);
     }
 
     Ok(output_data)

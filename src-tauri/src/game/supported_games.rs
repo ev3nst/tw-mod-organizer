@@ -7,6 +7,7 @@ use crate::utils::roaming_folder::roaming_folder;
 pub struct Game {
     pub name: &'static str,
     pub slug: &'static str,
+    pub slug_opt: &'static str,
     pub save_path_folder_name: &'static str,
     pub save_file_extension: &'static str,
     pub exe_name: &'static str,
@@ -23,6 +24,7 @@ pub const SUPPORTED_GAMES: &[Game] = &[
     Game {
         name: "Total War: WARHAMMER 2",
         slug: "tww2",
+		slug_opt: "wh2",
         save_path_folder_name: "Warhammer2",
         save_file_extension: "save",
         exe_name: "Warhammer2",
@@ -37,6 +39,7 @@ pub const SUPPORTED_GAMES: &[Game] = &[
     Game {
         name: "Total War: WARHAMMER 3",
         slug: "tww3",
+		slug_opt: "wh3",
         save_path_folder_name: "Warhammer3",
         save_file_extension: "save",
         exe_name: "Warhammer3",
@@ -51,6 +54,7 @@ pub const SUPPORTED_GAMES: &[Game] = &[
     Game {
         name: "Total War: Three Kingdoms",
         slug: "tw3k",
+		slug_opt: "threeKingdoms",
         save_path_folder_name: "ThreeKingdoms",
         save_file_extension: "save",
         exe_name: "Three_Kingdoms",
@@ -65,6 +69,7 @@ pub const SUPPORTED_GAMES: &[Game] = &[
     Game {
         name: "Mount & Blade: Bannerlord",
         slug: "mbbl",
+		slug_opt: "mbbl",
         save_path_folder_name: "Mount and Blade II Bannerlord",
         save_file_extension: "sav",
         exe_name: "Bannerlord",
@@ -107,6 +112,7 @@ impl Game {
 pub struct GameWithPath<'a> {
     pub name: &'a str,
     pub slug: &'a str,
+    pub slug_opt: &'a str,
     pub save_path_folder: Option<String>,
     pub save_file_extension: &'a str,
     pub exe_name: &'a str,
@@ -128,6 +134,7 @@ pub fn supported_games() -> Result<Vec<GameWithPath<'static>>, String> {
         games_with_paths.push(GameWithPath {
             name: game.name,
             slug: game.slug,
+            slug_opt: game.slug_opt,
             save_path_folder: path_result,
             save_file_extension: game.save_file_extension,
             exe_name: game.exe_name,

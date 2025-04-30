@@ -42,7 +42,7 @@ export function ImportData() {
 			const metaGameKeys = Object.keys(result.mod_meta_information);
 			for (let mgki = 0; mgki < metaGameKeys.length; mgki++) {
 				const gameKey = metaGameKeys[mgki];
-				const game = games.find(g => g.slug === gameKey);
+				const game = games.find(g => g.slug_opt === gameKey);
 				if (!game) continue;
 
 				let modMeta = await ModMetaModel.retrieve(
@@ -98,7 +98,7 @@ export function ImportData() {
 			const profileGameKeys = Object.keys(result.mod_profiles);
 			for (let gki = 0; gki < profileGameKeys.length; gki++) {
 				const gameKey = profileGameKeys[gki];
-				const game = games.find(g => g.slug === gameKey);
+				const game = games.find(g => g.slug_opt === gameKey);
 				if (!game) continue;
 
 				for (
@@ -162,7 +162,7 @@ export function ImportData() {
 
 			toast.success('Import successfull.');
 			setTimeout(() => {
-				window.location.reload();
+				//	window.location.reload();
 			}, 500);
 		} catch (error) {
 			toastError(error);
@@ -209,7 +209,7 @@ export function ImportData() {
 					disabled={loading || configJSONPath === ''}
 					onClick={handleSubmit}
 				>
-					Save changes
+					Start Importing
 					{loading && <Loading />}
 				</Button>
 			</DialogFooter>
