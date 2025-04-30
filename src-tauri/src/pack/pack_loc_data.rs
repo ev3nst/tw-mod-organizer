@@ -44,7 +44,7 @@ pub async fn pack_loc_data(
     }
 
     let cache_filename = format!(
-        "pack_loc_data_{}.json",
+        "pack_loc_data_parsed_{}.json",
         pack_file_path.file_name().unwrap().to_string_lossy()
     );
     let cache_file = app_cache_dir.join(cache_filename);
