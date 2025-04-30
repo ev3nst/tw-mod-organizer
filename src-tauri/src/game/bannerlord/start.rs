@@ -16,12 +16,36 @@ pub struct BannerlordMod {
     mod_path: String,
 }
 
+fn get_drive_letter(path: &Path) -> Option<char> {
+    path.as_os_str().to_string_lossy().chars().next()
+}
+
+fn try_create_junction(source: &Path, target: &Path) -> Result<bool, String> {
+    if get_drive_letter(source) != get_drive_letter(target) {
+        return Ok(false);
+    }
+
+    let output = Command::new("cmd")
+        .args([
+            "/C",
+            "mklink",
+            "/J",
+            &target.to_string_lossy(),
+            &source.to_string_lossy(),
+        ])
+        .output()
+        .map_err(|e| format!("Failed to execute mklink: {}", e))?;
+
+    Ok(output.status.success())
+}
+
 fn create_symlinks_with_elevation(
     game_modules_path: &Path,
     mods: &[(&str, &str, String)],
 ) -> Result<Vec<String>, String> {
     let mut created_symlinks = Vec::new();
     let mut script_content = String::from("@echo off\r\n");
+    let mut needs_elevation = false;
 
     if let Ok(entries) = fs::read_dir(game_modules_path) {
         for entry in entries.flatten() {
@@ -43,46 +67,62 @@ fn create_symlinks_with_elevation(
             continue;
         }
 
-        if link_path.exists() {
-            script_content.push_str(&format!(
-                "rmdir \"{}\"\r\n",
-                link_path.to_string_lossy().replace("/", "\\")
-            ));
+        match try_create_junction(target_path, &link_path) {
+            Ok(true) => {
+                created_symlinks.push(bannerlord_id.clone());
+                continue;
+            }
+            Ok(false) => {
+                if link_path.exists() {
+                    script_content.push_str(&format!(
+                        "rmdir \"{}\"\r\n",
+                        link_path.to_string_lossy().replace("/", "\\")
+                    ));
+                }
+
+                let link_path_str = link_path.to_string_lossy().replace("/", "\\");
+                let target_path_str = target_path.to_string_lossy().replace("/", "\\");
+
+                script_content.push_str(&format!(
+                    "mklink /D \"{}\" \"{}\"\r\n",
+                    link_path_str, target_path_str
+                ));
+
+                needs_elevation = true;
+                created_symlinks.push(bannerlord_id.clone());
+            }
+            Err(e) => return Err(format!("Failed to create junction: {}", e)),
+        }
+    }
+
+    if needs_elevation {
+        script_content.push_str("exit %ERRORLEVEL%\r\n");
+        let script_path = std::env::temp_dir().join("bannerlord_symlinks.cmd");
+
+        if let Err(e) = fs::write(&script_path, script_content) {
+            return Err(format!("Failed to create script file: {}", e));
         }
 
-        let link_path_str = link_path.to_string_lossy().replace("/", "\\");
-        let target_path_str = target_path.to_string_lossy().replace("/", "\\");
+        let status = runas::Command::new(script_path.to_str().unwrap())
+            .show(false)
+            .force_prompt(true)
+            .status();
 
-        script_content.push_str(&format!(
-            "mklink /D \"{}\" \"{}\"\r\n",
-            link_path_str, target_path_str
-        ));
+        let _ = fs::remove_file(&script_path);
 
-        created_symlinks.push(bannerlord_id.clone());
+        match status {
+            Ok(exit_status) if exit_status.success() => (),
+            Ok(exit_status) => {
+                return Err(format!(
+                    "Batch script failed with exit code: {}",
+                    exit_status.code().unwrap_or(-1)
+                ))
+            }
+            Err(e) => return Err(format!("Failed to run elevated command: {}", e)),
+        }
     }
 
-    script_content.push_str("exit %ERRORLEVEL%\r\n");
-
-    let script_path = std::env::temp_dir().join("bannerlord_symlinks.cmd");
-
-    if let Err(e) = fs::write(&script_path, script_content) {
-        return Err(format!("Failed to create script file: {}", e));
-    }
-
-    let status = runas::Command::new(script_path.to_str().unwrap())
-        .show(false)
-        .force_prompt(true)
-        .status();
-
-    let _ = fs::remove_file(&script_path);
-    match status {
-        Ok(exit_status) if exit_status.success() => Ok(created_symlinks),
-        Ok(exit_status) => Err(format!(
-            "Batch script failed with exit code: {}",
-            exit_status.code().unwrap_or(-1)
-        )),
-        Err(e) => Err(format!("Failed to run elevated command: {}", e)),
-    }
+    Ok(created_symlinks)
 }
 
 #[tauri::command(rename_all = "snake_case")]
