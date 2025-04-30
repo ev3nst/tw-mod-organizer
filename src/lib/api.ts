@@ -196,10 +196,16 @@ class API {
 	}
 
 	async subscribe(app_id: number, item_id: number): Promise<boolean> {
-		return invoke('subscribe', {
+		const success: boolean = await invoke('subscribe', {
 			app_id,
 			item_id,
 		});
+
+		if (success) {
+			await this.waitForDownload(app_id, item_id);
+		}
+
+		return success;
 	}
 
 	async unsubscribe(app_id: number, item_id: number): Promise<boolean> {
@@ -217,6 +223,30 @@ class API {
 			app_id,
 			item_id,
 		});
+	}
+
+	private async waitForDownload(
+		app_id: number,
+		item_id: number,
+		timeout = 300000,
+	): Promise<boolean> {
+		const startTime = Date.now();
+
+		while (Date.now() - startTime < timeout) {
+			const state = await this.check_item_download(app_id, item_id);
+
+			if (state.download_complete) {
+				return true;
+			}
+
+			if (!state.is_downloading && !state.download_complete) {
+				throw new Error(`Download failed for item ${item_id}`);
+			}
+
+			await new Promise(resolve => setTimeout(resolve, 5000));
+		}
+
+		throw new Error(`Download timeout for item ${item_id}`);
 	}
 
 	async update_workshop_item(app_id: number, item_id: number): Promise<void> {
