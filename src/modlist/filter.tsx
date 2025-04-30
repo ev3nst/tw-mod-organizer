@@ -32,7 +32,6 @@ export const Filter = memo(
 
 		const mods = modsStore(state => state.mods);
 		const onlyMods = mods.filter(m => !isSeparator(m));
-		const separatorCount = mods.length - onlyMods.length;
 		const modActiveData = modActivationStore(state => state.data);
 
 		useEffect(() => {
@@ -88,7 +87,14 @@ export const Filter = memo(
 						<Tooltip>
 							<TooltipTrigger className="hover:cursor-default hover:brightness-125 text-green-500">
 								A:
-								{modActiveData.filter(f => f.is_active).length}
+								{
+									modActiveData.filter(
+										f =>
+											!f.mod_id.startsWith(
+												'separator_',
+											) && f.is_active,
+									).length
+								}
 							</TooltipTrigger>
 							<TooltipContent>
 								<p>Active mod count.</p>
@@ -98,8 +104,14 @@ export const Filter = memo(
 						<Tooltip>
 							<TooltipTrigger className="hover:cursor-default hover:brightness-125 text-red-500">
 								P:
-								{modActiveData.filter(f => !f.is_active)
-									.length - separatorCount}
+								{
+									modActiveData.filter(
+										f =>
+											!f.mod_id.startsWith(
+												'separator_',
+											) && !f.is_active,
+									).length
+								}
 							</TooltipTrigger>
 							<TooltipContent>
 								<p>Passive mod count.</p>
