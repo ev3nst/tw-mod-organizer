@@ -194,16 +194,23 @@ const PackPriorityLogic =
 	"!#$%&'()+,-;=@0123456789abcdefghijklmnopqrstuvwxyz[]^_`{}~";
 
 export const comparePriority = (a: string, b: string): number => {
-	const minLength = Math.min(a.length, b.length);
-	for (let i = 0; i < minLength; i++) {
-		const indexA = PackPriorityLogic.indexOf(a[i]);
-		const indexB = PackPriorityLogic.indexOf(b[i]);
+	const maxLength = Math.max(a.length, b.length);
 
-		if (indexA !== indexB) {
-			return indexB - indexA;
+	const paddedA = a.padEnd(maxLength, ' ');
+	const paddedB = b.padEnd(maxLength, ' ');
+
+	for (let i = 0; i < maxLength; i++) {
+		const indexA = PackPriorityLogic.indexOf(paddedA[i]);
+		const indexB = PackPriorityLogic.indexOf(paddedB[i]);
+
+		const valueA = indexA === -1 ? Number.MAX_SAFE_INTEGER : indexA;
+		const valueB = indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB;
+
+		if (valueA !== valueB) {
+			return valueB - valueA;
 		}
 	}
-	return a.length - b.length;
+	return 0;
 };
 
 export type MergedTableData = {

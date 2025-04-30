@@ -30,6 +30,7 @@ import { modOrderStore } from '@/lib/store/mod_order';
 import { isSeparator } from '@/lib/store/mod_separator';
 import { THVersion } from './version';
 import { memo } from 'react';
+import { comparePriority } from '@/lib/store/pack-manager';
 
 const SortByIndicator = ({
 	title,
@@ -113,9 +114,12 @@ export const Header = memo(() => {
 		) as ModItem[];
 		const separatorMods = mods.filter(mod => isSeparator(mod));
 
-		let sortedMods = [...nonSeparatorMods].sort(
-			(a, b) => a.created_at - b.created_at,
-		);
+		let sortedMods = [...nonSeparatorMods];
+		if (selectedGame?.type === 'totalwar') {
+			sortedMods.sort((a, b) => comparePriority(a.mod_file, b.mod_file));
+		} else {
+			sortedMods.sort((a, b) => a.created_at - b.created_at);
+		}
 
 		let iterations = 0;
 		const maxIterations = sortedMods.length;
@@ -185,8 +189,15 @@ export const Header = memo(() => {
 									This action is irreversible. You are about
 									to reset your current profile's load order.
 									Automatic sorting will make sure that
-									dependency checks are resolved and sorted by
-									their creation date afterwards.
+									<span className="text-blue-500 mx-1">
+										dependency
+									</span>
+									checks are resolved and sorted by their
+									<span className="text-blue-500 mx-1">
+										{selectedGame?.type === 'totalwar'
+											? '.pack file names similar to official CA launcher afterwards.'
+											: 'creation date afterwards.'}
+									</span>
 								</AlertDialogDescription>
 							</AlertDialogHeader>
 							<AlertDialogFooter>
