@@ -1,4 +1,3 @@
-use runas;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::os::windows::process::CommandExt;
@@ -7,6 +6,7 @@ use std::process::Command;
 
 use crate::game::find_installation_path::find_installation_path;
 use crate::game::supported_games::SUPPORTED_GAMES;
+use crate::utils::create_junction::create_junction;
 use crate::AppState;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16,35 +16,20 @@ pub struct BannerlordMod {
     mod_path: String,
 }
 
-fn get_drive_letter(path: &Path) -> Option<char> {
-    path.as_os_str().to_string_lossy().chars().next()
-}
-
-fn try_create_junction(source: &Path, target: &Path) -> Result<bool, String> {
-    if get_drive_letter(source) != get_drive_letter(target) {
-        return Ok(false);
-    }
-
-    let output = Command::new("cmd")
-        .args([
-            "/C",
-            "mklink",
-            "/J",
-            &target.to_string_lossy(),
-            &source.to_string_lossy(),
-        ])
-        .output()
-        .map_err(|e| format!("Failed to execute mklink: {}", e))?;
-
-    Ok(output.status.success())
-}
-
 fn create_symlinks_with_elevation(
     game_modules_path: &Path,
     mods: &[(&str, &str, String)],
 ) -> Result<Vec<String>, String> {
     let mut created_symlinks = Vec::new();
-    let mut script_content = String::from("@echo off\r\n");
+    let mut script_content = String::from(
+        "@echo off\r\n\
+         NET SESSION >nul 2>&1\r\n\
+         IF %ERRORLEVEL% NEQ 0 (\r\n\
+             powershell -Command \"$proc = Start-Process -FilePath '%~dpnx0' -Verb RunAs -PassThru -Wait; exit $proc.ExitCode\"\r\n\
+             exit /b %ERRORLEVEL%\r\n\
+         )\r\n\
+         echo Running with elevation...\r\n\r\n"
+    );
     let mut needs_elevation = false;
 
     if let Ok(entries) = fs::read_dir(game_modules_path) {
@@ -67,7 +52,7 @@ fn create_symlinks_with_elevation(
             continue;
         }
 
-        match try_create_junction(target_path, &link_path) {
+        match create_junction(target_path, &link_path) {
             Ok(true) => {
                 created_symlinks.push(bannerlord_id.clone());
                 continue;
@@ -96,29 +81,30 @@ fn create_symlinks_with_elevation(
     }
 
     if needs_elevation {
-        script_content.push_str("exit %ERRORLEVEL%\r\n");
+        script_content.push_str("echo Done.\r\n");
+        script_content.push_str("exit /b %ERRORLEVEL%\r\n");
         let script_path = std::env::temp_dir().join("bannerlord_symlinks.cmd");
 
         if let Err(e) = fs::write(&script_path, script_content) {
             return Err(format!("Failed to create script file: {}", e));
         }
 
-        let status = runas::Command::new(script_path.to_str().unwrap())
-            .show(false)
-            .force_prompt(true)
-            .status();
+        let _ = Command::new("cmd")
+            .args(["/C", script_path.to_str().unwrap()])
+            .creation_flags(0x08000000)
+            .output()
+            .map_err(|e| format!("Failed to execute script: {}", e))?;
 
         let _ = fs::remove_file(&script_path);
+    }
 
-        match status {
-            Ok(exit_status) if exit_status.success() => (),
-            Ok(exit_status) => {
-                return Err(format!(
-                    "Batch script failed with exit code: {}",
-                    exit_status.code().unwrap_or(-1)
-                ))
-            }
-            Err(e) => return Err(format!("Failed to run elevated command: {}", e)),
+    for bannerlord_id in &created_symlinks {
+        let link_path = game_modules_path.join(bannerlord_id);
+        if !link_path.exists() {
+            return Err(format!(
+                "Failed to verify symlink creation for: {}",
+                bannerlord_id
+            ));
         }
     }
 
