@@ -11,7 +11,6 @@ import { SettingModel, settingStore } from '@/lib/store/setting';
 export function GameSwitcher() {
 	const games = settingStore(state => state.games);
 	const selectedGame = settingStore(state => state.selectedGame);
-	const setSelectedGame = settingStore(state => state.setSelectedGame);
 	const isGameRunning = settingStore(state => state.isGameRunning);
 	const shouldLockScreen = settingStore(state => state.shouldLockScreen);
 
@@ -19,16 +18,13 @@ export function GameSwitcher() {
 		<Select
 			defaultValue={selectedGame!.slug}
 			disabled={isGameRunning || shouldLockScreen}
-			onValueChange={value => {
+			onValueChange={async value => {
 				const findGame = games.find(f => f.slug === value);
 				if (findGame) {
-					setSelectedGame(undefined);
-					setTimeout(async () => {
-						setSelectedGame(findGame);
-						const setting = await SettingModel.retrieve();
-						setting.selected_game = findGame.steam_id;
-						await setting.save();
-					}, 200);
+					const setting = await SettingModel.retrieve();
+					setting.selected_game = findGame.steam_id;
+					await setting.save();
+					window.location.reload();
 				}
 			}}
 		>
