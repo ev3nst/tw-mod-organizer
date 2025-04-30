@@ -28,6 +28,7 @@ export const THVersion = memo(() => {
 			const now = Date.now();
 			let updatedModVersionData = [...modVersionData];
 			let changed = [];
+			let needsUpdate = false;
 
 			const fetchModDetails = async (mv: ModVersionItem, vi: number) => {
 				const modDetails = mods.find(
@@ -46,20 +47,33 @@ export const THVersion = memo(() => {
 								game_domain_name: selectedGame!.nexus_slug,
 								mod_id: Number(modNexusId),
 							});
-							updatedModVersionData[vi].last_time_checked =
-								Date.now();
-							if (mv.latest_version !== nexusModDetail.version) {
+
+							if (
+								updatedModVersionData[vi].last_time_checked !==
+									now ||
+								updatedModVersionData[vi].latest_version !==
+									nexusModDetail.version
+							) {
+								updatedModVersionData[vi].last_time_checked =
+									now;
 								updatedModVersionData[vi].latest_version =
 									nexusModDetail.version;
-								mv.latest_version = nexusModDetail.version;
-								changed.push(mv);
+								needsUpdate = true;
+
+								if (
+									mv.latest_version !== nexusModDetail.version
+								) {
+									changed.push({
+										...mv,
+										latest_version: nexusModDetail.version,
+									});
+								}
 							}
 						} catch (_e) {}
 					}
 				}
 			};
 
-			let updated = false;
 			for (let vi = 0; vi < modVersionData.length; vi++) {
 				const mv = modVersionData[vi];
 				switch (mv.mod_type) {
@@ -81,7 +95,6 @@ export const THVersion = memo(() => {
 						if (timeSinceCheck > ONE_WEEK_IN_MS) {
 							// Only check if more than 1 week has passed since the last check
 							fetchModDetails(mv, vi);
-							updated = true;
 						} else if (mv.latest_version !== mv.version) {
 							changed.push(mv);
 						}
@@ -91,7 +104,7 @@ export const THVersion = memo(() => {
 				}
 			}
 
-			if (updated) {
+			if (needsUpdate) {
 				setVersionData(updatedModVersionData);
 			}
 
