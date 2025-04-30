@@ -8,6 +8,7 @@ import { debounceCallback } from '@/lib/utils';
 export type IGameMeta = {
 	name: string;
 	slug: string;
+	slug_opt: string;
 	save_path_folder: string;
 	save_file_extension: string;
 	exe_name: string;
