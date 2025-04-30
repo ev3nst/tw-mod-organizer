@@ -1,9 +1,8 @@
 use runas;
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::io::{self, Write};
 use std::os::windows::process::CommandExt;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 
 use crate::game::find_installation_path::find_installation_path;
@@ -17,36 +16,73 @@ pub struct BannerlordMod {
     mod_path: String,
 }
 
-fn create_symlinks_batch_script(
-    game_installation_path: &str,
+fn create_symlinks_with_elevation(
+    game_modules_path: &Path,
     mods: &[(&str, &str, String)],
-) -> io::Result<PathBuf> {
-    let temp_dir = std::env::temp_dir();
-    let batch_path = temp_dir.join("create_bannerlord_symlinks.bat");
+) -> Result<Vec<String>, String> {
+    let mut created_symlinks = Vec::new();
+    let mut script_content = String::from("@echo off\r\n");
 
-    let mut batch_file = fs::File::create(&batch_path)?;
-
-    writeln!(batch_file, "@echo off")?;
-    writeln!(batch_file, "cd /d \"{}\\Modules\"", game_installation_path)?;
-    writeln!(
-        batch_file,
-        "for /f \"delims= \" %%a in ('dir /b /aL') do rmdir \"%%a\""
-    )?;
-
-    for (identifier, mod_path, bannerlord_id) in mods {
-        writeln!(
-            batch_file,
-            "if exist \"{}\" rmdir \"{}\"",
-            identifier, identifier
-        )?;
-        writeln!(
-            batch_file,
-            "mklink /D \"{}\" \"{}\"",
-            bannerlord_id, mod_path
-        )?;
+    if let Ok(entries) = fs::read_dir(game_modules_path) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() && path.read_link().is_ok() {
+                script_content.push_str(&format!(
+                    "rmdir \"{}\"\r\n",
+                    path.to_string_lossy().replace("/", "\\")
+                ));
+            }
+        }
     }
 
-    Ok(batch_path)
+    for (_, mod_path, bannerlord_id) in mods {
+        let target_path = Path::new(mod_path);
+        let link_path = game_modules_path.join(bannerlord_id);
+
+        if !target_path.exists() {
+            continue;
+        }
+
+        if link_path.exists() {
+            script_content.push_str(&format!(
+                "rmdir \"{}\"\r\n",
+                link_path.to_string_lossy().replace("/", "\\")
+            ));
+        }
+
+        let link_path_str = link_path.to_string_lossy().replace("/", "\\");
+        let target_path_str = target_path.to_string_lossy().replace("/", "\\");
+
+        script_content.push_str(&format!(
+            "mklink /D \"{}\" \"{}\"\r\n",
+            link_path_str, target_path_str
+        ));
+
+        created_symlinks.push(bannerlord_id.clone());
+    }
+
+    script_content.push_str("exit %ERRORLEVEL%\r\n");
+
+    let script_path = std::env::temp_dir().join("bannerlord_symlinks.cmd");
+
+    if let Err(e) = fs::write(&script_path, script_content) {
+        return Err(format!("Failed to create script file: {}", e));
+    }
+
+    let status = runas::Command::new(script_path.to_str().unwrap())
+        .show(false)
+        .force_prompt(true)
+        .status();
+
+    let _ = fs::remove_file(&script_path);
+    match status {
+        Ok(exit_status) if exit_status.success() => Ok(created_symlinks),
+        Ok(exit_status) => Err(format!(
+            "Batch script failed with exit code: {}",
+            exit_status.code().unwrap_or(-1)
+        )),
+        Err(e) => Err(format!("Failed to run elevated command: {}", e)),
+    }
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -114,28 +150,15 @@ pub async fn start_game_bannerlord(
             .collect();
 
         if !custom_mods.is_empty() {
-            let batch_script = create_symlinks_batch_script(&game_installation_path, &custom_mods)
-                .map_err(|e| format!("Failed to create symlink batch script: {}", e))?;
-
-            let result = runas::Command::new(batch_script.to_str().unwrap())
-                .show(false)
-                .force_prompt(true)
-                .status();
-
-            let _ = fs::remove_file(batch_script);
-            match result {
-                Ok(status) if status.success() => {}
-                Ok(status) => {
-                    return Err(format!("Symlink creation failed. Exit status: {}", status))
+            let game_modules_path = Path::new(&game_installation_path).join("Modules");
+            match create_symlinks_with_elevation(&game_modules_path, &custom_mods) {
+                Ok(created_mods) => {
+                    symlinked_mods = created_mods;
                 }
-                Err(e) => return Err(format!("Failed to create symlinks: {}", e)),
+                Err(e) => {
+                    return Err(format!("Failed to create symlinks: {}", e));
+                }
             }
-
-            symlinked_mods.extend(
-                custom_mods
-                    .iter()
-                    .map(|(_, _, bannerlord_id)| bannerlord_id.to_string()),
-            );
         }
 
         if !symlinked_mods.is_empty() {
