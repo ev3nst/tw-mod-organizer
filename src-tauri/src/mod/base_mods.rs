@@ -51,7 +51,7 @@ pub struct LocalModMeta {
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn base_mods(app_id: u32) -> Result<Vec<ModItem>, String> {
+pub async fn base_mods(handle: tauri::AppHandle, app_id: u32) -> Result<Vec<ModItem>, String> {
     let game = SUPPORTED_GAMES
         .iter()
         .find(|game| game.steam_id == app_id)
@@ -60,7 +60,7 @@ pub async fn base_mods(app_id: u32) -> Result<Vec<ModItem>, String> {
     match game.r#type.as_ref() {
         "totalwar" => Ok(vec![]),
         "bannerlord" => {
-            let mods = bannerlord::base_mods::base_mods(app_id).await?;
+            let mods = bannerlord::base_mods::base_mods(handle, app_id).await?;
             Ok(mods)
         }
         _ => Err(format!("Game type '{}' is not supported", game.r#type)),

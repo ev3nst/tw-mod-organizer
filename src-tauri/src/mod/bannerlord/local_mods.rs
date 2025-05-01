@@ -1,14 +1,30 @@
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
+use tauri::path::BaseDirectory;
+use tauri::Manager;
 
 use crate::r#mod::base_mods::{LocalModMeta, ModItem};
 use crate::xml::submodule_contents::submodule_contents;
 
-pub async fn local_mods(app_mods_path: PathBuf) -> Result<Vec<ModItem>, String> {
-    let mut mods: Vec<ModItem> = vec![];
+pub async fn local_mods(
+    handle: tauri::AppHandle,
+    app_id: u32,
+    app_mods_path: PathBuf,
+) -> Result<Vec<ModItem>, String> {
+    let app_cache_dir = handle
+        .path()
+        .resolve("cache".to_string(), BaseDirectory::AppConfig)
+        .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?;
 
+    if !app_cache_dir.exists() {
+        fs::create_dir_all(&app_cache_dir)
+            .map_err(|e| format!("Failed to create cache directory: {}", e))?;
+    }
+
+    let mut mods: Vec<ModItem> = vec![];
     let mut mod_contents_map = HashMap::new();
+
     for entry in fs::read_dir(&app_mods_path).map_err(|e| e.to_string())? {
         let entry = entry.map_err(|e| e.to_string())?;
         let mod_path = entry.path();
@@ -25,7 +41,9 @@ pub async fn local_mods(app_mods_path: PathBuf) -> Result<Vec<ModItem>, String> 
         let meta_content = fs::read_to_string(&meta_path).map_err(|e| e.to_string())?;
         let meta: LocalModMeta = serde_json::from_str(&meta_content).map_err(|e| e.to_string())?;
 
-        if let Some(submodule_info) = submodule_contents(&mod_path) {
+        if let Some(submodule_info) =
+            submodule_contents(&mod_path, &app_cache_dir, app_id, meta.identifier.clone())
+        {
             mod_contents_map.insert(
                 submodule_info.id.clone(),
                 (submodule_info, meta.identifier.clone()),

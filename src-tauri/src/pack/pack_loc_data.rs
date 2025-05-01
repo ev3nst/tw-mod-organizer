@@ -44,7 +44,7 @@ pub async fn pack_loc_data(
     }
 
     let cache_filename = format!(
-        "pack_loc_data_parsed_{}.json",
+        "pack_loc_data_parsed_{}.bin",
         pack_file_path.file_name().unwrap().to_string_lossy()
     );
     let cache_file = app_cache_dir.join(cache_filename);
@@ -62,8 +62,8 @@ pub async fn pack_loc_data(
     };
 
     if cache_file.exists() {
-        if let Ok(cache_content) = fs::read_to_string(&cache_file) {
-            if let Ok(cache_entry) = serde_json::from_str::<CacheEntry>(&cache_content) {
+        if let Ok(cache_content) = fs::read(&cache_file) {
+            if let Ok(cache_entry) = bincode::deserialize::<CacheEntry>(&cache_content) {
                 if cache_entry.file_path == pack_file_path_str
                     && cache_entry.file_metadata.size == current_metadata.size
                     && cache_entry.file_metadata.modified == current_metadata.modified
@@ -89,8 +89,8 @@ pub async fn pack_loc_data(
         loc_data: parsed_data.clone(),
     };
 
-    if let Ok(cache_json) = serde_json::to_string(&cache_entry) {
-        let _ = fs::write(&cache_file, cache_json);
+    if let Ok(cache_bin) = bincode::serialize(&cache_entry) {
+        let _ = fs::write(&cache_file, cache_bin);
     }
 
     Ok(parsed_data)

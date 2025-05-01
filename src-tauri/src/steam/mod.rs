@@ -1,5 +1,6 @@
 pub mod check_item_download;
 pub mod client;
+pub mod fetch_creator_names;
 pub mod get_collection_items;
 pub mod get_workshop_items;
 pub mod initialize_client;

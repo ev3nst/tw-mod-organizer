@@ -51,7 +51,7 @@ pub async fn pack_db_data_raw(
     }
 
     let cache_filename = format!(
-        "pack_db_data_raw_{}.json",
+        "pack_db_data_raw_{}.bin",
         pack_file_path.file_name().unwrap().to_string_lossy()
     );
     let cache_file = app_cache_dir.join(cache_filename);
@@ -70,8 +70,8 @@ pub async fn pack_db_data_raw(
 
     let pack_file_path_str = pack_file_path.to_string_lossy().to_string();
     if cache_file.exists() {
-        if let Ok(cache_content) = fs::read_to_string(&cache_file) {
-            if let Ok(cache_entry) = serde_json::from_str::<CacheEntry>(&cache_content) {
+        if let Ok(cache_content) = fs::read(&cache_file) {
+            if let Ok(cache_entry) = bincode::deserialize::<CacheEntry>(&cache_content) {
                 if cache_entry.file_path == pack_file_path_str
                     && cache_entry.file_metadata.size == current_metadata.size
                     && cache_entry.file_metadata.modified == current_metadata.modified
@@ -96,8 +96,8 @@ pub async fn pack_db_data_raw(
         db_data: table_data_map.clone(),
     };
 
-    if let Ok(cache_json) = serde_json::to_string(&cache_entry) {
-        let _ = fs::write(&cache_file, cache_json);
+    if let Ok(cache_bin) = bincode::serialize(&cache_entry) {
+        let _ = fs::write(&cache_file, cache_bin);
     }
 
     Ok(table_data_map)
@@ -133,8 +133,8 @@ pub fn get_pack_db_table_data(
             db_data: HashMap::new(),
         };
 
-        if let Ok(cache_json) = serde_json::to_string(&cache_entry) {
-            let _ = fs::write(&cache_file, cache_json);
+        if let Ok(cache_bin) = bincode::serialize(&cache_entry) {
+            let _ = fs::write(&cache_file, cache_bin);
         }
 
         return Ok(HashMap::new());

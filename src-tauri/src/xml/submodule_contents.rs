@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::{fs::File, io::Read, path::Path};
 use xml::reader::{EventReader, XmlEvent};
 
+use crate::steam::subscribed_mods::CachedSubModuleContents;
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DependentModule {
@@ -20,7 +22,12 @@ pub struct SubModuleContents {
     pub modules_to_load_after_this: Option<Vec<DependentModule>>,
 }
 
-pub fn submodule_contents(dir_path: &Path) -> Option<SubModuleContents> {
+pub fn submodule_contents(
+    dir_path: &Path,
+    cache_dir: &Path,
+    app_id: u32,
+    identifier: String,
+) -> Option<SubModuleContents> {
     if !dir_path.exists() {
         return None;
     }
@@ -30,8 +37,34 @@ pub fn submodule_contents(dir_path: &Path) -> Option<SubModuleContents> {
         return None;
     }
 
+    let cache_json_filename = format!("workshop_item_{}_{}_contents.bin", app_id, identifier);
+    let cache_file = cache_dir.join(cache_json_filename);
+
+    if cache_file.exists() {
+        if let Ok(metadata) = std::fs::metadata(&submodule_path) {
+            let file_size = metadata.len();
+            let last_modified = metadata
+                .modified()
+                .map(|time| {
+                    time.duration_since(std::time::UNIX_EPOCH)
+                        .unwrap_or_default()
+                        .as_secs()
+                })
+                .unwrap_or(0);
+
+            if let Ok(cache_data) = std::fs::read(&cache_file) {
+                if let Ok(cached) = bincode::deserialize::<CachedSubModuleContents>(&cache_data) {
+                    if cached.file_size == file_size && cached.last_modified == last_modified {
+                        return Some(cached.submodule_info);
+                    }
+                }
+            }
+        }
+    }
+
+    // Parse XML as fallback
     let file = File::open(&submodule_path);
-    match file {
+    let submodule_info = match file {
         Ok(mut f) => {
             let mut content = String::new();
             if f.read_to_string(&mut content).is_ok() {
@@ -158,7 +191,7 @@ pub fn submodule_contents(dir_path: &Path) -> Option<SubModuleContents> {
                     }
                 }
 
-                return Some(SubModuleContents {
+                Some(SubModuleContents {
                     id,
                     name,
                     version,
@@ -173,11 +206,38 @@ pub fn submodule_contents(dir_path: &Path) -> Option<SubModuleContents> {
                     } else {
                         Some(modules_to_load_after_this)
                     },
-                });
+                })
+            } else {
+                None
             }
         }
-        Err(_) => return None,
+        Err(_) => None,
+    }?;
+
+    if let Ok(metadata) = std::fs::metadata(&submodule_path) {
+        let file_size = metadata.len();
+        let last_modified = metadata
+            .modified()
+            .map(|time| {
+                time.duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_secs()
+            })
+            .unwrap_or(0);
+
+        let cache_data = CachedSubModuleContents {
+            submodule_info: submodule_info.clone(),
+            file_size,
+            last_modified,
+        };
+
+        if let Ok(data) = bincode::serialize(&cache_data) {
+            let cache_json_filename =
+                format!("workshop_item_{}_{}_contents.bin", app_id, identifier);
+            let cache_file = cache_dir.join(cache_json_filename);
+            let _ = std::fs::write(&cache_file, data);
+        }
     }
 
-    None
+    Some(submodule_info)
 }

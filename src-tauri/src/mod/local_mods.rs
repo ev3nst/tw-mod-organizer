@@ -8,6 +8,7 @@ use super::totalwar;
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn local_mods(
+    handle: tauri::AppHandle,
     app_id: u32,
     mod_installation_path: String,
 ) -> Result<Vec<ModItem>, String> {
@@ -27,7 +28,7 @@ pub async fn local_mods(
             Ok(mods)
         }
         "bannerlord" => {
-            let mods = bannerlord::local_mods::local_mods(app_mods_path).await?;
+            let mods = bannerlord::local_mods::local_mods(handle, app_id, app_mods_path).await?;
             Ok(mods)
         }
         _ => Err(format!("Game type '{}' is not supported", game.r#type)),

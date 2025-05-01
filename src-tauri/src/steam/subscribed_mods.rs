@@ -1,4 +1,3 @@
-use futures_util::FutureExt;
 use rayon::prelude::*;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
@@ -16,16 +15,17 @@ use crate::r#mod::totalwar;
 use crate::xml::submodule_contents::{submodule_contents, SubModuleContents};
 use crate::AppState;
 
+use super::fetch_creator_names::fetch_creator_names;
 use super::get_workshop_items::get_workshop_items;
 use super::initialize_client::initialize_client;
 use super::workshop_item::workshop::WorkshopItem;
 use super::workshop_path_for_app::workshop_path_for_app;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct CachedSubModuleContents {
-    submodule_info: SubModuleContents,
-    file_size: u64,
-    last_modified: u64,
+pub struct CachedSubModuleContents {
+    pub submodule_info: SubModuleContents,
+    pub file_size: u64,
+    pub last_modified: u64,
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -239,14 +239,12 @@ fn process_item(
             }
         }
         "bannerlord" => {
-            let submodule_path = item_path.join("SubModule.xml");
-            let cache_json_filename = format!(
-                "workshop_item_{}_{}_contents.bin",
-                app_id, item.published_file_id
-            );
-            let cache_file = app_cache_dir.join(cache_json_filename);
-
-            if let Some(submodule_info) = try_load_cached_info(&submodule_path, &cache_file) {
+            if let Some(submodule_info) = submodule_contents(
+                item_path,
+                app_cache_dir,
+                app_id,
+                item.published_file_id.to_string(),
+            ) {
                 result = Some((
                     submodule_info.id.clone(),
                     item.clone(),
@@ -260,45 +258,6 @@ fn process_item(
                     submodule_info.id.clone(),
                     (submodule_info.clone(), item.published_file_id.to_string()),
                 ));
-                creator_id = Some(item.owner.raw);
-            } else if let Some(submodule_info) = submodule_contents(item_path) {
-                if let Ok(metadata) = fs::metadata(&submodule_path) {
-                    let file_size = metadata.len();
-                    let last_modified = metadata
-                        .modified()
-                        .map(|time| {
-                            time.duration_since(std::time::UNIX_EPOCH)
-                                .unwrap_or_default()
-                                .as_secs()
-                        })
-                        .unwrap_or(0);
-
-                    let cache_data = CachedSubModuleContents {
-                        submodule_info: submodule_info.clone(),
-                        file_size,
-                        last_modified,
-                    };
-
-                    if let Ok(data) = bincode::serialize(&cache_data) {
-                        let _ = fs::write(&cache_file, data);
-                    }
-                }
-
-                result = Some((
-                    submodule_info.id.clone(),
-                    item.clone(),
-                    submodule_info.name.clone(),
-                    item_path.to_string_lossy().to_string(),
-                    String::from(""),
-                    Vec::<String>::new(),
-                    Vec::<String>::new(),
-                ));
-
-                mod_map_entry = Some((
-                    submodule_info.id.clone(),
-                    (submodule_info.clone(), item.published_file_id.to_string()),
-                ));
-
                 creator_id = Some(item.owner.raw);
             }
         }
@@ -306,104 +265,6 @@ fn process_item(
     }
 
     (creator_id, result, mod_map_entry)
-}
-
-fn try_load_cached_info(
-    submodule_path: &PathBuf,
-    cache_file: &PathBuf,
-) -> Option<SubModuleContents> {
-    if !cache_file.exists() {
-        return None;
-    }
-
-    let metadata = fs::metadata(submodule_path).ok()?;
-    let file_size = metadata.len();
-    let last_modified = metadata
-        .modified()
-        .map(|time| {
-            time.duration_since(std::time::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_secs()
-        })
-        .unwrap_or(0);
-
-    let cache_data = fs::read(cache_file).ok()?;
-    let cached: CachedSubModuleContents = bincode::deserialize(&cache_data).ok()?;
-
-    if cached.file_size == file_size && cached.last_modified == last_modified {
-        return Some(cached.submodule_info);
-    }
-
-    None
-}
-
-async fn fetch_creator_names(
-    steam_client: steamworks::Client,
-    creator_ids: Vec<SteamId>,
-    app_state: tauri::State<'_, AppState>,
-    app_id: u32,
-) -> Result<FxHashMap<SteamId, String>, String> {
-    if creator_ids.is_empty() {
-        return Ok(FxHashMap::default());
-    }
-
-    let (creator_tx, mut creator_rx) = tokio::sync::mpsc::channel(32);
-
-    let creator_task = tokio::task::spawn_blocking(move || {
-        let friends = steam_client.friends();
-        let mut unknown_creators = FxHashSet::default();
-
-        let unique_creator_ids: FxHashSet<_> = creator_ids.into_iter().collect();
-
-        for &creator_id in &unique_creator_ids {
-            let creator = friends.get_friend(creator_id);
-            if creator.name() == "[unknown]" {
-                unknown_creators.insert(creator_id);
-                let _ = friends.request_user_information(creator_id, true);
-            }
-        }
-
-        if !unknown_creators.is_empty() {
-            let start_time = std::time::Instant::now();
-            let timeout = std::time::Duration::from_secs(2);
-
-            while !unknown_creators.is_empty() && start_time.elapsed() < timeout {
-                let _ = creator_tx.blocking_send(());
-                std::thread::sleep(std::time::Duration::from_millis(50));
-                unknown_creators.retain(|&id| {
-                    let creator = friends.get_friend(id);
-                    creator.name() == "[unknown]"
-                });
-            }
-        }
-
-        let mut names = FxHashMap::default();
-        for &id in &unique_creator_ids {
-            let creator = friends.get_friend(id);
-            names.insert(id, creator.name());
-        }
-
-        names
-    });
-
-    let mut creator_result = None;
-    let mut fused_creator_task = creator_task.fuse();
-
-    while creator_result.is_none() {
-        tokio::select! {
-            Some(_) = creator_rx.recv() => {
-                app_state.steam_state.run_callbacks(app_id)?;
-            }
-            task_result = &mut fused_creator_task => {
-                creator_result = Some(
-                    task_result.map_err(|e| format!("Creator task error: {}", e))?
-                );
-                break;
-            }
-        }
-    }
-
-    Ok(creator_result.unwrap())
 }
 
 fn process_bannerlord_dependencies(

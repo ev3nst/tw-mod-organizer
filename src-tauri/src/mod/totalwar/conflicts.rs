@@ -25,8 +25,8 @@ pub async fn conflicts(
             .map_err(|e| format!("Failed to create cache directory: {}", e))?;
     }
 
-    let cache_json_filename = format!("mod_conflicts_{}_cache.json", app_id.to_string());
-    let cache_file = app_cache_dir.join(cache_json_filename);
+    let cache_bin_filename = format!("mod_conflicts_{}_cache.bin", app_id.to_string());
+    let cache_file = app_cache_dir.join(cache_bin_filename);
 
     let files_vec: Vec<PathBuf> = folder_paths
         .par_iter()
@@ -91,9 +91,8 @@ pub async fn conflicts(
         .collect();
 
     if cache_file.exists() {
-        let cache_content = fs::read_to_string(&cache_file).ok();
-        if let Some(content) = cache_content {
-            if let Ok(cache_entry) = serde_json::from_str::<CacheEntry>(&content) {
+        if let Ok(cache_content) = fs::read(&cache_file) {
+            if let Ok(cache_entry) = bincode::deserialize::<CacheEntry>(&cache_content) {
                 let file_paths_set: HashSet<_> = file_paths.iter().cloned().collect();
                 let cached_paths_set: HashSet<_> = cache_entry.file_paths.iter().cloned().collect();
 
@@ -175,10 +174,9 @@ pub async fn conflicts(
         conflicts: sorted_conflicts.clone(),
     };
 
-    let cache_json = serde_json::to_string(&cache_entry)
-        .map_err(|e| format!("Failed to serialize cache: {}", e))?;
-
-    fs::write(&cache_file, cache_json).map_err(|e| format!("Failed to write cache file: {}", e))?;
+    if let Ok(cache_bin) = bincode::serialize(&cache_entry) {
+        let _ = fs::write(&cache_file, cache_bin);
+    }
 
     Ok(sorted_conflicts)
 }

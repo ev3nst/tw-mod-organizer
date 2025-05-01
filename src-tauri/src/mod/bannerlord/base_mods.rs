@@ -1,4 +1,6 @@
 use std::{fs, path::PathBuf, time::UNIX_EPOCH};
+use tauri::path::BaseDirectory;
+use tauri::Manager;
 
 use crate::{
     game::{find_installation_path::find_installation_path, supported_games::SUPPORTED_GAMES},
@@ -7,7 +9,17 @@ use crate::{
 
 use crate::xml::submodule_contents::submodule_contents;
 
-pub async fn base_mods(app_id: u32) -> Result<Vec<ModItem>, String> {
+pub async fn base_mods(handle: tauri::AppHandle, app_id: u32) -> Result<Vec<ModItem>, String> {
+    let app_cache_dir = handle
+        .path()
+        .resolve("cache".to_string(), BaseDirectory::AppConfig)
+        .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?;
+
+    if !app_cache_dir.exists() {
+        fs::create_dir_all(&app_cache_dir)
+            .map_err(|e| format!("Failed to create cache directory: {}", e))?;
+    }
+
     let game = SUPPORTED_GAMES
         .iter()
         .find(|game| game.steam_id == app_id)
@@ -41,7 +53,12 @@ pub async fn base_mods(app_id: u32) -> Result<Vec<ModItem>, String> {
             continue;
         }
 
-        let submodule_info = match submodule_contents(&mod_path) {
+        let submodule_info = match submodule_contents(
+            &mod_path,
+            &app_cache_dir,
+            app_id,
+            entry.file_name().to_string_lossy().to_string(),
+        ) {
             Some(info) => info,
             None => {
                 return Err(format!(
