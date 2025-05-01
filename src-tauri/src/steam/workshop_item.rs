@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-// Modified by Burak Kartal on [19/04/2025]
+// Modified by Burak Kartal on [01/05/2025]
 
 use std::collections::HashSet;
 
@@ -42,7 +42,7 @@ fn is_filtered_tag(tag: &str) -> bool {
 }
 
 pub mod workshop {
-    use serde::Serialize;
+    use serde::{Deserialize, Serialize};
     use steamworks::FileType;
 
     use crate::steam::localplayer::PlayerSteamId;
@@ -220,7 +220,7 @@ pub mod workshop {
         }
     }
 
-    #[derive(Debug, Clone, Serialize)]
+    #[derive(Debug, Clone, Serialize, Deserialize)]
     pub struct WorkshopItemStatistic {
         pub num_subscriptions: Option<u64>, //   0	gets the number of subscriptions.
         pub num_favorites: Option<u64>,     //   1	gets the number of favorites.
@@ -289,7 +289,7 @@ pub mod workshop {
         }
     }
 
-    #[derive(Debug, Clone, Serialize)]
+    #[derive(Debug, Clone, Serialize, Deserialize)]
     pub struct WorkshopItem {
         pub published_file_id: u64,
         pub creator_app_id: Option<u32>,

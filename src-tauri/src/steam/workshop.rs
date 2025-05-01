@@ -20,12 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-// Modified by Burak Kartal on [28/02/2025]
+// Modified by Burak Kartal on [01/05/2025]
 
 pub mod workshop {
-    use serde::Serialize;
+    use serde::{Deserialize, Serialize};
 
-    #[derive(Debug, Clone, Serialize)]
+    #[derive(Debug, Clone, Serialize, Deserialize)]
     pub enum UgcItemVisibility {
         Public,
         FriendsOnly,

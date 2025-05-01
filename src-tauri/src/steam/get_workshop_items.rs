@@ -1,3 +1,8 @@
+use serde::{Deserialize, Serialize};
+use std::fs;
+use tauri::path::BaseDirectory;
+use tauri::Manager;
+
 use futures_util::FutureExt;
 use steamworks::{Client, PublishedFileId};
 
@@ -5,12 +10,40 @@ use crate::{steam::workshop_item::workshop::WorkshopItem, AppState};
 
 use super::workshop_item::workshop::WorkshopItemsResult;
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WorkshopCache {
+    pub item_ids: Vec<u64>,
+    pub items: Vec<WorkshopItem>,
+}
+
 #[tauri::command(rename_all = "snake_case")]
 pub async fn get_workshop_items(
+    handle: tauri::AppHandle,
     app_state: tauri::State<'_, AppState>,
     app_id: u32,
     item_ids: Vec<u64>,
 ) -> Result<Vec<WorkshopItem>, String> {
+    let app_cache_dir = handle
+        .path()
+        .resolve("cache".to_string(), BaseDirectory::AppConfig)
+        .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?;
+
+    let cache_path = app_cache_dir.join(format!("workshop_cache_{}.json", app_id));
+    if cache_path.exists() {
+        if let Ok(cache_content) = fs::read_to_string(&cache_path) {
+            if let Ok(cache) = serde_json::from_str::<WorkshopCache>(&cache_content) {
+                let mut cached_ids = cache.item_ids.clone();
+                let mut current_ids = item_ids.clone();
+                cached_ids.sort();
+                current_ids.sort();
+
+                if cached_ids == current_ids {
+                    return Ok(cache.items);
+                }
+            }
+        }
+    }
+
     let steam_state = &app_state.steam_state;
     if !steam_state.has_client(app_id) {
         steam_state.drop_all_clients();
@@ -27,11 +60,17 @@ pub async fn get_workshop_items(
     };
 
     let (tx, mut rx) = tokio::sync::mpsc::channel(32);
+    let item_ids_for_query = item_ids.clone();
     let items_task = tokio::task::spawn_blocking(move || {
         let ugc = steam_client.ugc();
         let (tx_inner, rx_inner) = std::sync::mpsc::channel();
         let query_handle = ugc
-            .query_items(item_ids.iter().map(|id| PublishedFileId(*id)).collect())
+            .query_items(
+                item_ids_for_query
+                    .iter()
+                    .map(|id| PublishedFileId(*id))
+                    .collect(),
+            )
             .map_err(|e| format!("Failed to create query handle: {}", e))?;
 
         query_handle
@@ -88,5 +127,14 @@ pub async fn get_workshop_items(
         })
         .collect::<Vec<WorkshopItem>>();
 
-    Ok(items)
+    let new_cache = WorkshopCache {
+        item_ids: item_ids.clone(),
+        items,
+    };
+    let _ = fs::write(
+        &cache_path,
+        serde_json::to_string(&new_cache).map_err(|e| e.to_string())?,
+    );
+
+    Ok(new_cache.items)
 }

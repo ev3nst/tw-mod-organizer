@@ -27,6 +27,7 @@ pub struct CollectionDetails {
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn get_collection_items(
+    handle: tauri::AppHandle,
     app_state: tauri::State<'_, AppState>,
     app_id: u32,
     item_id: u64,
@@ -138,7 +139,7 @@ pub async fn get_collection_items(
     }
 
     let (collection_info, item_ids) = collection_result.unwrap();
-    let items = get_workshop_items(app_state.clone(), app_id, item_ids).await?;
+    let items = get_workshop_items(handle, app_state.clone(), app_id, item_ids).await?;
 
     Ok(CollectionDetails {
         details: collection_info,

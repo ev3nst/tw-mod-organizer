@@ -20,12 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-// Modified by Burak Kartal on [16/03/2025]
+// Modified by Burak Kartal on [01/05/2025]
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use steamworks::SteamId;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlayerSteamId {
     pub raw: SteamId,
     pub steam_id64: u64,

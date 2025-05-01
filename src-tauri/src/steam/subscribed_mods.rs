@@ -74,8 +74,8 @@ pub async fn subscribed_mods(
     if item_ids.is_empty() {
         return Ok(Vec::new());
     }
-    let items_result = get_workshop_items(app_state.clone(), app_id, item_ids).await;
 
+    let items_result = get_workshop_items(handle, app_state.clone(), app_id, item_ids).await;
     let workshop_base_path = workshop_path_for_app(app_id);
 
     let mut creator_ids = Vec::new();
