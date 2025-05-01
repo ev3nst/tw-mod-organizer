@@ -81,7 +81,7 @@ export const Filter = memo(
 							onChange={handleSearchChange}
 						/>
 					</div>
-					<div className="ps-3 w-[310px] gap-3 flex items-center text-sm">
+					<div className="ps-3 w-[340px] gap-3 flex items-center text-sm">
 						<div>Mod Count:</div>
 
 						<Tooltip>
