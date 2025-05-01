@@ -24,7 +24,7 @@ pub const SUPPORTED_GAMES: &[Game] = &[
     Game {
         name: "Total War: WARHAMMER 2",
         slug: "tww2",
-		slug_opt: "wh2",
+        slug_opt: "wh2",
         save_path_folder_name: "Warhammer2",
         save_file_extension: "save",
         exe_name: "Warhammer2",
@@ -39,7 +39,7 @@ pub const SUPPORTED_GAMES: &[Game] = &[
     Game {
         name: "Total War: WARHAMMER 3",
         slug: "tww3",
-		slug_opt: "wh3",
+        slug_opt: "wh3",
         save_path_folder_name: "Warhammer3",
         save_file_extension: "save",
         exe_name: "Warhammer3",
@@ -54,7 +54,7 @@ pub const SUPPORTED_GAMES: &[Game] = &[
     Game {
         name: "Total War: Three Kingdoms",
         slug: "tw3k",
-		slug_opt: "threeKingdoms",
+        slug_opt: "threeKingdoms",
         save_path_folder_name: "ThreeKingdoms",
         save_file_extension: "save",
         exe_name: "Three_Kingdoms",
@@ -69,7 +69,7 @@ pub const SUPPORTED_GAMES: &[Game] = &[
     Game {
         name: "Mount & Blade: Bannerlord",
         slug: "mbbl",
-		slug_opt: "mbbl",
+        slug_opt: "mbbl",
         save_path_folder_name: "Mount and Blade II Bannerlord",
         save_file_extension: "sav",
         exe_name: "Bannerlord",

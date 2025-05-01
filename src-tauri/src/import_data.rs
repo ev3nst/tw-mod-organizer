@@ -171,7 +171,7 @@ pub async fn import_data(
             }
 
             if !mods.is_empty() {
-				mods.reverse();
+                mods.reverse();
                 output_profiles.push(OutputProfile {
                     profile_name: preset.name.clone(),
                     mods,
