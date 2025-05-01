@@ -760,6 +760,16 @@
 	}
 }
 
+@layer utilities {
+	.no-scrollbar::-webkit-scrollbar {
+		display: none;
+	}
+	.no-scrollbar {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+}
+
 /* Native Scrollbar */
 ::-webkit-scrollbar {
 	@apply w-1.5 h-1.5;

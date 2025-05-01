@@ -8,6 +8,7 @@ import type { ModItem } from '@/lib/store/mods';
 import type { ModMetaItem } from '@/lib/store/mod_meta';
 
 import { ModItemComponent } from './mod-item';
+import { FixedSizeList } from 'react-window';
 
 type ModsProps = {
 	steamModExists: ModItem[];
@@ -34,6 +35,9 @@ export const Mods = ({
 	modMetaData,
 	onRemoveMod,
 }: ModsProps) => {
+	const filteredMods = profileExportMods.filter(
+		m => m.item_type !== 'base_mod',
+	);
 	return (
 		<AccordionItem value="mods">
 			<AccordionTrigger className="text-md">
@@ -59,20 +63,24 @@ export const Mods = ({
 					</span>
 				</div>
 			</AccordionTrigger>
-			<AccordionContent>
-				<div className="flex flex-col gap-1">
-					{profileExportMods
-						.filter(m => m.item_type !== 'base_mod')
-						.map(item => (
-							<ModItemComponent
-								modsOnly={modsOnly}
-								modMetaData={modMetaData}
-								key={`mod-${item.identifier}`}
-								item={item}
-								onRemoveMod={onRemoveMod}
-							/>
-						))}
-				</div>
+			<AccordionContent className="sm:max-w-[540px] p-0">
+				<FixedSizeList
+					height={200}
+					width="100%"
+					itemCount={filteredMods.length}
+					itemSize={50}
+					className="no-scrollbar"
+				>
+					{({ index, style }) => (
+						<ModItemComponent
+							style={style}
+							modsOnly={modsOnly}
+							modMetaData={modMetaData}
+							item={filteredMods[index]}
+							onRemoveMod={onRemoveMod}
+						/>
+					)}
+				</FixedSizeList>
 			</AccordionContent>
 		</AccordionItem>
 	);

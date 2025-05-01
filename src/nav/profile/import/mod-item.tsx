@@ -1,3 +1,4 @@
+import { CSSProperties } from 'react';
 import { ExternalLinkIcon, XIcon } from 'lucide-react';
 
 import api from '@/lib/api';
@@ -9,6 +10,7 @@ type ModItemProps = {
 	modMetaData: ModMetaItem[];
 	item: ModItem;
 	onRemoveMod: (mod: ModItem) => void;
+	style?: CSSProperties;
 };
 
 export const ModItemComponent = ({
@@ -16,6 +18,7 @@ export const ModItemComponent = ({
 	modMetaData,
 	item,
 	onRemoveMod,
+	style,
 }: ModItemProps) => {
 	const modExists =
 		modsOnly.some(m => m.mod_file === item.mod_file) ||
@@ -59,12 +62,16 @@ export const ModItemComponent = ({
 
 	return (
 		<div
+			style={style}
 			key={`import_profile_mitem_${item.identifier}`}
-			className={`text-sm py-1 ${styleClasses} hover:bg-black p-3`}
+			className={`text-sm py-1 ${styleClasses}`}
 		>
 			<div className="flex justify-between items-center">
-				<div className="flex items-center gap-1">
-					<div onClick={isSteamMod ? handleUrlOpen : undefined}>
+				<div className="flex items-center gap-1 break-words overflow-hidden">
+					<div
+						onClick={isSteamMod ? handleUrlOpen : undefined}
+						className=""
+					>
 						{item.title}
 					</div>
 					{isNexusMod && downloadLink !== '' && (

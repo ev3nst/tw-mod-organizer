@@ -30,10 +30,7 @@ export const ProfileDialog = () => {
 					<PlusIcon />
 				</Button>
 			</DialogTrigger>
-			<DialogContent
-				className="sm:max-w-[600px]"
-				onInteractOutside={e => e.preventDefault()}
-			>
+			<DialogContent className="sm:max-w-[600px]">
 				{/* suppress radix error */}
 				<DialogTitle className="hidden" />
 				<Tabs defaultValue="add_profile">
