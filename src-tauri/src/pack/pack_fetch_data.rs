@@ -1,10 +1,10 @@
-use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
-use rpfm_lib::files::{pack::Pack, Container, FileType, RFileDecoded};
+use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
+use rpfm_lib::files::{Container, FileType, RFileDecoded, pack::Pack};
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::path::PathBuf;
 
-use crate::utils::convert_dds::{convert_dds, DDSOutputFormat};
+use crate::utils::convert_dds::{DDSOutputFormat, convert_dds};
 
 #[derive(Debug, Serialize)]
 pub struct FileContent {

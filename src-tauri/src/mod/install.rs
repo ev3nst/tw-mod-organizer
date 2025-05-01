@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::fs::{create_dir_all, read_dir, remove_dir_all, rename, File};
+use std::fs::{File, create_dir_all, read_dir, remove_dir_all, rename};
 use std::io::Write;
 use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};

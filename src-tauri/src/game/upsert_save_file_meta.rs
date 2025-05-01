@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
-use tauri::{path::BaseDirectory, Manager};
+use tauri::{Manager, path::BaseDirectory};
 
 use super::migrate_legacy_meta_files::migrate_legacy_meta_files;
 use super::supported_games::SUPPORTED_GAMES;

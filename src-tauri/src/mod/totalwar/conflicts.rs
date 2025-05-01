@@ -1,4 +1,4 @@
-use bincode::{Encode, Decode};
+use bincode::{Decode, Encode};
 use rayon::prelude::*;
 use rpfm_lib::files::pack::Pack;
 use rustc_hash::{FxHashMap, FxHashSet};

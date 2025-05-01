@@ -22,8 +22,8 @@
 //
 // Modified by Burak Kartal on [01/05/2025]
 
+use bincode::{Decode, Encode};
 use serde::Serialize;
-use bincode::{Encode, Decode};
 use steamworks::SteamId;
 
 #[derive(Debug, Clone, Serialize, Encode, Decode)]

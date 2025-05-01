@@ -1,4 +1,4 @@
-use winreg::{enums::HKEY_LOCAL_MACHINE, RegKey};
+use winreg::{RegKey, enums::HKEY_LOCAL_MACHINE};
 
 pub fn find_7zip_path() -> Option<String> {
     let common_paths = [

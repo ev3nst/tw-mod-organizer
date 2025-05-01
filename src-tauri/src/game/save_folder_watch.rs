@@ -9,8 +9,8 @@ use tauri::{AppHandle, Emitter, Manager};
 use tokio::sync::mpsc;
 use trash::delete;
 
-use crate::utils::create_app_default_paths::create_app_default_paths;
 use crate::AppState;
+use crate::utils::create_app_default_paths::create_app_default_paths;
 
 use super::migrate_legacy_meta_files::migrate_legacy_meta_files;
 use super::supported_games::SUPPORTED_GAMES;

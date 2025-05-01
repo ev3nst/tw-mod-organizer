@@ -1,5 +1,5 @@
 use std::fs;
-use tauri::{path::BaseDirectory, Manager};
+use tauri::{Manager, path::BaseDirectory};
 
 pub fn migrate_legacy_meta_files(handle: &tauri::AppHandle, app_id: u32) -> Result<(), String> {
     let old_meta_folder = handle

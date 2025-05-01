@@ -1,12 +1,12 @@
 use reqwest::{
-    header::{HeaderValue, RANGE},
     Client,
+    header::{HeaderValue, RANGE},
 };
 use std::io::{self, Seek, SeekFrom, Write};
 use std::path::Path;
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
     Arc, Mutex,
+    atomic::{AtomicBool, Ordering},
 };
 use tauri::Emitter;
 

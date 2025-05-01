@@ -1,11 +1,11 @@
 use std::os::windows::process::CommandExt;
 use std::{fs, path::Path, process::Command};
 use tokio::spawn;
-use tokio::time::{sleep, Duration};
+use tokio::time::{Duration, sleep};
 
+use crate::AppState;
 use crate::game::find_installation_path::find_installation_path;
 use crate::game::supported_games::SUPPORTED_GAMES;
-use crate::AppState;
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn start_game_totalwar(
@@ -29,7 +29,7 @@ pub async fn start_game_totalwar(
             return Err(format!(
                 "Could not find installation path for game with app_id {}",
                 app_id
-            ))
+            ));
         }
     };
 

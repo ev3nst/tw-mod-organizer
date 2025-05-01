@@ -1,7 +1,7 @@
 use rayon::prelude::*;
 use std::fs;
-use tauri::path::BaseDirectory;
 use tauri::Manager;
+use tauri::path::BaseDirectory;
 use trash::delete;
 
 #[tauri::command(rename_all = "snake_case")]

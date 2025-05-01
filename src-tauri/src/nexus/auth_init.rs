@@ -1,6 +1,6 @@
 use futures_util::{SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
-use sqlx::{query, query_as, SqlitePool};
+use sqlx::{SqlitePool, query, query_as};
 use std::error::Error;
 use std::sync::Arc;
 use tauri::path::BaseDirectory;
@@ -9,8 +9,8 @@ use tauri_plugin_dialog::DialogExt;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
-use crate::utils::open_external_url::open_external_url;
 use crate::AppState;
+use crate::utils::open_external_url::open_external_url;
 
 // Define schemas and types
 #[derive(Debug, Serialize, Deserialize)]
@@ -161,7 +161,10 @@ pub async fn nexus_auth_init(
                                                         .await;
                                                 }
 
-                                                let auth_url = format!("https://www.nexusmods.com/sso?id={}&application=tww", request_id);
+                                                let auth_url = format!(
+                                                    "https://www.nexusmods.com/sso?id={}&application=tww",
+                                                    request_id
+                                                );
                                                 let _ = open_external_url(auth_url);
                                             }
 

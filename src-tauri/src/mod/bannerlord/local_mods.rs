@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
-use tauri::path::BaseDirectory;
 use tauri::Manager;
+use tauri::path::BaseDirectory;
 
 use crate::r#mod::base_mods::{LocalModMeta, ModItem};
 use crate::xml::submodule_contents::submodule_contents;

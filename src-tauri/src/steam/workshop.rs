@@ -23,8 +23,8 @@
 // Modified by Burak Kartal on [01/05/2025]
 
 pub mod workshop {
-	use serde::Serialize;
-	use bincode::{Encode, Decode};
+    use bincode::{Decode, Encode};
+    use serde::Serialize;
 
     #[derive(Debug, Clone, Serialize, Encode, Decode)]
     pub enum UgcItemVisibility {

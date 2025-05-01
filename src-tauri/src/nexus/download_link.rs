@@ -1,7 +1,7 @@
 use reqwest::header::{HeaderMap, HeaderValue};
 use serde::{Deserialize, Serialize};
 
-use super::mod_details::{nexus_mod_details, ModDetailsRequestOptions};
+use super::mod_details::{ModDetailsRequestOptions, nexus_mod_details};
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug)]

@@ -1,7 +1,7 @@
 use std::sync::atomic::Ordering;
 
-use crate::utils::create_app_default_paths::create_app_default_paths;
 use crate::AppState;
+use crate::utils::create_app_default_paths::create_app_default_paths;
 
 use super::manager::{DownloadManager, DownloadTask};
 

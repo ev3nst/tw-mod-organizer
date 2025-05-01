@@ -1,19 +1,19 @@
-use bincode::{Encode, Decode};
+use bincode::{Decode, Encode};
 use rayon::prelude::*;
 use rustc_hash::{FxHashMap, FxHashSet};
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
 use steamworks::SteamId;
-use tauri::path::BaseDirectory;
 use tauri::Manager;
+use tauri::path::BaseDirectory;
 use tokio::task::spawn_blocking;
 
+use crate::AppState;
 use crate::game::supported_games::SUPPORTED_GAMES;
 use crate::r#mod::base_mods::{ModItem, ModVersion};
 use crate::r#mod::totalwar;
-use crate::xml::submodule_contents::{submodule_contents, SubModuleContents};
-use crate::AppState;
+use crate::xml::submodule_contents::{SubModuleContents, submodule_contents};
 
 use super::fetch_creator_names::fetch_creator_names;
 use super::get_workshop_items::get_workshop_items;

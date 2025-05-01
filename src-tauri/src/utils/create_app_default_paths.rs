@@ -1,5 +1,5 @@
 use std::fs::create_dir_all;
-use tauri::{path::BaseDirectory, Manager};
+use tauri::{Manager, path::BaseDirectory};
 
 use crate::game::supported_games::SUPPORTED_GAMES;
 

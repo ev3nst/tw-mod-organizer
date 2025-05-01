@@ -1,4 +1,4 @@
-use bincode::{Encode, Decode};
+use bincode::{Decode, Encode};
 use std::fs;
 use tauri::Manager;
 use tauri::path::BaseDirectory;

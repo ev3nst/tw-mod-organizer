@@ -1,5 +1,5 @@
-use winreg::enums::*;
 use winreg::RegKey;
+use winreg::enums::*;
 
 #[tauri::command(rename_all = "snake_case")]
 pub fn steam_paths() -> Result<Vec<String>, String> {

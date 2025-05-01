@@ -1,5 +1,5 @@
 use std::{fs::File, io::Write};
-use tauri::{path::BaseDirectory, Manager};
+use tauri::{Manager, path::BaseDirectory};
 
 use crate::utils::create_app_default_paths::create_app_default_paths;
 

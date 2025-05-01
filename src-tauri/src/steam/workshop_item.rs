@@ -42,8 +42,8 @@ fn is_filtered_tag(tag: &str) -> bool {
 }
 
 pub mod workshop {
-	use serde::Serialize;
-	use bincode::{Encode, Decode};
+    use bincode::{Decode, Encode};
+    use serde::Serialize;
     use steamworks::FileType;
 
     use crate::steam::localplayer::PlayerSteamId;

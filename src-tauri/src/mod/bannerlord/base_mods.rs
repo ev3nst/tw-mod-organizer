@@ -1,6 +1,6 @@
 use std::{fs, path::PathBuf, time::UNIX_EPOCH};
-use tauri::path::BaseDirectory;
 use tauri::Manager;
+use tauri::path::BaseDirectory;
 
 use crate::{
     game::{find_installation_path::find_installation_path, supported_games::SUPPORTED_GAMES},
@@ -30,7 +30,7 @@ pub async fn base_mods(handle: tauri::AppHandle, app_id: u32) -> Result<Vec<ModI
             return Err(format!(
                 "Could not find installation path for game with app_id {}",
                 app_id
-            ))
+            ));
         }
     };
 
@@ -64,7 +64,7 @@ pub async fn base_mods(handle: tauri::AppHandle, app_id: u32) -> Result<Vec<ModI
                 return Err(format!(
                     "Failed to parse SubModule.xml in directory: {}",
                     mod_path.display()
-                ))
+                ));
             }
         };
 

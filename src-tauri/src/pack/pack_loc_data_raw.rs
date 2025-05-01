@@ -1,4 +1,4 @@
-use bincode::{Encode, Decode};
+use bincode::{Decode, Encode};
 use rpfm_lib::files::pack::Pack;
 use rpfm_lib::files::{Container, DecodeableExtraData, FileType, RFileDecoded};
 use rpfm_lib::schema::Schema;

@@ -3,7 +3,7 @@ use serde::Serialize;
 use steamworks::PublishedFileId;
 use tokio::sync::mpsc;
 
-use crate::{steam::workshop_item::workshop::WorkshopItem, AppState};
+use crate::{AppState, steam::workshop_item::workshop::WorkshopItem};
 
 use super::get_workshop_items::get_workshop_items;
 use super::initialize_client::initialize_client;

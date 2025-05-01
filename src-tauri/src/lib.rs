@@ -1,6 +1,6 @@
 use std::{
     path::PathBuf,
-    sync::{atomic::AtomicBool, Arc},
+    sync::{Arc, atomic::AtomicBool},
 };
 use tauri::{Emitter, Manager};
 use tokio::sync::Mutex;

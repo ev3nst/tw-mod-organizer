@@ -4,10 +4,10 @@ use std::os::windows::process::CommandExt;
 use std::path::Path;
 use std::process::Command;
 
+use crate::AppState;
 use crate::game::find_installation_path::find_installation_path;
 use crate::game::supported_games::SUPPORTED_GAMES;
 use crate::utils::create_junction::create_junction;
-use crate::AppState;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BannerlordMod {
@@ -28,7 +28,7 @@ fn create_symlinks_with_elevation(
              powershell -Command \"$proc = Start-Process -FilePath '%~dpnx0' -Verb RunAs -PassThru -Wait; exit $proc.ExitCode\"\r\n\
              exit /b %ERRORLEVEL%\r\n\
          )\r\n\
-         echo Running with elevation...\r\n\r\n"
+         echo Running with elevation...\r\n\r\n",
     );
     let mut needs_elevation = false;
 
@@ -123,7 +123,7 @@ pub async fn start_game_bannerlord(
             return Err(format!(
                 "Could not find installation path for game with app_id {}",
                 app_id
-            ))
+            ));
         }
     };
 
