@@ -2,6 +2,7 @@ pub mod check_item_download;
 pub mod client;
 pub mod get_collection_items;
 pub mod get_workshop_items;
+pub mod initialize_client;
 pub mod localplayer;
 pub mod steam_library_paths;
 pub mod steam_paths;

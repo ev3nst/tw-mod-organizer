@@ -1,11 +1,12 @@
 use futures_util::FutureExt;
 use serde::Serialize;
-use steamworks::{Client, PublishedFileId};
+use steamworks::PublishedFileId;
 use tokio::sync::mpsc;
 
 use crate::{steam::workshop_item::workshop::WorkshopItem, AppState};
 
 use super::get_workshop_items::get_workshop_items;
+use super::initialize_client::initialize_client;
 
 #[derive(Debug, Serialize)]
 pub struct CollectionInfo {
@@ -32,20 +33,7 @@ pub async fn get_collection_items(
     app_id: u32,
     item_id: u64,
 ) -> Result<CollectionDetails, String> {
-    let steam_state = &app_state.steam_state;
-    if !steam_state.has_client(app_id) {
-        steam_state.drop_all_clients();
-        let (steam_client, single_client) = match Client::init_app(app_id) {
-            Ok(result) => result,
-            Err(err) => return Err(format!("Failed to initialize Steam client: {}", err)),
-        };
-        steam_state.set_clients(app_id, steam_client, single_client);
-    }
-
-    let steam_client = match steam_state.get_client(app_id) {
-        Some(client) => client,
-        None => return Err("Failed to get Steam client".to_string()),
-    };
+    let steam_client = initialize_client(&app_state, app_id).await?;
 
     let (tx, mut rx) = mpsc::channel(32);
 

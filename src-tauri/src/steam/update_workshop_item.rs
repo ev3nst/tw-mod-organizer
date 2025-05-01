@@ -1,8 +1,10 @@
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use steamworks::{Client, ItemState, PublishedFileId};
+use steamworks::{ItemState, PublishedFileId};
 
 use crate::AppState;
+
+use super::initialize_client::initialize_client;
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn update_workshop_item(
@@ -10,20 +12,7 @@ pub async fn update_workshop_item(
     app_id: u32,
     item_id: u64,
 ) -> Result<(), String> {
-    let steam_state = &app_state.steam_state;
-    if !steam_state.has_client(app_id) {
-        steam_state.drop_all_clients();
-        let (steam_client, single_client) = match Client::init_app(app_id) {
-            Ok(result) => result,
-            Err(err) => return Err(format!("Failed to initialize Steam client: {}", err)),
-        };
-        steam_state.set_clients(app_id, steam_client, single_client);
-    }
-
-    let steam_client = match steam_state.get_client(app_id) {
-        Some(client) => client,
-        None => return Err("Failed to get Steam client".to_string()),
-    };
+    let steam_client = initialize_client(&app_state, app_id).await?;
 
     let published_file_id = PublishedFileId(item_id);
     {

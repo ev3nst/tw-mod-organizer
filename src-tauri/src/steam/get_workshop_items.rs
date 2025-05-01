@@ -4,10 +4,11 @@ use tauri::path::BaseDirectory;
 use tauri::Manager;
 
 use futures_util::FutureExt;
-use steamworks::{Client, PublishedFileId};
+use steamworks::PublishedFileId;
 
 use crate::{steam::workshop_item::workshop::WorkshopItem, AppState};
 
+use super::initialize_client::initialize_client;
 use super::workshop_item::workshop::WorkshopItemsResult;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -44,20 +45,7 @@ pub async fn get_workshop_items(
         }
     }
 
-    let steam_state = &app_state.steam_state;
-    if !steam_state.has_client(app_id) {
-        steam_state.drop_all_clients();
-        let (steam_client, single_client) = match Client::init_app(app_id) {
-            Ok(result) => result,
-            Err(err) => return Err(format!("Failed to initialize Steam client: {}", err)),
-        };
-        steam_state.set_clients(app_id, steam_client, single_client);
-    }
-
-    let steam_client = match steam_state.get_client(app_id) {
-        Some(client) => client,
-        None => return Err("Failed to get Steam client".to_string()),
-    };
+    let steam_client = initialize_client(&app_state, app_id).await?;
 
     let (tx, mut rx) = tokio::sync::mpsc::channel(32);
     let item_ids_for_query = item_ids.clone();

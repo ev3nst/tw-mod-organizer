@@ -4,7 +4,6 @@ use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::io::{Read, Write};
 use std::path::PathBuf;
-use steamworks::Client;
 use tauri::path::BaseDirectory;
 use tauri::Manager;
 use tokio::task::spawn_blocking;
@@ -16,6 +15,7 @@ use crate::xml::submodule_contents::{submodule_contents, SubModuleContents};
 use crate::AppState;
 
 use super::get_workshop_items::get_workshop_items;
+use super::initialize_client::initialize_client;
 use super::workshop_path_for_app::workshop_path_for_app;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -35,24 +35,7 @@ pub async fn subscribed_mods(
         .find(|game| game.steam_id == app_id)
         .ok_or_else(|| format!("Given app_id {} is not supported", app_id))?;
 
-    let steam_client = {
-        let steam_state = &app_state.steam_state;
-
-        if !steam_state.has_client(app_id) {
-            steam_state.drop_all_clients();
-            let (steam_client, single_client) = Client::init_app(app_id)
-                .map_err(|err| format!("Failed to initialize Steam client: {}", err))?;
-            steam_state.set_clients(app_id, steam_client, single_client);
-        }
-
-        steam_state
-            .get_client(app_id)
-            .ok_or_else(|| "Failed to get Steam client".to_string())?
-            .clone()
-    };
-
-    let steam_client_clone = steam_client.clone();
-
+    let steam_client = initialize_client(&app_state, app_id).await?;
     let app_cache_dir = handle
         .path()
         .resolve("cache".to_string(), BaseDirectory::AppConfig)
@@ -82,6 +65,7 @@ pub async fn subscribed_mods(
     let mut steam_items = Vec::new();
     let mut mod_contents_map = HashMap::new();
 
+    let steam_client_clone = steam_client.clone();
     let steam_client_for_friends = steam_client_clone.clone();
     let (creator_tx, mut creator_rx) = tokio::sync::mpsc::channel(32);
 

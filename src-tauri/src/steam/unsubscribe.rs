@@ -1,8 +1,10 @@
 use futures_util::FutureExt;
-use steamworks::{Client, PublishedFileId};
+use steamworks::PublishedFileId;
 use tokio::sync::mpsc;
 
 use crate::AppState;
+
+use super::initialize_client::initialize_client;
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn unsubscribe(
@@ -10,20 +12,7 @@ pub async fn unsubscribe(
     app_id: u32,
     item_id: u64,
 ) -> Result<bool, String> {
-    let steam_state = &app_state.steam_state;
-    if !steam_state.has_client(app_id) {
-        steam_state.drop_all_clients();
-        let (steam_client, single_client) = match Client::init_app(app_id) {
-            Ok(result) => result,
-            Err(err) => return Err(format!("Failed to initialize Steam client: {}", err)),
-        };
-        steam_state.set_clients(app_id, steam_client, single_client);
-    }
-
-    let steam_client = match steam_state.get_client(app_id) {
-        Some(client) => client,
-        None => return Err("Failed to get Steam client".to_string()),
-    };
+    let steam_client = initialize_client(&app_state, app_id).await?;
 
     let (tx, mut rx) = mpsc::channel(32);
 
@@ -60,7 +49,7 @@ pub async fn unsubscribe(
     while result.is_none() {
         tokio::select! {
             Some(_) = rx.recv() => {
-                steam_state.run_callbacks(app_id)?;
+                app_state.steam_state.run_callbacks(app_id)?;
             }
             task_result = &mut unsub_task => {
                 result = Some(task_result.unwrap_or_else(|e| Err(format!("Task join error: {}", e)))?);
