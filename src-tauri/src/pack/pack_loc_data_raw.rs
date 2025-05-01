@@ -1,28 +1,31 @@
+use bincode::{Encode, Decode};
 use rpfm_lib::files::pack::Pack;
 use rpfm_lib::files::{Container, DecodeableExtraData, FileType, RFileDecoded};
 use rpfm_lib::schema::Schema;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
 use std::time::SystemTime;
-use tauri::path::BaseDirectory;
 use tauri::Manager;
+use tauri::path::BaseDirectory;
 
 use crate::game::supported_games::SUPPORTED_GAMES;
+use crate::utils::json_wrapper::JsonWrapper;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Encode, Decode)]
 pub struct FileMetadata {
     pub size: u64,
     pub modified: u64,
 }
 
-#[derive(Serialize, Deserialize)]
+type JsonWrapperMap = HashMap<String, JsonWrapper>;
+
+#[derive(Encode, Decode)]
 pub struct CacheEntry {
     pub file_path: String,
     pub file_metadata: FileMetadata,
-    pub loc_data: HashMap<String, serde_json::Value>,
+    pub loc_data: JsonWrapperMap,
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -69,14 +72,23 @@ pub async fn pack_loc_data_raw(
     };
 
     let pack_file_path_str = pack_file_path.to_string_lossy().to_string();
+    let bincode_config = bincode::config::standard();
     if cache_file.exists() {
         if let Ok(cache_content) = fs::read(&cache_file) {
-            if let Ok(cache_entry) = bincode::deserialize::<CacheEntry>(&cache_content) {
+            if let Ok((cache_entry, _)) =
+                bincode::decode_from_slice::<CacheEntry, _>(&cache_content, bincode_config)
+            {
                 if cache_entry.file_path == pack_file_path_str
                     && cache_entry.file_metadata.size == current_metadata.size
                     && cache_entry.file_metadata.modified == current_metadata.modified
                 {
-                    return Ok(cache_entry.loc_data);
+                    let mut result_map = HashMap::new();
+                    for (key, wrapper) in cache_entry.loc_data {
+                        if let Ok(json_value) = serde_json::from_str(&wrapper.json_string) {
+                            result_map.insert(key, json_value);
+                        }
+                    }
+                    return Ok(result_map);
                 }
             }
         }
@@ -90,13 +102,18 @@ pub async fn pack_loc_data_raw(
         cache_file.clone(),
     )?;
 
+    let wrapped_map: JsonWrapperMap = table_data_map
+        .iter()
+        .map(|(k, v)| (k.clone(), JsonWrapper::from(v.clone())))
+        .collect();
+
     let cache_entry = CacheEntry {
         file_path: pack_file_path_str,
         file_metadata: current_metadata,
-        loc_data: table_data_map.clone(),
+        loc_data: wrapped_map,
     };
 
-    if let Ok(cache_bin) = bincode::serialize(&cache_entry) {
+    if let Ok(cache_bin) = bincode::encode_to_vec(&cache_entry, bincode_config) {
         let _ = fs::write(&cache_file, cache_bin);
     }
 
@@ -125,6 +142,7 @@ pub fn get_pack_loc_table_data(
     let mut packfile = Pack::read_and_merge(&[pack_file_path], true, false, false)
         .map_err(|e| format!("Failed to read pack file: {:?}", e))?;
 
+    let bincode_config = bincode::config::standard();
     let loc_files = packfile.files_by_type_mut(&[FileType::Loc]);
     if loc_files.is_empty() {
         let cache_entry = CacheEntry {
@@ -133,7 +151,7 @@ pub fn get_pack_loc_table_data(
             loc_data: HashMap::new(),
         };
 
-        if let Ok(cache_bin) = bincode::serialize(&cache_entry) {
+        if let Ok(cache_bin) = bincode::encode_to_vec(&cache_entry, bincode_config) {
             let _ = fs::write(&cache_file, cache_bin);
         }
 

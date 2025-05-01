@@ -1,22 +1,27 @@
+use bincode::{Encode, Decode};
 use rpfm_lib::files::pack::Pack;
-use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 use std::time::SystemTime;
-use tauri::path::BaseDirectory;
 use tauri::Manager;
+use tauri::path::BaseDirectory;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Encode, Decode)]
 struct FileMetadata {
     size: u64,
     modified: u64,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Encode, Decode)]
+struct PackFilesData {
+    json_string: String,
+}
+
+#[derive(Encode, Decode)]
 struct CacheEntry {
     file_path: String,
     file_metadata: FileMetadata,
-    pack_files: serde_json::Value,
+    pack_files: PackFilesData,
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -64,12 +69,20 @@ pub async fn pack_files(
 
     if cache_file.exists() {
         if let Ok(cache_content) = fs::read(&cache_file) {
-            if let Ok(cache_entry) = bincode::deserialize::<CacheEntry>(&cache_content) {
+            let config = bincode::config::standard();
+            if let Ok(cache_entry) =
+                bincode::decode_from_slice::<CacheEntry, _>(&cache_content, config)
+                    .map(|(entry, _)| entry)
+            {
                 if cache_entry.file_path == pack_file_path_str
                     && cache_entry.file_metadata.size == current_metadata.size
                     && cache_entry.file_metadata.modified == current_metadata.modified
                 {
-                    return Ok(cache_entry.pack_files);
+                    if let Ok(json_value) =
+                        serde_json::from_str(&cache_entry.pack_files.json_string)
+                    {
+                        return Ok(json_value);
+                    }
                 }
             }
         }
@@ -101,13 +114,17 @@ pub async fn pack_files(
     let result_json = serde_json::to_value(raw_tree.clone())
         .map_err(|e| format!("Failed to serialize pack files: {}", e))?;
 
+    let json_string = serde_json::to_string(&result_json)
+        .map_err(|e| format!("Failed to convert JSON to string: {}", e))?;
+
     let cache_entry = CacheEntry {
         file_path: pack_file_path_str,
         file_metadata: current_metadata,
-        pack_files: result_json.clone(),
+        pack_files: PackFilesData { json_string },
     };
 
-    if let Ok(cache_bin) = bincode::serialize(&cache_entry) {
+    let config = bincode::config::standard();
+    if let Ok(cache_bin) = bincode::encode_to_vec(&cache_entry, config) {
         let _ = fs::write(&cache_file, cache_bin);
     }
 
@@ -148,7 +165,7 @@ fn insert_path_recursive(
             let sub_map = map
                 .entry(first.to_string())
                 .or_insert_with(|| serde_json::json!({}));
-            if let serde_json::Value::Object(ref mut obj) = sub_map {
+            if let serde_json::Value::Object(obj) = sub_map {
                 insert_path_recursive(obj, rest, depth + 1);
             }
         }
@@ -180,7 +197,7 @@ fn collect_files_in_leaf_nodes(map: &mut serde_json::Map<String, serde_json::Val
                     files.sort();
                     map.insert(key.clone(), serde_json::json!(files));
                 } else if has_folders {
-                    if let serde_json::Value::Object(ref mut obj) = map.get_mut(&key).unwrap() {
+                    if let Some(serde_json::Value::Object(obj)) = map.get_mut(&key) {
                         collect_files_in_leaf_nodes(obj, depth + 1);
                     }
                 }

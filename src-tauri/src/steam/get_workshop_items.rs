@@ -1,17 +1,17 @@
-use serde::{Deserialize, Serialize};
+use bincode::{Encode, Decode};
 use std::fs;
-use tauri::path::BaseDirectory;
 use tauri::Manager;
+use tauri::path::BaseDirectory;
 
 use futures_util::FutureExt;
 use steamworks::PublishedFileId;
 
-use crate::{steam::workshop_item::workshop::WorkshopItem, AppState};
+use crate::{AppState, steam::workshop_item::workshop::WorkshopItem};
 
 use super::initialize_client::initialize_client;
 use super::workshop_item::workshop::WorkshopItemsResult;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Encode, Decode)]
 pub struct WorkshopCache {
     pub item_ids: Vec<u64>,
     pub items: Vec<WorkshopItem>,
@@ -30,9 +30,13 @@ pub async fn get_workshop_items(
         .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?;
 
     let cache_path = app_cache_dir.join(format!("workshop_cache_{}.bin", app_id));
+    let bincode_config = bincode::config::standard();
     if cache_path.exists() {
         if let Ok(cache_content) = fs::read(&cache_path) {
-            if let Ok(cache) = bincode::deserialize::<WorkshopCache>(&cache_content) {
+            if let Ok(cache_entry) =
+                bincode::decode_from_slice::<WorkshopCache, _>(&cache_content, bincode_config)
+            {
+                let cache = cache_entry.0;
                 let mut cached_ids = cache.item_ids.clone();
                 let mut current_ids = item_ids.clone();
                 cached_ids.sort();
@@ -120,8 +124,8 @@ pub async fn get_workshop_items(
         items,
     };
 
-    let serialized_cache =
-        bincode::serialize(&new_cache).map_err(|e| format!("Failed to serialize cache: {}", e))?;
+    let serialized_cache = bincode::encode_to_vec(&new_cache, bincode_config)
+        .map_err(|e| format!("Failed to serialize cache: {}", e))?;
 
     fs::write(&cache_path, serialized_cache)
         .map_err(|e| format!("Failed to write cache file: {}", e))?;

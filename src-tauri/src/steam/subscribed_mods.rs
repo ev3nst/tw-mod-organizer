@@ -1,6 +1,6 @@
+use bincode::{Encode, Decode};
 use rayon::prelude::*;
 use rustc_hash::{FxHashMap, FxHashSet};
-use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -21,7 +21,7 @@ use super::initialize_client::initialize_client;
 use super::workshop_item::workshop::WorkshopItem;
 use super::workshop_path_for_app::workshop_path_for_app;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Encode, Decode)]
 pub struct CachedSubModuleContents {
     pub submodule_info: SubModuleContents,
     pub file_size: u64,
@@ -138,7 +138,7 @@ pub async fn subscribed_mods(
 
     let creator_ids: Vec<_> = mod_items
         .iter()
-        .filter_map(|(_, item, _, _, _, _, _)| Some(item.owner.raw))
+        .filter_map(|(_, item, _, _, _, _, _)| Some(item.owner.to_steamid()))
         .collect();
 
     let creator_names = fetch_creator_names(steam_client, creator_ids, app_state, app_id).await?;
@@ -159,7 +159,7 @@ pub async fn subscribed_mods(
                     child_mods,
                 )| {
                     let creator_name = creator_names
-                        .get(&item.owner.raw)
+                        .get(&item.owner.to_steamid())
                         .cloned()
                         .unwrap_or_else(|| "[unknown]".to_string());
 
@@ -226,7 +226,7 @@ fn process_item(
                     .iter()
                     .map(|id| id.to_string())
                     .collect::<Vec<_>>();
-                creator_id = Some(item.owner.raw);
+                creator_id = Some(item.owner.to_steamid());
                 result = Some((
                     String::from(""),
                     item.clone(),
@@ -258,7 +258,7 @@ fn process_item(
                     submodule_info.id.clone(),
                     (submodule_info.clone(), item.published_file_id.to_string()),
                 ));
-                creator_id = Some(item.owner.raw);
+                creator_id = Some(item.owner.to_steamid());
             }
         }
         _ => {}
@@ -323,7 +323,7 @@ fn process_bannerlord_dependencies(
         }
 
         let creator_name = creator_names
-            .get(&item.owner.raw)
+            .get(&item.owner.to_steamid())
             .cloned()
             .unwrap_or_else(|| "[unknown]".to_string());
 

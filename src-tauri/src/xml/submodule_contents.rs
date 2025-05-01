@@ -1,18 +1,18 @@
-use serde::{Deserialize, Serialize};
+use bincode::{Decode, Encode};
 use std::{fs::File, io::Read, path::Path};
 use xml::reader::{EventReader, XmlEvent};
 
 use crate::steam::subscribed_mods::CachedSubModuleContents;
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Encode, Decode)]
 pub struct DependentModule {
     pub id: String,
     pub dependent_version: Option<String>,
     pub optional: Option<bool>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Encode, Decode)]
 pub struct SubModuleContents {
     pub id: String,
     pub name: String,
@@ -39,7 +39,7 @@ pub fn submodule_contents(
 
     let cache_json_filename = format!("workshop_item_{}_{}_contents.bin", app_id, identifier);
     let cache_file = cache_dir.join(cache_json_filename);
-
+    let bincode_config = bincode::config::standard();
     if cache_file.exists() {
         if let Ok(metadata) = std::fs::metadata(&submodule_path) {
             let file_size = metadata.len();
@@ -52,8 +52,12 @@ pub fn submodule_contents(
                 })
                 .unwrap_or(0);
 
-            if let Ok(cache_data) = std::fs::read(&cache_file) {
-                if let Ok(cached) = bincode::deserialize::<CachedSubModuleContents>(&cache_data) {
+            if let Ok(cache_content) = std::fs::read(&cache_file) {
+                if let Ok(cache_entry) = bincode::decode_from_slice::<CachedSubModuleContents, _>(
+                    &cache_content,
+                    bincode_config,
+                ) {
+                    let cached = cache_entry.0;
                     if cached.file_size == file_size && cached.last_modified == last_modified {
                         return Some(cached.submodule_info);
                     }
@@ -231,7 +235,8 @@ pub fn submodule_contents(
             last_modified,
         };
 
-        if let Ok(data) = bincode::serialize(&cache_data) {
+        let bincode_config = bincode::config::standard();
+        if let Ok(data) = bincode::encode_to_vec(&cache_data, bincode_config) {
             let cache_json_filename =
                 format!("workshop_item_{}_{}_contents.bin", app_id, identifier);
             let cache_file = cache_dir.join(cache_json_filename);

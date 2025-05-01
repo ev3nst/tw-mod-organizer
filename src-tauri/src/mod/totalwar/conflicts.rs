@@ -1,14 +1,27 @@
+use bincode::{Encode, Decode};
 use rayon::prelude::*;
 use rpfm_lib::files::pack::Pack;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use rustc_hash::{FxHashMap, FxHashSet};
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
-use tauri::path::BaseDirectory;
 use tauri::Manager;
+use tauri::path::BaseDirectory;
 use tokio::task;
 
-use crate::r#mod::conflicts::{CacheEntry, FileMetadata};
+#[derive(Encode, Decode, PartialEq, Eq, Clone, Debug)]
+pub struct FileMetadata {
+    pub size: u64,
+    pub modified: u64,
+}
+
+#[derive(Encode, Decode, Clone, Debug)]
+pub struct CacheEntry {
+    pub file_paths: Vec<String>,
+    pub file_metadata: FxHashMap<String, FileMetadata>,
+    pub conflicts: BTreeMap<String, BTreeMap<String, Vec<String>>>,
+}
 
 pub async fn conflicts(
     handle: tauri::AppHandle,
@@ -70,7 +83,7 @@ pub async fn conflicts(
         .map(|p| p.to_string_lossy().to_string())
         .collect();
 
-    let file_metadata: HashMap<String, FileMetadata> = files_vec
+    let file_metadata: FxHashMap<String, FileMetadata> = files_vec
         .par_iter()
         .filter_map(|path| {
             let metadata = fs::metadata(path).ok()?;
@@ -92,9 +105,14 @@ pub async fn conflicts(
 
     if cache_file.exists() {
         if let Ok(cache_content) = fs::read(&cache_file) {
-            if let Ok(cache_entry) = bincode::deserialize::<CacheEntry>(&cache_content) {
-                let file_paths_set: HashSet<_> = file_paths.iter().cloned().collect();
-                let cached_paths_set: HashSet<_> = cache_entry.file_paths.iter().cloned().collect();
+            let config = bincode::config::standard();
+            if let Ok(cache_entry) =
+                bincode::decode_from_slice::<CacheEntry, _>(&cache_content, config)
+                    .map(|(entry, _)| entry)
+            {
+                let file_paths_set: FxHashSet<_> = file_paths.iter().cloned().collect();
+                let cached_paths_set: FxHashSet<_> =
+                    cache_entry.file_paths.iter().cloned().collect();
 
                 if file_paths_set == cached_paths_set {
                     let all_files_unchanged = file_metadata.iter().all(|(path, metadata)| {
@@ -113,7 +131,7 @@ pub async fn conflicts(
     }
 
     let conflicts_result = task::spawn_blocking(move || {
-        let mod_files: HashMap<String, HashSet<String>> = files_vec
+        let mod_files: FxHashMap<String, FxHashSet<String>> = files_vec
             .par_iter()
             .filter_map(|mod_file_path| {
                 let packfile =
@@ -123,15 +141,15 @@ pub async fn conflicts(
                     .keys()
                     .filter(|path| !path.ends_with("/version.txt") && *path != "version.txt")
                     .cloned()
-                    .collect::<HashSet<_>>();
+                    .collect::<FxHashSet<_>>();
                 Some((mod_file_path.to_string_lossy().to_string(), paths))
             })
             .collect();
 
-        let conflicts_by_pack: HashMap<_, _> = mod_files
+        let conflicts_by_pack: FxHashMap<_, _> = mod_files
             .par_iter()
             .filter_map(|(mod_file, paths)| {
-                let mod_conflicts: HashMap<_, _> = mod_files
+                let mod_conflicts: FxHashMap<_, _> = mod_files
                     .par_iter()
                     .filter_map(|(other_mod_file, other_paths)| {
                         (mod_file != other_mod_file)
@@ -174,7 +192,8 @@ pub async fn conflicts(
         conflicts: sorted_conflicts.clone(),
     };
 
-    if let Ok(cache_bin) = bincode::serialize(&cache_entry) {
+    let config = bincode::config::standard();
+    if let Ok(cache_bin) = bincode::encode_to_vec(&cache_entry, config) {
         let _ = fs::write(&cache_file, cache_bin);
     }
 

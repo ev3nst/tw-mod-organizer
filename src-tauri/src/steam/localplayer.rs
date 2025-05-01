@@ -22,24 +22,29 @@
 //
 // Modified by Burak Kartal on [01/05/2025]
 
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
+use bincode::{Encode, Decode};
 use steamworks::SteamId;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Encode, Decode)]
 pub struct PlayerSteamId {
-    pub raw: SteamId,
     pub steam_id64: u64,
     pub steam_id32: String,
     pub account_id: u32,
 }
 
 impl PlayerSteamId {
-    pub(crate) fn from_steamid(steam_id: SteamId) -> Self {
+    pub fn from_steamid(steam_id: SteamId) -> Self {
         Self {
-            raw: steam_id,
             steam_id64: steam_id.raw(),
             steam_id32: steam_id.steamid32(),
             account_id: steam_id.account_id().raw(),
         }
     }
+
+    pub fn to_steamid(&self) -> SteamId {
+        SteamId::from_raw(self.steam_id64)
+    }
 }
+
+impl PlayerSteamId {}

@@ -1,19 +1,19 @@
-use serde::{Deserialize, Serialize};
+use bincode::{Encode, Decode};
 use std::fs;
 use std::path::PathBuf;
 use std::time::SystemTime;
-use tauri::path::BaseDirectory;
 use tauri::Manager;
+use tauri::path::BaseDirectory;
 
 use super::pack_db_data::parse_raw_pack_db;
-use super::pack_loc_data_raw::get_pack_loc_table_data;
 use super::pack_loc_data_raw::FileMetadata;
+use super::pack_loc_data_raw::get_pack_loc_table_data;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Encode, Decode)]
 struct CacheEntry {
     file_path: String,
     file_metadata: FileMetadata,
-    loc_data: serde_json::Value,
+    loc_data_serialized: String,
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -61,14 +61,21 @@ pub async fn pack_loc_data(
             .unwrap_or(0),
     };
 
+    let bincode_config = bincode::config::standard();
     if cache_file.exists() {
         if let Ok(cache_content) = fs::read(&cache_file) {
-            if let Ok(cache_entry) = bincode::deserialize::<CacheEntry>(&cache_content) {
+            if let Ok(cache_entry) =
+                bincode::decode_from_slice::<CacheEntry, _>(&cache_content, bincode_config)
+            {
+                let cache_entry = cache_entry.0;
                 if cache_entry.file_path == pack_file_path_str
                     && cache_entry.file_metadata.size == current_metadata.size
                     && cache_entry.file_metadata.modified == current_metadata.modified
                 {
-                    return Ok(cache_entry.loc_data);
+                    return match serde_json::from_str(&cache_entry.loc_data_serialized) {
+                        Ok(data) => Ok(data),
+                        Err(e) => Err(format!("Failed to deserialize cached data: {}", e)),
+                    };
                 }
             }
         }
@@ -82,14 +89,18 @@ pub async fn pack_loc_data(
         cache_file.clone(),
     )?;
     let parsed_data = parse_raw_pack_db(&table_data_map)?;
+    let loc_data_serialized = match serde_json::to_string(&parsed_data) {
+        Ok(data) => data,
+        Err(e) => return Err(format!("Failed to serialize data: {}", e)),
+    };
 
     let cache_entry = CacheEntry {
         file_path: pack_file_path_str,
         file_metadata: current_metadata,
-        loc_data: parsed_data.clone(),
+        loc_data_serialized,
     };
 
-    if let Ok(cache_bin) = bincode::serialize(&cache_entry) {
+    if let Ok(cache_bin) = bincode::encode_to_vec(&cache_entry, bincode_config) {
         let _ = fs::write(&cache_file, cache_bin);
     }
 

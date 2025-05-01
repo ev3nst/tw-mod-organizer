@@ -23,9 +23,10 @@
 // Modified by Burak Kartal on [01/05/2025]
 
 pub mod workshop {
-    use serde::{Deserialize, Serialize};
+	use serde::Serialize;
+	use bincode::{Encode, Decode};
 
-    #[derive(Debug, Clone, Serialize, Deserialize)]
+    #[derive(Debug, Clone, Serialize, Encode, Decode)]
     pub enum UgcItemVisibility {
         Public,
         FriendsOnly,
