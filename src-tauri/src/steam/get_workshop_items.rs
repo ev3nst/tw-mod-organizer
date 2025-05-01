@@ -29,10 +29,10 @@ pub async fn get_workshop_items(
         .resolve("cache".to_string(), BaseDirectory::AppConfig)
         .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?;
 
-    let cache_path = app_cache_dir.join(format!("workshop_cache_{}.json", app_id));
+    let cache_path = app_cache_dir.join(format!("workshop_cache_{}.bin", app_id));
     if cache_path.exists() {
-        if let Ok(cache_content) = fs::read_to_string(&cache_path) {
-            if let Ok(cache) = serde_json::from_str::<WorkshopCache>(&cache_content) {
+        if let Ok(cache_content) = fs::read(&cache_path) {
+            if let Ok(cache) = bincode::deserialize::<WorkshopCache>(&cache_content) {
                 let mut cached_ids = cache.item_ids.clone();
                 let mut current_ids = item_ids.clone();
                 cached_ids.sort();
@@ -119,10 +119,12 @@ pub async fn get_workshop_items(
         item_ids: item_ids.clone(),
         items,
     };
-    let _ = fs::write(
-        &cache_path,
-        serde_json::to_string(&new_cache).map_err(|e| e.to_string())?,
-    );
+
+    let serialized_cache =
+        bincode::serialize(&new_cache).map_err(|e| format!("Failed to serialize cache: {}", e))?;
+
+    fs::write(&cache_path, serialized_cache)
+        .map_err(|e| format!("Failed to write cache file: {}", e))?;
 
     Ok(new_cache.items)
 }
