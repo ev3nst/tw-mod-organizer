@@ -62,8 +62,6 @@ function RequiredItemsDialog() {
 		})),
 	);
 
-	if (!requiredItemsMod) return null;
-
 	const { modLookup, nonSeparatorMods } = useMemo(
 		() => buildModLookup(mods),
 		[mods],
@@ -78,15 +76,15 @@ function RequiredItemsDialog() {
 		[modActivationData],
 	);
 
-	const isActive = activatedMods.has(requiredItemsMod.identifier);
+	const isActive = requiredItemsMod && activatedMods.has(requiredItemsMod.identifier);
 	const dependencyMods = useMemo(
 		() =>
-			getCascadingDependencies(
+			requiredItemsMod ? getCascadingDependencies(
 				requiredItemsMod,
 				modLookup,
 				nonSeparatorMods,
 				isActive ? 'dependencies' : 'dependents',
-			),
+			) : [],
 		[requiredItemsMod, modLookup, nonSeparatorMods, isActive],
 	);
 
@@ -109,6 +107,7 @@ function RequiredItemsDialog() {
 	const handleEnable = () => handleActivationChange(true);
 	const handleDisable = () => handleActivationChange(false);
 
+	if(!requiredItemsMod) return null;
 	return (
 		<Dialog
 			open={requiredItemsModal && requiredItemsMod !== undefined}
