@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -29,14 +30,18 @@ export const ReplaceProfileDialog = () => {
 
 	const mods = modsStore(state => state.mods);
 
-	const missingMods = selectedSaveFile
-		? selectedSaveFile.load_order_data.filter(
-				lr =>
-					!mods.some(m => m.identifier === lr.identifier) &&
-					lr.is_active === true &&
-					lr.mod_file !== null, // Ignore separators
-			)
-		: [];
+	const missingMods = useMemo(
+		() =>
+			selectedSaveFile
+				? selectedSaveFile.load_order_data.filter(
+						lr =>
+							!mods.some(m => m.identifier === lr.identifier) &&
+							lr.is_active === true &&
+							lr.mod_file !== null, // Ignore separators
+					)
+				: [],
+		[selectedSaveFile, mods],
+	);
 
 	const profile = profileStore(state => state.profile);
 

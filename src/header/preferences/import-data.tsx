@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { toast } from 'sonner';
 
 import { NativeFileInput } from '@/components/native-file-input';
@@ -20,8 +21,13 @@ export function ImportData() {
 	const [loading, setLoading] = useState(false);
 	const [configJSONPath, setConfigJSONPath] = useState('');
 
-	const games = settingStore(state => state.games);
-	const selectedGame = settingStore(state => state.selectedGame);
+	const { selectedGame, games } = settingStore(
+		useShallow(state => ({
+			selectedGame: state.selectedGame,
+			games: state.games,
+		})),
+	);
+
 	const profiles = profileStore(state => state.profiles);
 
 	async function handleSubmit() {

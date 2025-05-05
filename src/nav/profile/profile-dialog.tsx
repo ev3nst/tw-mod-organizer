@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import { PlusIcon } from 'lucide-react';
 
 import {
@@ -16,8 +17,12 @@ import { ImportProfile } from './import';
 import { ExportProfile } from './export';
 
 export const ProfileDialog = () => {
-	const isGameRunning = settingStore(state => state.isGameRunning);
-	const shouldLockScreen = settingStore(state => state.shouldLockScreen);
+	const { isGameRunning, shouldLockScreen } = settingStore(
+		useShallow(state => ({
+			isGameRunning: state.isGameRunning,
+			shouldLockScreen: state.shouldLockScreen,
+		})),
+	);
 
 	return (
 		<Dialog>

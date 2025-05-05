@@ -1,4 +1,5 @@
 import { ChangeEvent, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import {
 	Dialog,
@@ -17,13 +18,22 @@ import { modOrderStore } from '@/lib/store/mod_order';
 function SetPriorityDialog() {
 	const [priority, setPriority] = useState<string>('');
 
-	const mods = modsStore(state => state.mods);
-	const setMods = modsStore(state => state.setMods);
+	const { mods, setMods } = modsStore(
+		useShallow(state => ({
+			mods: state.mods,
+			setMods: state.setMods,
+		})),
+	);
 
-	const setModOrder = modOrderStore(state => state.setData);
-	const priorityOpen = modOrderStore(state => state.priorityOpen);
-	const selectedMod = modOrderStore(state => state.selectedMod);
-	const toggleSetPriority = modOrderStore(state => state.toggleSetPriority);
+	const { setModOrder, priorityOpen, toggleSetPriority, selectedMod } =
+		modOrderStore(
+			useShallow(state => ({
+				setModOrder: state.setData,
+				priorityOpen: state.priorityOpen,
+				toggleSetPriority: state.toggleSetPriority,
+				selectedMod: state.selectedMod,
+			})),
+		);
 
 	const handlePriorityChange = (event: ChangeEvent<HTMLInputElement>) => {
 		let normalized: string | number = event.currentTarget.value.trim();

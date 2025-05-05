@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import { SettingsIcon } from 'lucide-react';
 
 import {
@@ -16,9 +17,13 @@ import { UpdateMods } from './update-mods';
 import { ImportData } from './import-data';
 
 export function Preferences() {
-	const selectedGame = settingStore(state => state.selectedGame);
-	const isGameRunning = settingStore(state => state.isGameRunning);
-	const shouldLockScreen = settingStore(state => state.shouldLockScreen);
+	const { selectedGame, isGameRunning, shouldLockScreen } = settingStore(
+		useShallow(state => ({
+			selectedGame: state.selectedGame,
+			isGameRunning: state.isGameRunning,
+			shouldLockScreen: state.shouldLockScreen,
+		})),
+	);
 
 	return (
 		<Dialog>

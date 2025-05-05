@@ -1,6 +1,5 @@
-import { memo } from 'react';
-
-import { TableCell } from '@/components/table';
+import { memo, useCallback, useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import { settingStore } from '@/lib/store/setting';
 import { conflictsStore } from '@/lib/store/conflict';
@@ -10,87 +9,112 @@ import {
 	type ModItemSeparatorUnion,
 } from '@/lib/store/mod_separator';
 
+import { TABLE_DIMENSIONS } from '@/modlist/utils';
+
+interface ConflictCase {
+	cases: Record<string, any[]>;
+	total: number;
+}
+
+interface ConflictData {
+	mod: ModItemSeparatorUnion;
+	win: ConflictCase;
+	lose: ConflictCase;
+}
+
 export const Conflict = memo(
 	({ mod }: { mod: ModItemSeparatorUnion }) => {
-		if (isSeparator(mod)) return;
+		if (isSeparator(mod)) return null;
 
 		const mod_file_path =
 			'mod_file_path' in mod ? mod.mod_file_path : undefined;
-		if (!mod_file_path) return <TableCell>&nbsp;</TableCell>;
+		if (!mod_file_path) return <div>&nbsp;</div>;
 
 		const toggle_conflict = settingStore(state => state.toggle_conflict);
-		const conflicts = conflictsStore(state => state.conflicts);
-		const setCurrentConflict = conflictsStore(
-			state => state.setCurrentConflict,
+
+		const { conflicts, setCurrentConflict } = conflictsStore(
+			useShallow(state => ({
+				conflicts: state.conflicts,
+				setCurrentConflict: state.setCurrentConflict,
+			})),
 		);
+
 		const mod_order = modOrderStore(state => state.data);
 
-		let win: any = {
-			cases: {},
-			total: 0,
-		};
-		let lose: any = {
-			cases: {},
-			total: 0,
-		};
+		const { win, lose } = useMemo(() => {
+			const win: ConflictCase = {
+				cases: {},
+				total: 0,
+			};
+			const lose: ConflictCase = {
+				cases: {},
+				total: 0,
+			};
 
-		if (conflicts[mod_file_path]) {
-			const currentModOrder = mod_order.find(
-				m => m.mod_id === mod.identifier,
-			);
-			if (currentModOrder) {
-				const modFilePaths = Object.keys(conflicts[mod_file_path]);
-				for (let mpi = 0; mpi < modFilePaths.length; mpi++) {
-					const modFilePath = modFilePaths[mpi];
-					const findMod = mod_order.find(
-						mr => mr.mod_file_path === modFilePath,
-					);
-					if (!findMod) continue;
-					if (findMod!.order < currentModOrder!.order) {
-						win.total +=
-							conflicts[mod_file_path][modFilePath as any].length;
-						win.cases[findMod!.title] =
+			if (conflicts[mod_file_path]) {
+				const currentModOrder = mod_order.find(
+					m => m.mod_id === mod.identifier,
+				);
+				if (currentModOrder) {
+					const modFilePaths = Object.keys(conflicts[mod_file_path]);
+					for (let mpi = 0; mpi < modFilePaths.length; mpi++) {
+						const modFilePath = modFilePaths[mpi];
+						const findMod = mod_order.find(
+							mr => mr.mod_file_path === modFilePath,
+						);
+						if (!findMod) continue;
+
+						const conflictArray =
 							conflicts[mod_file_path][modFilePath as any];
-					} else {
-						lose.total +=
-							conflicts[mod_file_path][modFilePath as any].length;
-						lose.cases[findMod!.title] =
-							conflicts[mod_file_path][modFilePath as any];
+						if (!conflictArray) continue;
+
+						if (findMod.order < currentModOrder.order) {
+							win.total += conflictArray.length;
+							win.cases[findMod.title] = conflictArray;
+						} else {
+							lose.total += conflictArray.length;
+							lose.cases[findMod.title] = conflictArray;
+						}
 					}
 				}
 			}
-		}
 
-		if (toggle_conflict) {
-			if (win.total === 0 && lose.total === 0) return <TableCell />;
+			return { win, lose };
+		}, [conflicts, mod_file_path, mod.identifier, mod_order]);
 
-			return (
-				<TableCell
-					className="w-[80px]"
-					onClick={() => {
-						setCurrentConflict(mod.identifier, {
-							mod,
-							win,
-							lose,
-						});
-					}}
-				>
-					<div className="flex gap-1 text-center justify-center hover:cursor-pointer hover:opacity-80">
-						{win.total > 0 && (
-							<span className="text-green-500 text-xs">
-								{win.total}
-							</span>
-						)}
-						{lose.total > 0 && (
-							<span className="text-red-500 text-xs">
-								{lose.total}
-							</span>
-						)}
-					</div>
-				</TableCell>
-			);
-		}
-		return null;
+		const handleClick = useCallback(() => {
+			setCurrentConflict(mod.identifier, {
+				mod,
+				win,
+				lose,
+			} as ConflictData);
+		}, [mod, win, lose, setCurrentConflict]);
+
+		if (!toggle_conflict) return null;
+
+		if (win.total === 0 && lose.total === 0)
+			return <div style={TABLE_DIMENSIONS.CONFLICT} />;
+
+		return (
+			<div
+				style={TABLE_DIMENSIONS.CONFLICT}
+				onClick={handleClick}
+				className="flex justify-center items-center"
+			>
+				<div className="flex gap-1 text-center justify-center items-center hover:cursor-pointer hover:opacity-80">
+					{win.total > 0 && (
+						<span className="text-green-500 text-xs">
+							{win.total}
+						</span>
+					)}
+					{lose.total > 0 && (
+						<span className="text-red-500 text-xs">
+							{lose.total}
+						</span>
+					)}
+				</div>
+			</div>
+		);
 	},
 	(prevProps, nextProps) =>
 		prevProps.mod.identifier === nextProps.mod.identifier,

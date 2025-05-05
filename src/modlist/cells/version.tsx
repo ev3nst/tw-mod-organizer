@@ -1,6 +1,4 @@
-import { memo } from 'react';
-
-import { TableCell } from '@/components/table';
+import { memo, useMemo } from 'react';
 
 import { settingStore } from '@/lib/store/setting';
 import {
@@ -8,30 +6,41 @@ import {
 	type ModItemSeparatorUnion,
 } from '@/lib/store/mod_separator';
 
+import { TABLE_DIMENSIONS } from '@/modlist/utils';
+
 export const Version = memo(
 	({ mod }: { mod: ModItemSeparatorUnion }) => {
 		if (isSeparator(mod)) return;
 
-		let version = 'version' in mod ? mod.version : undefined;
+		const version = 'version' in mod ? mod.version : undefined;
 		const toggle_version = settingStore(state => state.toggle_version);
-		if (toggle_version) {
-			if (typeof version === 'number') {
-				try {
-					const dateVersion = new Date(version).toLocaleDateString();
-					return (
-						<TableCell className="text-xs select-none">
-							{dateVersion}
-						</TableCell>
-					);
-				} catch (_e) {}
+
+		const formattedVersion = useMemo(() => {
+			if (!toggle_version) {
+				return '';
 			}
 
-			return (
-				<TableCell className="text-xs select-none">
-					{version ?? ''}
-				</TableCell>
-			);
-		}
+			if (typeof version === 'number') {
+				try {
+					return new Date(version).toLocaleDateString();
+				} catch (_e) {
+					return version.toString();
+				}
+			}
+
+			return version ?? '';
+		}, [version, toggle_version]);
+
+		if (!toggle_version) return null;
+
+		return (
+			<div
+				className="flex items-center text-xs select-none"
+				style={TABLE_DIMENSIONS.VERSION}
+			>
+				{formattedVersion}
+			</div>
+		);
 	},
 	(prevProps, nextProps) =>
 		prevProps.mod.identifier === nextProps.mod.identifier,

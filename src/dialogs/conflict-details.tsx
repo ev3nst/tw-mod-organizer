@@ -1,3 +1,5 @@
+import { useShallow } from 'zustand/react/shallow';
+
 import {
 	Dialog,
 	DialogContent,
@@ -84,13 +86,14 @@ const ConflictItem = ({
 };
 
 const ConflictDetailsDialog = () => {
-	const setCurrentConflict = conflictsStore(
-		state => state.setCurrentConflict,
-	);
-	const currentConflict = conflictsStore(state => state.currentConflict);
-	const currentConflictData = conflictsStore(
-		state => state.currentConflictData,
-	);
+	const { setCurrentConflict, currentConflict, currentConflictData } =
+		conflictsStore(
+			useShallow(state => ({
+				setCurrentConflict: state.setCurrentConflict,
+				currentConflict: state.currentConflict,
+				currentConflictData: state.currentConflictData,
+			})),
+		);
 
 	if (!currentConflict || !currentConflictData) return null;
 

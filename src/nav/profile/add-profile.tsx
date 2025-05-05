@@ -1,4 +1,5 @@
-import { type ChangeEvent, useState } from 'react';
+import { type ChangeEvent, useState, useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { toast } from 'sonner';
 
 import { DialogFooter } from '@/components/dialog';
@@ -23,10 +24,15 @@ export const AddProfile = () => {
 	const [switchToNew, setSwitchToNew] = useState<boolean>(true);
 
 	const selectedGame = settingStore(state => state.selectedGame);
-	const profile = profileStore(state => state.profile);
-	const profiles = profileStore(state => state.profiles);
-	const setProfile = profileStore(state => state.setProfile);
-	const setProfiles = profileStore(state => state.setProfiles);
+
+	const { profile, profiles, setProfile, setProfiles } = profileStore(
+		useShallow(state => ({
+			profile: state.profile,
+			profiles: state.profiles,
+			setProfile: state.setProfile,
+			setProfiles: state.setProfiles,
+		})),
+	);
 
 	const handleProfileName = (event: ChangeEvent<HTMLInputElement>) => {
 		setProfileName(event.currentTarget.value);
@@ -115,8 +121,11 @@ export const AddProfile = () => {
 		}
 	};
 
-	const shouldDisableSubmit =
-		processLoading || profileName === null || profileName.trim() === '';
+	const shouldDisableSubmit = useMemo(
+		() =>
+			processLoading || profileName === null || profileName.trim() === '',
+		[processLoading, profileName],
+	);
 
 	return (
 		<div>

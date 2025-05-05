@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import { listen } from '@tauri-apps/api/event';
 
@@ -19,15 +20,29 @@ import api from '@/lib/api';
 import { SettingModel, settingStore } from '@/lib/store/setting';
 
 export const Nexus = () => {
-	const isGameRunning = settingStore(state => state.isGameRunning);
-	const shouldLockScreen = settingStore(state => state.shouldLockScreen);
-	const setNexusAuthApi = settingStore(state => state.setNexusAuthApi);
-	const setNexusAuthParams = settingStore(state => state.setNexusAuthParams);
-	const nexus_api_key = settingStore(state => state.nexus_api_key);
-	const nexus_connected =
-		typeof nexus_api_key !== 'undefined' &&
-		nexus_api_key !== null &&
-		nexus_api_key !== '';
+	const {
+		isGameRunning,
+		shouldLockScreen,
+		setNexusAuthApi,
+		setNexusAuthParams,
+		nexus_api_key,
+	} = settingStore(
+		useShallow(state => ({
+			isGameRunning: state.isGameRunning,
+			shouldLockScreen: state.shouldLockScreen,
+			setNexusAuthApi: state.setNexusAuthApi,
+			setNexusAuthParams: state.setNexusAuthParams,
+			nexus_api_key: state.nexus_api_key,
+		})),
+	);
+
+	const nexus_connected = useMemo(
+		() =>
+			typeof nexus_api_key !== 'undefined' &&
+			nexus_api_key !== null &&
+			nexus_api_key !== '',
+		[nexus_api_key],
+	);
 
 	useEffect(() => {
 		const unlisten = listen<string>('nexus-connection', async event => {

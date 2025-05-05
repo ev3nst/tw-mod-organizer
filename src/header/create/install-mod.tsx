@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 
@@ -30,40 +31,61 @@ export const InstallMod = () => {
 	const [archivePath, setArchivePath] = useState<string>();
 	const [modPath, setModPath] = useState<string>();
 
-	const selectedGame = settingStore(state => state.selectedGame);
-	const mod_installation_path = settingStore(
-		state => state.mod_installation_path,
+	const { selectedGame, mod_installation_path } = settingStore(
+		useShallow(state => ({
+			selectedGame: state.selectedGame,
+			mod_installation_path: state.mod_installation_path,
+		})),
 	);
 
-	const mods = modsStore(state => state.mods);
-	const downloadedArchivePath = modsStore(
-		state => state.downloadedArchivePath,
+	const {
+		mods,
+		downloadedArchivePath,
+		setDownloadedArchivePath,
+		downloadedModMeta,
+		setDownloadedModMeta,
+		setInstallModItemOpen,
+	} = modsStore(
+		useShallow(state => ({
+			mods: state.mods,
+			downloadedArchivePath: state.downloadedArchivePath,
+			setDownloadedArchivePath: state.setDownloadedArchivePath,
+			downloadedModMeta: state.downloadedModMeta,
+			setDownloadedModMeta: state.setDownloadedModMeta,
+			setInstallModItemOpen: state.setInstallModItemOpen,
+		})),
 	);
-	const setDownloadedArchivePath = modsStore(
-		state => state.setDownloadedArchivePath,
-	);
-	const downloadedModMeta = modsStore(state => state.downloadedModMeta);
-	const setDownloadedModMeta = modsStore(state => state.setDownloadedModMeta);
-	const setInstallModItemOpen = modsStore(
-		state => state.setInstallModItemOpen,
-	);
+
 	const separators = modSeparatorStore(state => state.data);
 
-	const sameNameWithMods = mods.some(
-		m =>
-			!isSeparator(m) &&
-			m.title.toLocaleLowerCase() === name.toLocaleLowerCase(),
-	);
-	const sameNameWithSeparators = separators.some(
-		s => s.title.toLocaleLowerCase() === name.toLocaleLowerCase(),
+	const sameNameWithMods = useMemo(
+		() =>
+			mods.some(
+				m =>
+					!isSeparator(m) &&
+					m.title.toLocaleLowerCase() === name.toLocaleLowerCase(),
+			),
+		[mods, name],
 	);
 
-	const isFormNotValid =
-		(isEmptyString(archivePath) && isEmptyString(downloadedArchivePath)) ||
-		sameNameWithSeparators ||
-		typeof name === 'undefined' ||
-		name === null ||
-		name === '';
+	const sameNameWithSeparators = useMemo(
+		() =>
+			separators.some(
+				s => s.title.toLocaleLowerCase() === name.toLocaleLowerCase(),
+			),
+		[separators, name],
+	);
+
+	const isFormNotValid = useMemo(
+		() =>
+			(isEmptyString(archivePath) &&
+				isEmptyString(downloadedArchivePath)) ||
+			sameNameWithSeparators ||
+			typeof name === 'undefined' ||
+			name === null ||
+			name === '',
+		[archivePath, downloadedArchivePath, sameNameWithSeparators, name],
+	);
 
 	// Auto Name Resolve
 	useEffect(() => {

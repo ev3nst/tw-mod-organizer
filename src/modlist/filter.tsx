@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useRef, memo } from 'react';
+import { ChangeEvent, useEffect, useRef, memo, useMemo } from 'react';
 import { SearchIcon } from 'lucide-react';
 
 import { Input } from '@/components/input';
@@ -31,8 +31,23 @@ export const Filter = memo(
 		const searchInputRef = useRef<HTMLInputElement>(null);
 
 		const mods = modsStore(state => state.mods);
-		const onlyMods = mods.filter(m => !isSeparator(m));
+		const onlyMods = useMemo(
+			() => mods.filter(m => !isSeparator(m)),
+			[mods],
+		);
 		const modActiveData = modActivationStore(state => state.data);
+
+		const { activeMods, passiveMods } = useMemo(
+			() => ({
+				activeMods: modActiveData.filter(
+					f => !f.mod_id.startsWith('separator_') && f.is_active,
+				).length,
+				passiveMods: modActiveData.filter(
+					f => !f.mod_id.startsWith('separator_') && !f.is_active,
+				).length,
+			}),
+			[modActiveData],
+		);
 
 		useEffect(() => {
 			const handleKeyDown = (event: KeyboardEvent) => {
@@ -51,7 +66,7 @@ export const Filter = memo(
 			setSearchModText(event.currentTarget.value);
 
 		return (
-			<div className="fixed bottom-0 left-0 right-0 bg-secondary-bg w-full flex gap-4">
+			<div className="fixed bottom-0 left-0 right-0 bg-secondary-bg w-full flex gap-4 shadow-[0_-1px_2px_0_hsl(var(--secondary-border)/0.6)]">
 				<div>
 					<Select
 						value={activationFilter}
@@ -86,15 +101,7 @@ export const Filter = memo(
 
 						<Tooltip>
 							<TooltipTrigger className="hover:cursor-default hover:brightness-125 text-green-500">
-								A:
-								{
-									modActiveData.filter(
-										f =>
-											!f.mod_id.startsWith(
-												'separator_',
-											) && f.is_active,
-									).length
-								}
+								A: {activeMods}
 							</TooltipTrigger>
 							<TooltipContent>
 								<p>Active mod count.</p>
@@ -103,15 +110,7 @@ export const Filter = memo(
 
 						<Tooltip>
 							<TooltipTrigger className="hover:cursor-default hover:brightness-125 text-red-500">
-								P:
-								{
-									modActiveData.filter(
-										f =>
-											!f.mod_id.startsWith(
-												'separator_',
-											) && !f.is_active,
-									).length
-								}
+								P: {passiveMods}
 							</TooltipTrigger>
 							<TooltipContent>
 								<p>Passive mod count.</p>

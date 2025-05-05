@@ -1,4 +1,6 @@
+import { useMemo } from 'react';
 import { FileWarningIcon } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 
 import {
 	Dialog,
@@ -21,26 +23,31 @@ import { Play } from './play';
 import { LoadExactly } from './load-exactly';
 
 function SaveFileDetailsDialog() {
-	const saveFileDialogOpen = saveFilesStore(
-		state => state.saveFileDialogOpen,
-	);
-	const setSaveFileDialogOpen = saveFilesStore(
-		state => state.setSaveFileDialogOpen,
-	);
-	const selectedSaveFile = saveFilesStore(state => state.selectedSaveFile);
+	const { saveFileDialogOpen, setSaveFileDialogOpen, selectedSaveFile } =
+		saveFilesStore(
+			useShallow(state => ({
+				saveFileDialogOpen: state.saveFileDialogOpen,
+				setSaveFileDialogOpen: state.setSaveFileDialogOpen,
+				selectedSaveFile: state.selectedSaveFile,
+			})),
+		);
 
 	const modActivationData = modActivationStore(state => state.data);
 	const modOrderData = modOrderStore(state => state.data);
 	const mods = modsStore(state => state.mods);
 
-	const missingMods = selectedSaveFile
-		? selectedSaveFile.load_order_data.filter(
-				lr =>
-					!mods.some(m => m.identifier === lr.identifier) &&
-					lr.is_active === true &&
-					lr.mod_file !== null, // Ignore separators
-			)
-		: [];
+	const missingMods = useMemo(
+		() =>
+			selectedSaveFile
+				? selectedSaveFile.load_order_data.filter(
+						lr =>
+							!mods.some(m => m.identifier === lr.identifier) &&
+							lr.is_active === true &&
+							lr.mod_file !== null, // Ignore separators
+					)
+				: [],
+		[selectedSaveFile, mods],
+	);
 
 	return (
 		<Dialog

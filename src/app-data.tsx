@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import { Loading } from '@/components/loading';
 
@@ -26,36 +27,44 @@ import {
 	initVersion,
 } from '@/modlist/utils';
 
-export const AppData = ({
-	onContentLoaded,
-	children,
-}: {
-	onContentLoaded: () => void;
-	children: React.ReactNode;
-}) => {
+export const AppData = ({ children }: { children: React.ReactNode }) => {
 	const [fetchModsLoading, setFetchModsLoading] = useState(false);
 
-	const setMods = modsStore(state => state.setMods);
-	const stateMods = modsStore(state => state.mods);
+	const {
+		init_reload,
+		setLoading,
+		selectedGame,
+		steam_library_paths,
+		mod_installation_path,
+		sort_by,
+		sort_by_direction,
+	} = settingStore(
+		useShallow(state => ({
+			init_reload: state.init_reload,
+			setLoading: state.setLoading,
+			selectedGame: state.selectedGame,
+			steam_library_paths: state.steam_library_paths,
+			mod_installation_path: state.mod_installation_path,
+			sort_by: state.sort_by,
+			sort_by_direction: state.sort_by_direction,
+		})),
+	);
+
+	const profile = profileStore(state => state.profile);
+
+	const { setMods, stateMods } = modsStore(
+		useShallow(state => ({
+			setMods: state.setMods,
+			stateMods: state.mods,
+		})),
+	);
+
 	const setModOrder = modOrderStore(state => state.setData);
 	const setModVersion = modVersionStore(state => state.setData);
 	const setModActivation = modActivationStore(state => state.setData);
 	const setSeparators = modSeparatorStore(state => state.setData);
 	const setMetas = modMetaStore(state => state.setData);
 	const setConflicts = conflictsStore(state => state.setConflicts);
-	const profile = profileStore(state => state.profile);
-
-	const init_reload = settingStore(state => state.init_reload);
-	const setLoading = settingStore(state => state.setLoading);
-	const selectedGame = settingStore(state => state.selectedGame);
-	const steam_library_paths = settingStore(
-		state => state.steam_library_paths,
-	);
-	const mod_installation_path = settingStore(
-		state => state.mod_installation_path,
-	);
-	const sort_by = settingStore(state => state.sort_by);
-	const sort_by_direction = settingStore(state => state.sort_by_direction);
 
 	const init = useCallback(async () => {
 		try {
@@ -178,7 +187,6 @@ export const AppData = ({
 				sortedMods,
 			);
 			setMetas(modMetaData);
-			onContentLoaded();
 		} catch (error) {
 			toastError(error);
 		} finally {

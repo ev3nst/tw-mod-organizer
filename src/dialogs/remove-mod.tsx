@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { toast } from 'sonner';
 
 import {
@@ -25,18 +26,31 @@ import { isSeparator } from '@/lib/store/mod_separator';
 import { toastError } from '@/lib/utils';
 
 function RemoveModDialog() {
-	const loading = settingStore(state => state.loading);
-	const setLoading = settingStore(state => state.setLoading);
-	const selectedGame = settingStore(state => state.selectedGame);
+	const { loading, setLoading, selectedGame } = settingStore(
+		useShallow(state => ({
+			loading: state.loading,
+			setLoading: state.setLoading,
+			selectedGame: state.selectedGame,
+		})),
+	);
 
-	const removeModOpen = modsStore(state => state.removeModOpen);
-	const toggleModRemove = modsStore(state => state.toggleModRemove);
+	const { removeModOpen, toggleModRemove, mods } = modsStore(
+		useShallow(state => ({
+			removeModOpen: state.removeModOpen,
+			toggleModRemove: state.toggleModRemove,
+			mods: state.mods,
+		})),
+	);
 
-	const mods = modsStore(state => state.mods);
-	const modOrderData = modOrderStore(state => state.data);
+	const { modOrderData, selectedRows } = modOrderStore(
+		useShallow(state => ({
+			modOrderData: state.data,
+			selectedRows: state.selectedRows,
+		})),
+	);
+
 	const modActivationData = modActivationStore(state => state.data);
 	const modMetaData = modMetaStore(state => state.data);
-	const selectedRows = modOrderStore(state => state.selectedRows);
 
 	const handleUnsubscribe = useCallback(
 		async (modIdentifier: string) => {

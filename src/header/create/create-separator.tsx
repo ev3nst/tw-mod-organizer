@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -12,11 +13,20 @@ import { toastError } from '@/lib/utils';
 export const CreateSeparator = () => {
 	const [isLoading, setIsLoading] = useState(false);
 
-	const init_reload = settingStore(state => state.init_reload);
-	const setInitReload = settingStore(state => state.setInitReload);
+	const { init_reload, setInitReload } = settingStore(
+		useShallow(state => ({
+			init_reload: state.init_reload,
+			setInitReload: state.setInitReload,
+		})),
+	);
 
-	const separators = modSeparatorStore(state => state.data);
-	const setSeparators = modSeparatorStore(state => state.setData);
+	const { separators, setSeparators } = modSeparatorStore(
+		useShallow(state => ({
+			separators: state.data,
+			setSeparators: state.setData,
+		})),
+	);
+
 	const modOrderData = modOrderStore(state => state.data);
 
 	const handleSubmit = (values: {

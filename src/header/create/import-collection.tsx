@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { toast } from 'sonner';
 import { Compact as ColorPicker } from '@uiw/react-color';
 import { ExternalLinkIcon, XIcon, UndoIcon } from 'lucide-react';
@@ -38,24 +39,53 @@ export const ImportCollection = () => {
 	const [ignoredMods, setIgnoredMods] = useState<Set<number>>(new Set());
 
 	const selectedGame = settingStore(state => state.selectedGame);
-	const mods = modsStore(state => state.mods);
-	const modOrderData = modOrderStore(state => state.data);
-	const setModOrderData = modOrderStore(state => state.setData);
-	const separators = modSeparatorStore(state => state.data);
-	const setSeparators = modSeparatorStore(state => state.setData);
 
-	const isFormValid =
-		typeof collection !== 'undefined' && collection?.items.length > 0;
-	const alreadyExistingIds =
-		typeof collection !== 'undefined' && collection?.items.length > 0
-			? collection?.items
-					.filter(mod =>
-						mods.some(
-							m => m.identifier === String(mod.published_file_id),
-						),
-					)
-					.map(m => m.published_file_id)
-			: [];
+	const mods = modsStore(state => state.mods);
+
+	const { modOrderData, setModOrderData } = modOrderStore(
+		useShallow(state => ({
+			modOrderData: state.data,
+			setModOrderData: state.setData,
+		})),
+	);
+
+	const { separators, setSeparators } = modSeparatorStore(
+		useShallow(state => ({
+			separators: state.data,
+			setSeparators: state.setData,
+		})),
+	);
+
+	const isFormValid = useMemo(
+		() => typeof collection !== 'undefined' && collection?.items.length > 0,
+		[collection],
+	);
+
+	const alreadyExistingIds = useMemo(
+		() =>
+			typeof collection !== 'undefined' && collection?.items.length > 0
+				? collection?.items
+						.filter(mod =>
+							mods.some(
+								m =>
+									m.identifier ===
+									String(mod.published_file_id),
+							),
+						)
+						.map(m => m.published_file_id)
+				: [],
+		[collection, mods],
+	);
+
+	const activeMods = useMemo(
+		() =>
+			collection?.items.filter(
+				mod =>
+					!ignoredMods.has(mod.published_file_id) &&
+					alreadyExistingIds.indexOf(mod.published_file_id) === -1,
+			) || [],
+		[collection, ignoredMods, alreadyExistingIds],
+	);
 
 	const handleFetch = async () => {
 		if (!isValidURL(steamURL)) {
@@ -90,12 +120,6 @@ export const ImportCollection = () => {
 
 		setIsLoading(true);
 		try {
-			const activeMods = collection!.items.filter(
-				mod =>
-					!ignoredMods.has(mod.published_file_id) &&
-					alreadyExistingIds.indexOf(mod.published_file_id) === -1,
-			);
-
 			let newModOrderData = [...modOrderData];
 			const highestOrder = Math.max(
 				...newModOrderData.map(m => m.order),
@@ -282,12 +306,15 @@ export const ImportCollection = () => {
 											Use dedicated separator
 										</label>
 									</div>
-									{collection?.items.length > 0 && (
-										<div className="flex items-center gap-4 text-sm">
-											<div className="w-3 h-3 bg-green-500" />
-											<div>Mods that already exist.</div>
-										</div>
-									)}
+									{typeof collection !== 'undefined' &&
+										collection.items.length > 0 && (
+											<div className="flex items-center gap-4 text-sm">
+												<div className="w-3 h-3 bg-green-500" />
+												<div>
+													Mods that already exist.
+												</div>
+											</div>
+										)}
 								</div>
 
 								{useSeparator && (
@@ -305,7 +332,11 @@ export const ImportCollection = () => {
 												}}
 												defaultValue={
 													separatorTitle ||
-													collection.details.title
+													(typeof collection !==
+													'undefined'
+														? collection.details
+																.title
+														: undefined)
 												}
 												onChange={e =>
 													setSeparatorTitle(

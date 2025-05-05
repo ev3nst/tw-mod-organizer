@@ -1,6 +1,5 @@
+import { useShallow } from 'zustand/react/shallow';
 import { MinusIcon, PlusIcon } from 'lucide-react';
-
-import { TableCell } from '@/components/table';
 
 import {
 	modSeparatorStore,
@@ -10,16 +9,22 @@ import {
 } from '@/lib/store/mod_separator';
 import { memo } from 'react';
 
+import { TABLE_DIMENSIONS } from '@/modlist/utils';
+
 export const Order = memo(
 	({ mod, modIndex }: { mod: ModItemSeparatorUnion; modIndex: number }) => {
-		const separators = modSeparatorStore(state => state.data);
-		const toggleCollapse = modSeparatorStore(state => state.toggleCollapse);
+		const { separators, toggleCollapse } = modSeparatorStore(
+			useShallow(state => ({
+				separators: state.data,
+				toggleCollapse: state.toggleCollapse,
+			})),
+		);
 
 		if (isSeparator(mod)) {
 			const modCollapsed = isCollapsed(separators, mod.identifier);
 
 			return (
-				<TableCell className="select-none w-[40px]">
+				<div className="select-none" style={TABLE_DIMENSIONS.ORDER}>
 					<div
 						className="flex items-center justify-center hover:cursor-pointer hover:opacity-70"
 						onClick={() => toggleCollapse(mod.identifier)}
@@ -30,17 +35,16 @@ export const Order = memo(
 							<MinusIcon className="w-4 h-4" />
 						)}
 					</div>
-				</TableCell>
+				</div>
 			);
 		} else {
 			return (
-				<TableCell className="select-none w-[40px]">
-					<div className="flex items-center justify-center select-none">
-						<em className="text-muted-foreground">
-							{modIndex + 1}
-						</em>
-					</div>
-				</TableCell>
+				<div
+					className="flex items-center justify-center select-none"
+					style={TABLE_DIMENSIONS.ORDER}
+				>
+					<em className="text-muted-foreground">{modIndex + 1}</em>
+				</div>
 			);
 		}
 	},

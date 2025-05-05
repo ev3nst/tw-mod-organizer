@@ -1,9 +1,8 @@
-import { memo } from 'react';
+import { memo, useMemo, useCallback } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVerticalIcon } from 'lucide-react';
 
-import { TableCell, TableRow } from '@/components/table';
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -11,12 +10,13 @@ import {
 } from '@/components/context-menu';
 
 import { settingStore } from '@/lib/store/setting';
-import type { ModItem } from '@/lib/store/mods';
+import { type ModItem } from '@/lib/store/mods';
 import {
 	isSeparator,
 	type ModItemSeparatorUnion,
 } from '@/lib/store/mod_separator';
 
+import { Sort } from './cells/sort';
 import { Selection } from './cells/selection';
 import { Type } from './cells/type';
 import { Title } from './cells/title';
@@ -24,14 +24,14 @@ import { Category } from './cells/category';
 import { Conflict } from './cells/conflict';
 import { Version } from './cells/version';
 import { Creator } from './cells/creator';
+import { Order } from './cells/order';
+import { CreatedAt } from './cells/created_at';
+import { UpdatedAt } from './cells/updated_at';
 import {
 	Actions,
 	ModActionContextMenuRenderer,
 	ModActionDropdownRenderer,
 } from './cells/actions';
-import { Order } from './cells/order';
-import { CreatedAt } from './cells/created_at';
-import { UpdatedAt } from './cells/updated_at';
 
 type RowProps = {
 	mod: ModItemSeparatorUnion;
@@ -46,6 +46,15 @@ type RowProps = {
 	dependentMods?: Set<string>;
 };
 
+const PreviewImgSizeToRowHeight = {
+	6: 35,
+	8: 40,
+	10: 45,
+	12: 50,
+	16: 60,
+	20: 80,
+};
+
 const RowComponent = ({
 	mod,
 	modIndex,
@@ -58,9 +67,13 @@ const RowComponent = ({
 	hasViolation = false,
 	dependentMods,
 }: RowProps) => {
-	const selectedGame = settingStore(state => state.selectedGame);
-	const sort_by = settingStore(state => state.sort_by);
-	const isSortingEnabled = sort_by === 'load_order';
+	const { selectedGame, sort_by, preview_size } = settingStore(
+		useShallow(state => ({
+			selectedGame: state.selectedGame,
+			sort_by: state.sort_by,
+			preview_size: state.preview_size,
+		})),
+	);
 
 	const {
 		attributes,
@@ -71,44 +84,94 @@ const RowComponent = ({
 		isDragging,
 	} = useSortable({ id });
 
+	const isSortingEnabled = sort_by === 'load_order';
+	const showViolation = isSortingEnabled && hasViolation;
+
 	const style = {
 		transform: isSortingEnabled
 			? CSS.Transform.toString(transform)
 			: undefined,
 		transition: isSortingEnabled ? transition : undefined,
-		opacity: isSortingEnabled && isDragging ? 0.5 : 1,
+		opacity: isSortingEnabled && isDragging ? 0 : 1,
 	};
 
-	const cellStyle = {
-		backgroundColor: mod.background_color,
-		color: mod.text_color,
-	};
+	const cellStyle = useMemo(
+		() => ({
+			backgroundColor: mod.background_color,
+			color: mod.text_color,
+		}),
+		[mod.identifier],
+	);
 
-	const handleRowClick = (e: React.MouseEvent) => {
-		if (sort_by === 'load_order' && onSelect && !isSeparator(mod)) {
-			if (e.shiftKey && lastSelectedId) {
-				selectRange(lastSelectedId, id);
-			} else {
-				onSelect(id, e.ctrlKey);
-				if (setLastSelectedId) {
+	const handleRowClick = useCallback(
+		(e: React.MouseEvent) => {
+			if (sort_by === 'load_order' && !isSeparator(mod)) {
+				if (e.shiftKey && lastSelectedId) {
+					selectRange(lastSelectedId, id);
+				} else {
+					onSelect(id, e.ctrlKey);
 					setLastSelectedId(id);
 				}
 			}
-		}
-	};
+		},
+		[sort_by, mod.identifier, lastSelectedId, id],
+	);
 
-	const showViolation = isSortingEnabled && hasViolation;
+	const onContextOpen = useMemo(
+		() => (isOpen: boolean) => {
+			if (isOpen) {
+				onSelect(id, false);
+			}
+		},
+		[onSelect, id],
+	);
 
-	const onContextOpen = (isOpen: boolean) => {
-		if (isOpen) {
-			onSelect(id, false);
-		}
-	};
+	const rowClassName = useMemo(
+		() =>
+			`flex mod-row hover:bg-muted/50 py-1.5 min-h-[${PreviewImgSizeToRowHeight[preview_size as keyof typeof PreviewImgSizeToRowHeight]}px] border-b border-border/70 ${
+				isSelected ? '!ring-1 !ring-blue-800 !bg-blue-500/10' : ''
+			} ${
+				showViolation
+					? 'ring-1 ring-red-500 bg-red-50 dark:bg-red-900/20'
+					: ''
+			} cursor-pointer`,
+		[isSelected, showViolation, preview_size],
+	);
+
+	const dependentModsArray = useMemo(
+		() =>
+			dependentMods && dependentMods.size > 0
+				? Array.from(dependentMods)
+				: undefined,
+		[dependentMods],
+	);
+
+	const sortableProps = useMemo(
+		() => ({
+			attributes,
+			listeners,
+			style: {
+				transform: isSortingEnabled
+					? CSS.Transform.toString(transform)
+					: undefined,
+				transition: isSortingEnabled ? transition : undefined,
+				opacity: isSortingEnabled && isDragging ? 0.5 : 1,
+			},
+		}),
+		[
+			isSortingEnabled,
+			transform,
+			transition,
+			isDragging,
+			attributes,
+			listeners,
+		],
+	);
 
 	return (
 		<ContextMenu onOpenChange={onContextOpen}>
 			<ContextMenuTrigger asChild>
-				<TableRow
+				<div
 					ref={setNodeRef}
 					style={{
 						...style,
@@ -116,30 +179,17 @@ const RowComponent = ({
 					}}
 					key={mod.identifier}
 					onClick={handleRowClick}
-					className={`${isSelected ? '!ring-1 !ring-blue-800 !bg-blue-500/10' : ''} ${
-						showViolation
-							? 'ring-1 ring-red-500 bg-red-50 dark:bg-red-900/20'
-							: ''
-					} cursor-pointer`}
+					className={rowClassName}
 				>
-					<TableCell
-						className={`select-none w-[40px] ${
-							isSortingEnabled ? 'cursor-move' : 'cursor-default'
-						}`}
-						{...(isSortingEnabled ? attributes : {})}
-						{...(isSortingEnabled ? listeners : {})}
-					>
-						<div className="flex items-center justify-center h-full relative">
-							<GripVerticalIcon
-								className={`h-4 w-4 text-muted-foreground dark:text-primary/60 ${
-									isSortingEnabled ? '' : 'opacity-50'
-								}`}
-							/>
-							{showViolation && (
-								<div className="absolute left-0 h-full w-1 bg-red-500"></div>
-							)}
-						</div>
-					</TableCell>
+					<Sort
+						mod={mod}
+						id={id}
+						isSelected={isSelected}
+						onSelect={onSelect}
+						setLastSelectedId={setLastSelectedId}
+						{...sortableProps}
+					/>
+
 					<Order mod={mod} modIndex={modIndex} />
 					<Selection mod={mod} />
 					<Type mod={mod} />
@@ -147,11 +197,7 @@ const RowComponent = ({
 						mod={mod}
 						hasViolation={showViolation}
 						dependentCount={dependentMods?.size}
-						dependentModIds={
-							dependentMods && dependentMods.size > 0
-								? Array.from(dependentMods)
-								: undefined
-						}
+						dependentModIds={dependentModsArray}
 					/>
 					<Category mod={mod} />
 					{selectedGame!.slug !== 'mbbl' && <Conflict mod={mod} />}
@@ -163,7 +209,7 @@ const RowComponent = ({
 						mod={mod as ModItem}
 						ModActionRenderer={ModActionDropdownRenderer}
 					/>
-				</TableRow>
+				</div>
 			</ContextMenuTrigger>
 			<ContextMenuContent>
 				<Actions
@@ -176,14 +222,14 @@ const RowComponent = ({
 };
 
 export const Row = memo(RowComponent, (prevProps, nextProps) => {
-	return (
-		prevProps.mod.identifier === nextProps.mod.identifier &&
-		prevProps.modIndex === nextProps.modIndex &&
-		prevProps.isSelected === nextProps.isSelected &&
-		prevProps.lastSelectedId === nextProps.lastSelectedId &&
-		prevProps.hasViolation === nextProps.hasViolation &&
-		areSetsSame(prevProps.dependentMods, nextProps.dependentMods)
-	);
+	if (prevProps.mod !== nextProps.mod) return false;
+	if (prevProps.modIndex !== nextProps.modIndex) return false;
+	if (prevProps.isSelected !== nextProps.isSelected) return false;
+	if (prevProps.lastSelectedId !== nextProps.lastSelectedId) return false;
+	if (prevProps.hasViolation !== nextProps.hasViolation) return false;
+	if (!areSetsSame(prevProps.dependentMods, nextProps.dependentMods))
+		return false;
+	return true;
 });
 
 function areSetsSame(a?: Set<string>, b?: Set<string>): boolean {

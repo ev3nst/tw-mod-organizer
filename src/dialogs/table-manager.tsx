@@ -1,3 +1,5 @@
+import { useShallow } from 'zustand/react/shallow';
+
 import {
 	Dialog,
 	DialogContent,
@@ -29,27 +31,45 @@ const checkboxClass = `
 	`;
 
 function TableManagerDialog() {
-	const selectedGame = settingStore(state => state.selectedGame);
-
-	const toggle_type = settingStore(state => state.toggle_type);
-	const toggle_category = settingStore(state => state.toggle_category);
-	const toggle_conflict = settingStore(state => state.toggle_conflict);
-	const toggle_version = settingStore(state => state.toggle_version);
-	const toggle_creator = settingStore(state => state.toggle_creator);
-	const toggle_created_at = settingStore(state => state.toggle_created_at);
-	const toggle_updated_at = settingStore(state => state.toggle_updated_at);
-	const setColumnSelection = settingStore(state => state.setColumnSelection);
-
-	const setSortBy = settingStore(state => state.setSortBy);
-	const setSortByDirection = settingStore(state => state.setSortByDirection);
-	const sort_by = settingStore(state => state.sort_by);
-	const sort_by_direction = settingStore(state => state.sort_by_direction);
-
-	const preview_size = settingStore(state => state.preview_size);
-	const setPreviewSize = settingStore(state => state.setPreviewSize);
-
-	const tableManagerOpen = settingStore(state => state.tableManagerOpen);
-	const toggleTableManager = settingStore(state => state.toggleTableManager);
+	const {
+		selectedGame,
+		toggle_type,
+		toggle_category,
+		toggle_conflict,
+		toggle_version,
+		toggle_creator,
+		toggle_created_at,
+		toggle_updated_at,
+		setColumnSelection,
+		sort_by,
+		sort_by_direction,
+		setSortBy,
+		setSortByDirection,
+		preview_size,
+		setPreviewSize,
+		tableManagerOpen,
+		toggleTableManager,
+	} = settingStore(
+		useShallow(state => ({
+			selectedGame: state.selectedGame,
+			toggle_type: state.toggle_type,
+			toggle_category: state.toggle_category,
+			toggle_conflict: state.toggle_conflict,
+			toggle_version: state.toggle_version,
+			toggle_creator: state.toggle_creator,
+			toggle_created_at: state.toggle_created_at,
+			toggle_updated_at: state.toggle_updated_at,
+			setColumnSelection: state.setColumnSelection,
+			sort_by: state.sort_by,
+			sort_by_direction: state.sort_by_direction,
+			setSortBy: state.setSortBy,
+			setSortByDirection: state.setSortByDirection,
+			preview_size: state.preview_size,
+			setPreviewSize: state.setPreviewSize,
+			tableManagerOpen: state.tableManagerOpen,
+			toggleTableManager: state.toggleTableManager,
+		})),
+	);
 
 	return (
 		<Dialog

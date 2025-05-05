@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import { RefreshCwIcon } from 'lucide-react';
 
 import { Button } from '@/components/button';
@@ -7,11 +8,21 @@ import { settingStore } from '@/lib/store/setting';
 import { toastError } from '@/lib/utils';
 
 export const Refresh = () => {
-	const loading = settingStore(state => state.loading);
-	const isGameRunning = settingStore(state => state.isGameRunning);
-	const shouldLockScreen = settingStore(state => state.shouldLockScreen);
-	const init_reload = settingStore(state => state.init_reload);
-	const setInitReload = settingStore(state => state.setInitReload);
+	const {
+		loading,
+		isGameRunning,
+		shouldLockScreen,
+		init_reload,
+		setInitReload,
+	} = settingStore(
+		useShallow(state => ({
+			loading: state.loading,
+			isGameRunning: state.isGameRunning,
+			shouldLockScreen: state.shouldLockScreen,
+			init_reload: state.init_reload,
+			setInitReload: state.setInitReload,
+		})),
+	);
 
 	const handleRefresh = () => {
 		try {

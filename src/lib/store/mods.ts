@@ -53,29 +53,32 @@ type ModsStore = {
 	setDownloadedModMeta: (downloadedModMeta: DownloadedModMeta) => void;
 };
 
-export const modsStore = create<ModsStore>((set, get) => ({
-	installModItemOpen: false,
-	setInstallModItemOpen: installModItemOpen => set({ installModItemOpen }),
-	mods: [],
-	setMods: mods => set({ mods }),
-	removeModOpen: false,
-	toggleModRemove: () => {
-		const removeModOpen = !get().removeModOpen;
-		set({ removeModOpen });
-	},
-	selectedMod: {
-		title: '',
-		mod_file: '',
-	} as any,
-	setSelectedMod: selectedMod => {
-		set({ selectedMod });
-	},
-	downloadedArchivePath: '',
-	setDownloadedArchivePath: downloadedArchivePath => {
-		set({ downloadedArchivePath });
-	},
-	downloadedModMeta: {},
-	setDownloadedModMeta: downloadedModMeta => {
-		set({ downloadedModMeta });
-	},
-}));
+export const modsStore = create<ModsStore>(
+	(set, get): ModsStore => ({
+		installModItemOpen: false,
+		setInstallModItemOpen: installModItemOpen =>
+			set({ installModItemOpen }),
+		mods: [],
+		setMods: mods => set({ mods }),
+		removeModOpen: false,
+		toggleModRemove: () => {
+			const removeModOpen = !get().removeModOpen;
+			set({ removeModOpen });
+		},
+		selectedMod: {
+			title: '',
+			mod_file: '',
+		} as any,
+		setSelectedMod: selectedMod => {
+			set({ selectedMod });
+		},
+		downloadedArchivePath: '',
+		setDownloadedArchivePath: downloadedArchivePath => {
+			set({ downloadedArchivePath });
+		},
+		downloadedModMeta: {},
+		setDownloadedModMeta: downloadedModMeta => {
+			set({ downloadedModMeta });
+		},
+	}),
+);

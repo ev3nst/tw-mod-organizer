@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { SquareXIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -33,118 +34,127 @@ import {
 } from '@/lib/utils';
 
 export const Play = () => {
-	const setSaveFileDialogOpen = saveFilesStore(
-		state => state.setSaveFileDialogOpen,
-	);
-	const setSelectedSaveFile = saveFilesStore(
-		state => state.setSelectedSaveFile,
+	const {
+		setSaveFileDialogOpen,
+		setSelectedSaveFile,
+		setCurrentlyRunningMods,
+	} = saveFilesStore(
+		useShallow(state => ({
+			setSaveFileDialogOpen: state.setSaveFileDialogOpen,
+			setSelectedSaveFile: state.setSelectedSaveFile,
+			setCurrentlyRunningMods: state.setCurrentlyRunningMods,
+		})),
 	);
 
-	const isGameLoading = settingStore(state => state.isGameLoading);
-	const setIsGameLoading = settingStore(state => state.setIsGameLoading);
-	const isGameRunning = settingStore(state => state.isGameRunning);
-	const shouldLockScreen = settingStore(state => state.shouldLockScreen);
-	const setIsGameRunning = settingStore(state => state.setIsGameRunning);
-	const selectedGame = settingStore(state => state.selectedGame);
+	const {
+		isGameLoading,
+		setIsGameLoading,
+		isGameRunning,
+		shouldLockScreen,
+		setIsGameRunning,
+		selectedGame,
+	} = settingStore(
+		useShallow(state => ({
+			isGameLoading: state.isGameLoading,
+			setIsGameLoading: state.setIsGameLoading,
+			isGameRunning: state.isGameRunning,
+			shouldLockScreen: state.shouldLockScreen,
+			setIsGameRunning: state.setIsGameRunning,
+			selectedGame: state.selectedGame,
+		})),
+	);
 
 	const mods = modsStore(state => state.mods);
 	const modOrderData = modOrderStore(state => state.data);
-	const saveFile = modActivationStore(state => state.saveFile);
-	const modActivationData = modActivationStore(state => state.data);
-	const setCurrentlyRunningMods = saveFilesStore(
-		state => state.setCurrentlyRunningMods,
+
+	const { saveFile, modActivationData } = modActivationStore(
+		useShallow(state => ({
+			saveFile: state.saveFile,
+			modActivationData: state.data,
+		})),
 	);
 
-	useEffect(() => {
-		const checkIfGameIsRunning = async () => {
-			try {
-				const result = await api.is_game_running(
-					selectedGame!.steam_id,
-				);
-				if (isGameRunning !== result) {
-					setIsGameRunning(result);
-				}
-			} catch (error) {
-				console.error('Failed to check if the game is running:', error);
+	const checkIfGameIsRunning = useCallback(async () => {
+		try {
+			const result = await api.is_game_running(selectedGame!.steam_id);
+			if (isGameRunning !== result) {
+				setIsGameRunning(result);
 			}
-		};
+		} catch (error) {
+			console.error('Failed to check if the game is running:', error);
+		}
+	}, [selectedGame?.steam_id, isGameRunning]);
 
-		const interval = setInterval(() => checkIfGameIsRunning(), 5000);
+	useEffect(() => {
+		const interval = setInterval(checkIfGameIsRunning, 5000);
 		checkIfGameIsRunning();
-
 		return () => clearInterval(interval);
-	}, [isGameRunning]);
+	}, [checkIfGameIsRunning]);
 
-	const saveGameCompatibilityCheck = async (): Promise<boolean> => {
-		let save_game: string | undefined = '';
-		if (
-			typeof saveFile?.path !== 'undefined' &&
-			saveFile?.path !== null &&
-			saveFile?.path !== '' &&
-			saveFile?.path.includes('\\')
-		) {
-			save_game = saveFile.path.split('\\').pop() as string;
+	const saveGameCompatibilityCheck =
+		useCallback(async (): Promise<boolean> => {
+			if (!saveFile?.path || !saveFile.path.includes('\\')) {
+				return true;
+			}
+
+			const save_game = saveFile.path.split('\\').pop();
 			let save_meta_data: any;
+
 			try {
 				save_meta_data = await api.fetch_save_file_meta(
 					selectedGame!.steam_id,
-					save_game,
+					save_game as string,
 				);
-			} catch (_e) {}
-			if (!save_meta_data) {
+			} catch (_e) {
 				toast.warning(
 					'Save meta file could not be found, therefore compatibility check failed.',
 				);
 				return true;
 			}
 
-			for (
-				let smi = 0;
-				smi < save_meta_data.mod_order_data.length;
-				smi++
-			) {
-				if (save_meta_data.mod_order_data[smi].mod_file === null)
-					continue;
+			if (!save_meta_data) return true;
 
-				const mod = mods.find(
-					m =>
-						m.identifier ===
-						save_meta_data.mod_order_data[smi].identifier,
-				);
+			const isIncompatible = save_meta_data.mod_order_data.some(
+				(saveModData: any) => {
+					if (saveModData.mod_file === null) return false;
 
-				const modOrder = modOrderData.find(
-					mr =>
-						mr.mod_id ===
-						save_meta_data.mod_order_data[smi].identifier,
-				);
+					const mod = mods.find(
+						m => m.identifier === saveModData.identifier,
+					);
+					const modOrder = modOrderData.find(
+						mr => mr.mod_id === saveModData.identifier,
+					);
+					const modActive = modActivationData.find(
+						ma => ma.mod_id === saveModData.identifier,
+					);
 
-				const modActive = modActivationData.find(
-					ma =>
-						ma.mod_id ===
-						save_meta_data.mod_order_data[smi].identifier,
-				);
+					return (
+						!mod ||
+						modOrder?.order !== saveModData.order_index ||
+						modActive?.is_active !== saveModData.is_active
+					);
+				},
+			);
 
-				if (
-					!mod ||
-					modOrder?.order !==
-						save_meta_data.mod_order_data[smi].order_index ||
-					modActive?.is_active !==
-						save_meta_data.mod_order_data[smi].is_active
-				) {
-					setSelectedSaveFile({
-						filename: saveFile.filename,
-						filesize: saveFile.filesize,
-						path: saveFile.path,
-						load_order_data: save_meta_data.mod_order_data,
-					});
-					setSaveFileDialogOpen(true);
-					return false;
-				}
+			if (isIncompatible) {
+				setSelectedSaveFile({
+					filename: saveFile.filename,
+					filesize: saveFile.filesize,
+					path: saveFile.path,
+					load_order_data: save_meta_data.mod_order_data,
+				});
+				setSaveFileDialogOpen(true);
+				return false;
 			}
-		}
 
-		return true;
-	};
+			return true;
+		}, [
+			saveFile,
+			selectedGame?.steam_id,
+			mods,
+			modOrderData,
+			modActivationData,
+		]);
 
 	const handlePlay = async () => {
 		try {
@@ -222,9 +232,11 @@ export const Play = () => {
 		}
 	};
 
-	let playButtonText = 'Play';
-	if (saveFile && saveFile?.path !== '') playButtonText = 'Continue';
-	if (isGameRunning) playButtonText = 'Running';
+	const playButtonText = useMemo(() => {
+		if (isGameRunning) return 'Running';
+		if (saveFile?.path) return 'Continue';
+		return 'Play';
+	}, [isGameRunning, saveFile?.path]);
 
 	return (
 		<SidebarFooter className="mt-auto sticky bottom-0 bg-background pt-2 pb-2 z-10">

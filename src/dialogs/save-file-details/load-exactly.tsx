@@ -1,3 +1,6 @@
+import { useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
+
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/tooltip';
 import { Button } from '@/components/button';
 
@@ -14,26 +17,55 @@ import {
 } from '@/lib/utils';
 
 export const LoadExactly = () => {
-	const setIsGameLoading = settingStore(state => state.setIsGameLoading);
-	const selectedGame = settingStore(state => state.selectedGame);
+	const { setIsGameLoading, selectedGame } = settingStore(
+		useShallow(state => ({
+			setIsGameLoading: state.setIsGameLoading,
+			selectedGame: state.selectedGame,
+		})),
+	);
 
-	const setSaveFileDialogOpen = saveFilesStore(
-		state => state.setSaveFileDialogOpen,
-	);
-	const selectedSaveFile = saveFilesStore(state => state.selectedSaveFile);
-	const setCurrentlyRunningMods = saveFilesStore(
-		state => state.setCurrentlyRunningMods,
-	);
+	const { setSaveFileDialogOpen, selectedSaveFile, setCurrentlyRunningMods } =
+		saveFilesStore(
+			useShallow(state => ({
+				setSaveFileDialogOpen: state.setSaveFileDialogOpen,
+				selectedSaveFile: state.selectedSaveFile,
+				setCurrentlyRunningMods: state.setCurrentlyRunningMods,
+			})),
+		);
 
 	const mods = modsStore(state => state.mods);
-	const missingMods = selectedSaveFile
-		? selectedSaveFile.load_order_data.filter(
-				lr =>
-					!mods.some(m => m.identifier === lr.identifier) &&
-					lr.is_active === true &&
-					lr.mod_file !== null, // Ignore separators
-			)
-		: [];
+	const missingMods = useMemo(
+		() =>
+			selectedSaveFile
+				? selectedSaveFile.load_order_data.filter(
+						lr =>
+							!mods.some(m => m.identifier === lr.identifier) &&
+							lr.is_active === true &&
+							lr.mod_file !== null, // Ignore separators
+					)
+				: [],
+		[selectedSaveFile, mods],
+	);
+
+	const modsFromSave = useMemo(() => {
+		if (!selectedSaveFile?.load_order_data) return [];
+		return selectedSaveFile.load_order_data
+			.filter(lrf => lrf.is_active && lrf.mod_file !== null)
+			.sort((a, b) => a.order_index - b.order_index)
+			.map(lr => {
+				const findMod = mods.find(
+					m => (m as ModItem).mod_file === lr.mod_file,
+				) as ModItem;
+				if (!findMod) {
+					console.error(lr);
+					console.error(mods);
+					throw new Error(
+						'There was an error while setting up required mod list for this save.',
+					);
+				}
+				return findMod;
+			}) as ModItemSeparatorUnion[];
+	}, [selectedSaveFile?.load_order_data, mods]);
 
 	const handleLoadExactly = async () => {
 		if (!selectedSaveFile || !selectedSaveFile.load_order_data) return;
@@ -63,23 +95,6 @@ export const LoadExactly = () => {
 					}
 				}),
 			);
-
-			const modsFromSave = selectedSaveFile.load_order_data
-				.filter(lrf => lrf.is_active && lrf.mod_file !== null)
-				.sort((a, b) => a.order_index - b.order_index)
-				.map(lr => {
-					const findMod = mods.find(
-						m => (m as ModItem).mod_file === lr.mod_file,
-					) as ModItem;
-					if (!findMod) {
-						console.error(lr);
-						console.error(mods);
-						throw new Error(
-							'There was an error while setting up required mod list for this save.',
-						);
-					}
-					return findMod;
-				}) as ModItemSeparatorUnion[];
 
 			switch (selectedGame!.type) {
 				case 'totalwar':

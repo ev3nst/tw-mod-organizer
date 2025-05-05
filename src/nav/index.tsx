@@ -1,3 +1,4 @@
+import { useMemo, useCallback } from 'react';
 import { Link, useLocation } from 'wouter';
 import {
 	DatabaseZapIcon,
@@ -20,7 +21,13 @@ export const AppNav = () => {
 	const selectedGame = settingStore(state => state.selectedGame);
 	const selectedTreeItem = packManagerStore(state => state.selectedTreeItem);
 
-	const renderToolbar = () => {
+	const handleOpenPackFile = useCallback(() => {
+		if (selectedTreeItem?.pack_file_path) {
+			api.open_pack_file(selectedTreeItem.pack_file_path);
+		}
+	}, [selectedTreeItem?.pack_file_path]);
+
+	const toolbar = useMemo(() => {
 		if (selectedGame?.type !== 'totalwar') return null;
 
 		if (wouterLocation === '/pack-viewer') {
@@ -35,11 +42,7 @@ export const AppNav = () => {
 							'string' && (
 							<div
 								className="hover:cursor-pointer hover:brightness-125"
-								onClick={() =>
-									api.open_pack_file(
-										selectedTreeItem.pack_file_path,
-									)
-								}
+								onClick={handleOpenPackFile}
 							>
 								<ExternalLinkIcon className="w-4 h-4" />
 							</div>
@@ -51,13 +54,16 @@ export const AppNav = () => {
 				</div>
 			);
 		}
-	};
+		return null;
+	}, [
+		wouterLocation,
+		selectedGame?.type,
+		selectedTreeItem,
+		handleOpenPackFile,
+	]);
 
-	return (
-		<div className="flex justify-between items-center border-b">
-			{wouterLocation === '/' && <ProfileSwitcher />}
-			{renderToolbar()}
-
+	const navigationLinks = useMemo(
+		() => (
 			<div className="flex -space-x-px flex-shrink-0">
 				<Link
 					to="/"
@@ -116,6 +122,15 @@ export const AppNav = () => {
 					</>
 				)}
 			</div>
+		),
+		[wouterLocation, selectedGame?.type],
+	);
+
+	return (
+		<div className="flex justify-between items-center border-b">
+			{wouterLocation === '/' && <ProfileSwitcher />}
+			{toolbar}
+			{navigationLinks}
 		</div>
 	);
 };

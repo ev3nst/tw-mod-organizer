@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { toast } from 'sonner';
 
 import {
@@ -19,14 +20,20 @@ function MetaInformationDialog() {
 	const [title, setTitle] = useState<string>('');
 	const [categories, setCategories] = useState<string>('');
 
-	const metaInfoOpen = modMetaStore(state => state.metaInfoOpen);
-	const selectedMod = modMetaStore(state => state.selectedMod);
-	const toggleMetaInfo = modMetaStore(state => state.toggleMetaInfo);
-	const metaData = modMetaStore(state => state.data);
-	const setMetaData = modMetaStore(state => state.setData);
+	const { metaInfoOpen, selectedMod, toggleMetaInfo, metaData, setMetaData } =
+		modMetaStore(
+			useShallow(state => ({
+				metaInfoOpen: state.metaInfoOpen,
+				selectedMod: state.selectedMod,
+				toggleMetaInfo: state.toggleMetaInfo,
+				metaData: state.data,
+				setMetaData: state.setData,
+			})),
+		);
 
-	const selectedModMeta = metaData.find(
-		md => md.mod_id === selectedMod.identifier,
+	const selectedModMeta = useMemo(
+		() => metaData.find(md => md.mod_id === selectedMod.identifier),
+		[metaData, selectedMod.identifier],
 	);
 
 	let titlePlaceholder = selectedMod.title;

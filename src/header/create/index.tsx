@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import { PlusIcon } from 'lucide-react';
 
 import {
@@ -18,12 +19,18 @@ import { ImportCollection } from './import-collection';
 import { CreateSeparator } from './create-separator';
 
 export const Create = () => {
-	const isGameRunning = settingStore(state => state.isGameRunning);
-	const shouldLockScreen = settingStore(state => state.shouldLockScreen);
+	const { isGameRunning, shouldLockScreen } = settingStore(
+		useShallow(state => ({
+			isGameRunning: state.isGameRunning,
+			shouldLockScreen: state.shouldLockScreen,
+		})),
+	);
 
-	const installModItemOpen = modsStore(state => state.installModItemOpen);
-	const setInstallModItemOpen = modsStore(
-		state => state.setInstallModItemOpen,
+	const { installModItemOpen, setInstallModItemOpen } = modsStore(
+		useShallow(state => ({
+			installModItemOpen: state.installModItemOpen,
+			setInstallModItemOpen: state.setInstallModItemOpen,
+		})),
 	);
 
 	return (

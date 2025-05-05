@@ -1,11 +1,5 @@
-import {
-	lazy,
-	Suspense,
-	useEffect,
-	useState,
-	useCallback,
-	useRef,
-} from 'react';
+import { lazy, Suspense, useEffect, useState, useCallback } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { Route, Switch } from 'wouter';
 
 import { SidebarInset, SidebarProvider } from '@/components/sidebar';
@@ -32,8 +26,6 @@ const SaveFileDetailsDialog = lazy(() => import('@/dialogs/save-file-details'));
 const TableManagerDialog = lazy(() => import('@/dialogs/table-manager'));
 const VersionTrackingDialog = lazy(() => import('@/dialogs/version-tracking'));
 
-import { SettingModel } from '@/lib/store/setting';
-
 import { AppData } from './app-data';
 import { AppHeader } from './header';
 import { AppSidebar } from './sidebar';
@@ -44,92 +36,22 @@ const PackViewer = lazy(() => import('@/pack/viewer'));
 const PackFilesTree = lazy(() => import('@/pack/files-tree'));
 const PackConflicts = lazy(() => import('@/pack/conflicts'));
 
-function AppContent() {
-	const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-	const scrollPositionRef = useRef<number>(0);
-	const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-	const restoreScrollPosition = useCallback(async () => {
-		try {
-			const setting = await SettingModel.retrieve();
-			scrollPositionRef.current = setting.mod_table_scroll || 0;
-
-			requestAnimationFrame(() => {
-				if (scrollContainerRef.current) {
-					scrollContainerRef.current.scrollTop =
-						scrollPositionRef.current;
-				}
-			});
-		} catch (error) {
-			console.error('Failed to load scroll position:', error);
-		}
-	}, []);
-
-	const handleScroll = useCallback(
-		async (e: React.UIEvent<HTMLDivElement>) => {
-			const position = e.currentTarget.scrollTop;
-
-			if (scrollTimeoutRef.current) {
-				clearTimeout(scrollTimeoutRef.current);
-			}
-
-			scrollTimeoutRef.current = setTimeout(async () => {
-				try {
-					const setting = await SettingModel.retrieve();
-					setting.mod_table_scroll = position;
-					await setting.save();
-				} catch (error) {
-					console.error('Failed to save scroll position:', error);
-				}
-			}, 100);
-		},
-		[],
-	);
-
-	useEffect(() => {
-		return () => {
-			if (scrollTimeoutRef.current) {
-				clearTimeout(scrollTimeoutRef.current);
-			}
-		};
-	}, []);
-
-	return (
-		<AppData onContentLoaded={restoreScrollPosition}>
-			<div
-				className="absolute inset-0 overflow-y-auto dark-scrollbar"
-				ref={scrollContainerRef}
-				onScroll={handleScroll}
-			>
-				<AppNav />
-				<Suspense fallback={<Loading />}>
-					<Switch>
-						<Route path="/" component={ModListSortableTable} />
-						<Route path="/pack-viewer" component={PackViewer} />
-						<Route
-							path="/pack-files-tree"
-							component={PackFilesTree}
-						/>
-						<Route
-							path="/pack-conflicts"
-							component={PackConflicts}
-						/>
-					</Switch>
-				</Suspense>
-			</div>
-		</AppData>
-	);
-}
-
 function App() {
 	const [fetchAppManageLoading, setFetchAppManageLoading] = useState(true);
 
-	const setLoading = settingStore(state => state.setLoading);
-	const selectedGame = settingStore(state => state.selectedGame);
+	const { setLoading, selectedGame } = settingStore(
+		useShallow(state => ({
+			setLoading: state.setLoading,
+			selectedGame: state.selectedGame,
+		})),
+	);
 
-	const setProfile = profileStore(state => state.setProfile);
-	const setProfiles = profileStore(state => state.setProfiles);
-
+	const { setProfile, setProfiles } = profileStore(
+		useShallow(state => ({
+			setProfile: state.setProfile,
+			setProfiles: state.setProfiles,
+		})),
+	);
 	const init = useCallback(async () => {
 		try {
 			const profile = await ProfileModel.currentProfile(
@@ -160,7 +82,31 @@ function App() {
 					<AppHeader />
 					<div className="flex flex-1">
 						<SidebarInset>
-							<AppContent />
+							<AppData>
+								<div className="h-full overflow-hidden">
+									<AppNav />
+									<Suspense fallback={<Loading />}>
+										<Switch>
+											<Route
+												path="/"
+												component={ModListSortableTable}
+											/>
+											<Route
+												path="/pack-viewer"
+												component={PackViewer}
+											/>
+											<Route
+												path="/pack-files-tree"
+												component={PackFilesTree}
+											/>
+											<Route
+												path="/pack-conflicts"
+												component={PackConflicts}
+											/>
+										</Switch>
+									</Suspense>
+								</div>
+							</AppData>
 							<Suspense fallback={<Loading />}>
 								<TableManagerDialog />
 								<VersionTrackingDialog />

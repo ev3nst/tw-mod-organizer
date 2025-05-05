@@ -1,4 +1,5 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import {
 	AppWindowIcon,
 	ArrowRightIcon,
@@ -12,7 +13,6 @@ import {
 	UserIcon,
 } from 'lucide-react';
 
-import { TableCell } from '@/components/table';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -46,6 +46,8 @@ import {
 } from '@/lib/store/mod_separator';
 import { modMetaStore } from '@/lib/store/mod_meta';
 import { toastError } from '@/lib/utils';
+
+import { TABLE_DIMENSIONS } from '@/modlist/utils';
 
 export const Actions = memo(
 	({
@@ -82,36 +84,50 @@ const SeparatorActions = ({
 	mod: ModSeparatorItem;
 	ModActionRenderer: any;
 }) => {
-	const { init_reload, setInitReload } = settingStore();
-
-	const separators = modSeparatorStore(state => state.data);
-	const setSeparators = modSeparatorStore(state => state.setData);
-	const setSelectedSeparator = modSeparatorStore(
-		state => state.setSelectedSeparator,
-	);
-	const toggleEditSeparator = modSeparatorStore(
-		state => state.toggleEditSeparator,
+	const { init_reload, setInitReload } = settingStore(
+		useShallow(state => ({
+			init_reload: state.init_reload,
+			setInitReload: state.setInitReload,
+		})),
 	);
 
-	const toggleSetPriority = modOrderStore(state => state.toggleSetPriority);
-	const setSelectedPriorityMod = modOrderStore(state => state.setSelectedMod);
+	const {
+		separators,
+		setSeparators,
+		setSelectedSeparator,
+		toggleEditSeparator,
+	} = modSeparatorStore(
+		useShallow(state => ({
+			separators: state.data,
+			setSeparators: state.setData,
+			setSelectedSeparator: state.setSelectedSeparator,
+			toggleEditSeparator: state.toggleEditSeparator,
+		})),
+	);
+
+	const { toggleSetPriority, setSelectedPriorityMod } = modOrderStore(
+		useShallow(state => ({
+			toggleSetPriority: state.toggleSetPriority,
+			setSelectedPriorityMod: state.setSelectedMod,
+		})),
+	);
 
 	const handleSetPriority = useCallback(() => {
 		setSelectedPriorityMod(mod);
 		toggleSetPriority();
-	}, [mod, setSelectedPriorityMod, toggleSetPriority]);
+	}, [mod.identifier]);
 
 	const handleDelete = useCallback(() => {
 		setSeparators(
 			[...separators].filter(fi => fi.identifier !== mod.identifier),
 		);
 		setInitReload(!init_reload);
-	}, [separators, mod.identifier, init_reload, setSeparators, setInitReload]);
+	}, [separators, mod.identifier, init_reload]);
 
 	const handleEdit = useCallback(() => {
 		setSelectedSeparator(mod);
 		toggleEditSeparator();
-	}, [mod, setSelectedSeparator, toggleEditSeparator]);
+	}, [mod.identifier]);
 
 	return (
 		<ModActionRenderer
@@ -133,17 +149,28 @@ const ModActions = ({
 }) => {
 	const selectedGame = settingStore(state => state.selectedGame);
 
-	const toggleMetaInfo = modMetaStore(state => state.toggleMetaInfo);
-	const setSelectedMetaMod = modMetaStore(state => state.setSelectedMod);
-
-	const toggleSetPriority = modOrderStore(state => state.toggleSetPriority);
-	const setSelectedPriorityMod = modOrderStore(state => state.setSelectedMod);
-	const toggleSendToSeparator = modOrderStore(
-		state => state.toggleSendToSeparator,
+	const { toggleMetaInfo, setSelectedMetaMod } = modMetaStore(
+		useShallow(state => ({
+			toggleMetaInfo: state.toggleMetaInfo,
+			setSelectedMetaMod: state.setSelectedMod,
+		})),
 	);
 
-	const toggleModRemove = modsStore(state => state.toggleModRemove);
-	const setSelectedRemoveMod = modsStore(state => state.setSelectedMod);
+	const { toggleSetPriority, setSelectedPriorityMod, toggleSendToSeparator } =
+		modOrderStore(
+			useShallow(state => ({
+				toggleSetPriority: state.toggleSetPriority,
+				setSelectedPriorityMod: state.setSelectedMod,
+				toggleSendToSeparator: state.toggleSendToSeparator,
+			})),
+		);
+
+	const { toggleModRemove, setSelectedRemoveMod } = modsStore(
+		useShallow(state => ({
+			toggleModRemove: state.toggleModRemove,
+			setSelectedRemoveMod: state.setSelectedMod,
+		})),
+	);
 
 	const handleOpenModUrl = useCallback(
 		async (inSteamClient: boolean = false) => {
@@ -164,32 +191,39 @@ const ModActions = ({
 				toastError(error);
 			}
 		},
-		[mod],
+		[mod.identifier],
 	);
 
 	const handleMetaInfo = useCallback(() => {
 		setSelectedMetaMod(mod);
 		toggleMetaInfo();
-	}, [mod, setSelectedMetaMod, toggleMetaInfo]);
+	}, [mod.identifier]);
 
 	const handleSetPriority = useCallback(() => {
 		setSelectedPriorityMod(mod);
 		toggleSetPriority();
-	}, [mod, setSelectedPriorityMod, toggleSetPriority]);
+	}, [mod.identifier]);
 
 	const handleSendToSeparator = useCallback(() => {
 		setSelectedPriorityMod(mod);
 		toggleSendToSeparator();
-	}, [mod, setSelectedPriorityMod, toggleSendToSeparator]);
+	}, [mod.identifier]);
 
 	const handleRemove = useCallback(() => {
 		setSelectedRemoveMod(mod);
 		toggleModRemove();
-	}, [mod, setSelectedRemoveMod, toggleModRemove]);
+	}, [mod.identifier]);
 
-	const showExternalLink =
-		mod.item_type === 'steam_mod' || (mod.url !== null && mod.url !== '');
-	const deleteText = mod.item_type === 'steam_mod' ? 'Unsubscribe' : 'Delete';
+	const { showExternalLink, deleteText } = useMemo(
+		() => ({
+			showExternalLink:
+				mod.item_type === 'steam_mod' ||
+				(mod.url !== null && mod.url !== ''),
+			deleteText:
+				mod.item_type === 'steam_mod' ? 'Unsubscribe' : 'Delete',
+		}),
+		[mod.item_type, mod.url],
+	);
 
 	return (
 		<ModActionRenderer
@@ -243,7 +277,7 @@ export const ModActionDropdownRenderer = ({
 }) => {
 	if (isModSeparator) {
 		return (
-			<TableCell className="w-[40px]" style={cellStyle}>
+			<div style={{ ...cellStyle, ...TABLE_DIMENSIONS.ACTIONS }}>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<div className="w-full flex items-center justify-center p-0">
@@ -276,7 +310,7 @@ export const ModActionDropdownRenderer = ({
 						</DropdownMenuGroup>
 					</DropdownMenuContent>
 				</DropdownMenu>
-			</TableCell>
+			</div>
 		);
 	}
 
@@ -288,7 +322,7 @@ export const ModActionDropdownRenderer = ({
 	const currentMod = mod as ModItem;
 
 	return (
-		<TableCell className="w-[40px]">
+		<div style={TABLE_DIMENSIONS.ACTIONS}>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<div className="w-full flex items-center justify-center p-0">
@@ -438,7 +472,7 @@ export const ModActionDropdownRenderer = ({
 					</DropdownMenuGroup>
 				</DropdownMenuContent>
 			</DropdownMenu>
-		</TableCell>
+		</div>
 	);
 };
 

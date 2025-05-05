@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { CheckIcon, XIcon } from 'lucide-react';
 
 import {
@@ -41,37 +43,53 @@ const DependencyModComponent = ({
 
 function RequiredItemsDialog() {
 	const mods = modsStore(state => state.mods);
-	const modActivationData = modActivationStore(state => state.data);
-	const setModActivation = modActivationStore(state => state.setData);
-	const requiredItemsModal = modActivationStore(
-		state => state.requiredItemsModal,
-	);
-	const setRequiredItemsModal = modActivationStore(
-		state => state.setRequiredItemsModal,
-	);
-	const setRequiredItemsMod = modActivationStore(
-		state => state.setRequiredItemsMod,
-	);
-	const requiredItemsMod = modActivationStore(
-		state => state.requiredItemsMod,
+
+	const {
+		modActivationData,
+		setModActivation,
+		requiredItemsModal,
+		setRequiredItemsModal,
+		setRequiredItemsMod,
+		requiredItemsMod,
+	} = modActivationStore(
+		useShallow(state => ({
+			modActivationData: state.data,
+			setModActivation: state.setData,
+			requiredItemsModal: state.requiredItemsModal,
+			setRequiredItemsModal: state.setRequiredItemsModal,
+			setRequiredItemsMod: state.setRequiredItemsMod,
+			requiredItemsMod: state.requiredItemsMod,
+		})),
 	);
 
 	if (!requiredItemsMod) return null;
 
-	const { modLookup, nonSeparatorMods } = buildModLookup(mods);
-	const activatedMods = new Set(
-		modActivationData.filter(ma => ma.is_active).map(ma => ma.mod_id),
+	const { modLookup, nonSeparatorMods } = useMemo(
+		() => buildModLookup(mods),
+		[mods],
+	);
+	const activatedMods = useMemo(
+		() =>
+			new Set(
+				modActivationData
+					.filter(ma => ma.is_active)
+					.map(ma => ma.mod_id),
+			),
+		[modActivationData],
 	);
 
 	const isActive = activatedMods.has(requiredItemsMod.identifier);
-	const cascadingMods = getCascadingDependencies(
-		requiredItemsMod,
-		modLookup,
-		nonSeparatorMods,
-		isActive ? 'dependencies' : 'dependents',
+	const dependencyMods = useMemo(
+		() =>
+			getCascadingDependencies(
+				requiredItemsMod,
+				modLookup,
+				nonSeparatorMods,
+				isActive ? 'dependencies' : 'dependents',
+			),
+		[requiredItemsMod, modLookup, nonSeparatorMods, isActive],
 	);
 
-	const dependencyMods = cascadingMods;
 	const closeModal = () => {
 		setRequiredItemsModal(false);
 		setRequiredItemsMod(undefined);

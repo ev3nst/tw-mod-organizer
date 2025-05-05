@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState, useCallback } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import { appConfigDir } from '@tauri-apps/api/path';
 
@@ -24,34 +25,42 @@ const toasterOptions = {
 function AppInit() {
 	const [initLoading, setInitLoading] = useState(true);
 
-	const setGames = settingStore(state => state.setGames);
-	const setSelectedGame = settingStore(state => state.setSelectedGame);
-	const selectedGame = settingStore(state => state.selectedGame);
-	const setSteamLibraryPaths = settingStore(
-		state => state.setSteamLibraryPaths,
-	);
-	const setModDownloadPath = settingStore(state => state.setModDownloadPath);
-	const setModInstallationPath = settingStore(
-		state => state.setModInstallationPath,
-	);
-	const setNexusAuthApi = settingStore(state => state.setNexusAuthApi);
-	const setNexusAuthParams = settingStore(state => state.setNexusAuthParams);
-	const setColumnSelection = settingStore(state => state.setColumnSelection);
-	const setSortBy = settingStore(state => state.setSortBy);
-	const setSortByDirection = settingStore(state => state.setSortByDirection);
-	const setPreviewSize = settingStore(state => state.setPreviewSize);
-
-	const setIncludeHiddenDownloads = settingStore(
-		state => state.setIncludeHiddenDownloads,
-	);
-	const setCompactArchiveNames = settingStore(
-		state => state.setCompactArchiveNames,
-	);
-	const setCompactSaveNames = settingStore(
-		state => state.setCompactSaveNames,
-	);
-	const setSidebarAccordion = settingStore(
-		state => state.setSidebarAccordion,
+	const {
+		setGames,
+		setSelectedGame,
+		selectedGame,
+		setSteamLibraryPaths,
+		setModDownloadPath,
+		setModInstallationPath,
+		setNexusAuthApi,
+		setNexusAuthParams,
+		setColumnSelection,
+		setSortBy,
+		setSortByDirection,
+		setPreviewSize,
+		setIncludeHiddenDownloads,
+		setCompactArchiveNames,
+		setCompactSaveNames,
+		setSidebarAccordion,
+	} = settingStore(
+		useShallow(state => ({
+			setGames: state.setGames,
+			setSelectedGame: state.setSelectedGame,
+			selectedGame: state.selectedGame,
+			setSteamLibraryPaths: state.setSteamLibraryPaths,
+			setModDownloadPath: state.setModDownloadPath,
+			setModInstallationPath: state.setModInstallationPath,
+			setNexusAuthApi: state.setNexusAuthApi,
+			setNexusAuthParams: state.setNexusAuthParams,
+			setColumnSelection: state.setColumnSelection,
+			setSortBy: state.setSortBy,
+			setSortByDirection: state.setSortByDirection,
+			setPreviewSize: state.setPreviewSize,
+			setIncludeHiddenDownloads: state.setIncludeHiddenDownloads,
+			setCompactArchiveNames: state.setCompactArchiveNames,
+			setCompactSaveNames: state.setCompactSaveNames,
+			setSidebarAccordion: state.setSidebarAccordion,
+		})),
 	);
 
 	const init = useCallback(async () => {

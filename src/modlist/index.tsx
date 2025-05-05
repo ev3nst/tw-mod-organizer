@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import {
 	DndContext,
 	closestCenter,
@@ -7,7 +8,6 @@ import {
 	useSensors,
 	DragEndEvent,
 	DragStartEvent,
-	DragOverlay,
 } from '@dnd-kit/core';
 
 import { modsStore, type ModItem } from '@/lib/store/mods';
@@ -33,6 +33,7 @@ import {
 
 import { ModTable } from './table';
 import { Filter } from './filter';
+import { RowDragOverlay } from './row-drag-overlay';
 
 const ModListSortableTable = () => {
 	const [searchModText, setSearchModText] = useState<string>('');
@@ -41,20 +42,35 @@ const ModListSortableTable = () => {
 	const [dependencyViolations, setDependencyViolations] = useState<
 		Map<string, Set<string>>
 	>(new Map());
+	const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
 
 	const sort_by = settingStore(state => state.sort_by);
 
-	const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
-	const mods = modsStore(state => state.mods);
-	const setMods = modsStore(state => state.setMods);
-	const toggleModRemove = modsStore(state => state.toggleModRemove);
+	const { mods, setMods, toggleModRemove } = modsStore(
+		useShallow(state => ({
+			mods: state.mods,
+			setMods: state.setMods,
+			toggleModRemove: state.toggleModRemove,
+		})),
+	);
 
-	const modOrderData = modOrderStore(state => state.data);
-	const setModOrder = modOrderStore(state => state.setData);
-	const selectedRows = modOrderStore(state => state.selectedRows);
-	const setSelectedRows = modOrderStore(state => state.setSelectedRows);
-	const toggleRow = modOrderStore(state => state.toggleRow);
-	const clearSelection = modOrderStore(state => state.clearSelection);
+	const {
+		modOrderData,
+		setModOrder,
+		selectedRows,
+		setSelectedRows,
+		toggleRow,
+		clearSelection,
+	} = modOrderStore(
+		useShallow(state => ({
+			modOrderData: state.data,
+			setModOrder: state.setData,
+			selectedRows: state.selectedRows,
+			setSelectedRows: state.setSelectedRows,
+			toggleRow: state.toggleRow,
+			clearSelection: state.clearSelection,
+		})),
+	);
 
 	const separators = modSeparatorStore(state => state.data);
 	const metaData = modMetaStore(state => state.data);
@@ -180,15 +196,17 @@ const ModListSortableTable = () => {
 		}
 	}, [sort_by]);
 
-	const filteredMods = useMemo(() => {
-		return filterMods(
-			searchModText,
-			activationFilter,
-			mods,
-			metaData,
-			modActiveData,
-		);
-	}, [mods, searchModText, activationFilter]);
+	const filteredMods = useMemo(
+		() =>
+			filterMods(
+				searchModText,
+				activationFilter,
+				mods,
+				metaData,
+				modActiveData,
+			),
+		[mods, searchModText, activationFilter, metaData, modActiveData],
+	);
 
 	const separatorPositions = useMemo(() => {
 		const positions: { id: string; index: number }[] = [];
@@ -292,15 +310,18 @@ const ModListSortableTable = () => {
 					result = sortMods(mods, active, over);
 				}
 
-				if (result.modOrder !== modOrderData) {
-					setModOrder(result.modOrder);
-				}
-				if (result.mods !== mods) {
-					setMods(result.mods);
-				}
+				// Delay the state update by one frame
+				requestAnimationFrame(() => {
+					if (result.modOrder !== modOrderData) {
+						setModOrder(result.modOrder);
+					}
+					if (result.mods !== mods) {
+						setMods(result.mods);
+					}
+				});
 			}
 		},
-		[mods, separators, selectedRows, setModOrder, setMods],
+		[mods, separators, selectedRows, setModOrder, setMods, modOrderData],
 	);
 
 	const modIndices = useMemo(() => {
@@ -322,7 +343,7 @@ const ModListSortableTable = () => {
 	}, [activeId, selectedRows]);
 
 	return (
-		<div className="relative flex-1 mb-[41px]">
+		<div className="relative flex-1 h-full">
 			<DndContext
 				sensors={sensors}
 				collisionDetection={closestCenter}
@@ -340,30 +361,11 @@ const ModListSortableTable = () => {
 					dependencyViolations={dependencyViolations}
 				/>
 
-				{selectedCount > 1 && (
-					<DragOverlay>
-						{activeId && activeMod && (
-							<div className="opacity-80">
-								<table className="w-full border-collapse">
-									<tbody>
-										<tr className="bg-white dark:bg-gray-800 shadow-md rounded-md">
-											<td className="border border-gray-200 dark:border-gray-700 p-2">
-												<div className="flex items-center gap-2">
-													<div className="font-medium text-sm">
-														{activeMod.title}
-													</div>
-													<div className="bg-blue-700 text-white text-xs px-2 py-1 rounded-full">
-														+{selectedCount - 1}{' '}
-														more
-													</div>
-												</div>
-											</td>
-										</tr>
-									</tbody>
-								</table>
-							</div>
-						)}
-					</DragOverlay>
+				{activeMod && (
+					<RowDragOverlay
+						mod={activeMod}
+						selectedCount={selectedCount}
+					/>
 				)}
 			</DndContext>
 			<Filter

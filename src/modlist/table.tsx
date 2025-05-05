@@ -1,15 +1,16 @@
-import { memo } from 'react';
+import { useRef, memo, useEffect, useCallback, useMemo } from 'react';
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import {
 	SortableContext,
 	verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 
-import { Table, TableBody } from '@/components/table';
-
+import { SettingModel } from '@/lib/store/setting';
 import type { ModItemSeparatorUnion } from '@/lib/store/mod_separator';
 
 import { Header } from './header';
 import { Row } from './row';
+import { GoTop, GoTopHandle } from './go-top';
 
 type ModTableProps = {
 	modsResolved: ModItemSeparatorUnion[];
@@ -33,45 +34,89 @@ export const ModTable: React.FC<ModTableProps> = memo(
 		setLastSelectedId,
 		dependencyViolations,
 	}) => {
+		const goTopRef = useRef<GoTopHandle>(null);
+		const hasRestoredScroll = useRef(false);
+		const saveTimeout = useRef<NodeJS.Timeout | null>(null);
+		const virtuosoRef = useRef<VirtuosoHandle>(null);
+		useEffect(() => {
+			(async () => {
+				if (hasRestoredScroll.current) return;
+				hasRestoredScroll.current = true;
+				try {
+					const setting = await SettingModel.retrieve();
+					const scrollTop = setting.mod_table_scroll || 0;
+					virtuosoRef.current?.scrollTo({ top: scrollTop });
+				} catch (error) {
+					console.error('Failed to load scroll position:', error);
+				}
+			})();
+		}, []);
+
+		const handleScroll = useCallback((e: React.UIEvent) => {
+			const scrollTop = (e.target as HTMLElement).scrollTop;
+			goTopRef.current?.onScroll(scrollTop);
+			if (saveTimeout.current) clearTimeout(saveTimeout.current);
+			saveTimeout.current = setTimeout(async () => {
+				try {
+					const setting = await SettingModel.retrieve();
+					setting.mod_table_scroll = scrollTop;
+					await setting.save();
+				} catch (error) {
+					console.error('Failed to save scroll position:', error);
+				}
+			}, 150);
+		}, []);
+
+		const sortableItems = useMemo(
+			() => modsResolved.map(mod => mod.identifier),
+			[modsResolved],
+		);
+
 		return (
-			<Table className="w-full">
+			<div className="w-full flex flex-col h-full">
 				<Header />
-				<TableBody className="text-sm">
+				<div className="flex flex-col text-sm h-full">
+					<GoTop ref={goTopRef} virtuosoRef={virtuosoRef} />
 					<SortableContext
-						items={modsResolved.map(mod => mod.identifier)}
+						items={sortableItems}
 						strategy={verticalListSortingStrategy}
 					>
-						{modsResolved.map(mod => {
-							const hasViolation = dependencyViolations.has(
-								mod.identifier,
-							);
-							const dependentMods = hasViolation
-								? dependencyViolations.get(mod.identifier)
-								: undefined;
-
-							return (
-								<Row
-									key={mod.identifier}
-									mod={mod}
-									modIndex={
-										modIndices.get(mod.identifier) ?? -1
-									}
-									id={mod.identifier}
-									isSelected={selectedRows.has(
-										mod.identifier,
-									)}
-									onSelect={toggleRow}
-									selectRange={selectRange}
-									lastSelectedId={lastSelectedId}
-									setLastSelectedId={setLastSelectedId}
-									hasViolation={hasViolation}
-									dependentMods={dependentMods}
-								/>
-							);
-						})}
+						<Virtuoso
+							ref={virtuosoRef}
+							className="overflow-x-hidden overflow-y-scroll"
+							style={{ height: 'calc(100% - 80px)' }}
+							totalCount={modsResolved.length}
+							onScroll={handleScroll}
+							itemContent={index => {
+								const mod = modsResolved[index];
+								return (
+									<Row
+										key={mod.identifier}
+										mod={mod}
+										modIndex={
+											modIndices.get(mod.identifier) ?? -1
+										}
+										id={mod.identifier}
+										isSelected={selectedRows.has(
+											mod.identifier,
+										)}
+										onSelect={toggleRow}
+										selectRange={selectRange}
+										lastSelectedId={lastSelectedId}
+										setLastSelectedId={setLastSelectedId}
+										hasViolation={dependencyViolations.has(
+											mod.identifier,
+										)}
+										dependentMods={dependencyViolations.get(
+											mod.identifier,
+										)}
+									/>
+								);
+							}}
+						/>
 					</SortableContext>
-				</TableBody>
-			</Table>
+				</div>
+			</div>
 		);
 	},
 );

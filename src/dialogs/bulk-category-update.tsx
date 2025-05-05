@@ -1,4 +1,5 @@
 import { useState, ChangeEvent, useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { ArrowRightIcon, PlusIcon, XIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -48,30 +49,45 @@ function BulkCategoryUpdateDialog() {
 		setCategoriesToRemove(event.currentTarget.value);
 
 	const mods = modsStore(state => state.mods);
-	const metaData = modMetaStore(state => state.data);
-	const setMetaData = modMetaStore(state => state.setData);
+
+	const {
+		metaData,
+		setMetaData,
+		bulkCategoryDialogOpen,
+		toggleBulkCategory,
+	} = modMetaStore(
+		useShallow(state => ({
+			metaData: state.data,
+			setMetaData: state.setData,
+			bulkCategoryDialogOpen: state.bulkCategoryDialogOpen,
+			toggleBulkCategory: state.toggleBulkCategory,
+		})),
+	);
+
 	const modActiveData = modActivationStore(state => state.data);
 
-	const modsResolved = mods.map(rm => {
-		if (isSeparator(rm)) return rm;
+	const modsResolved = useMemo(() => {
+		return mods.map(rm => {
+			if (isSeparator(rm)) return rm;
 
-		const rmMeta = metaData.find(md => md.mod_id === rm.identifier);
-		return {
-			...rm,
-			title:
-				typeof rmMeta?.title !== 'undefined' &&
-				rmMeta?.title !== null &&
-				rmMeta?.title !== ''
-					? rmMeta.title
-					: rm.title,
-			categories:
-				typeof rmMeta?.categories !== 'undefined' &&
-				rmMeta?.categories !== null &&
-				rmMeta?.categories !== ''
-					? rmMeta.categories
-					: (rm as ModItem).categories,
-		};
-	});
+			const rmMeta = metaData.find(md => md.mod_id === rm.identifier);
+			return {
+				...rm,
+				title:
+					typeof rmMeta?.title !== 'undefined' &&
+					rmMeta?.title !== null &&
+					rmMeta?.title !== ''
+						? rmMeta.title
+						: rm.title,
+				categories:
+					typeof rmMeta?.categories !== 'undefined' &&
+					rmMeta?.categories !== null &&
+					rmMeta?.categories !== ''
+						? rmMeta.categories
+						: (rm as ModItem).categories,
+			};
+		});
+	}, [mods, metaData]);
 
 	const filteredMods = useMemo(() => {
 		return filterMods(
@@ -82,11 +98,6 @@ function BulkCategoryUpdateDialog() {
 			modActiveData,
 		).filter(mod => !isSeparator(mod)) as ModItem[];
 	}, [modsResolved, searchModText, activationFilter]);
-
-	const bulkCategoryDialogOpen = modMetaStore(
-		state => state.bulkCategoryDialogOpen,
-	);
-	const toggleBulkCategory = modMetaStore(state => state.toggleBulkCategory);
 
 	function applyCategoryChanges(
 		existingCategories: string,

@@ -1,6 +1,4 @@
-import { memo } from 'react';
-
-import { TableCell } from '@/components/table';
+import { memo, useMemo } from 'react';
 
 import { settingStore } from '@/lib/store/setting';
 import { modMetaStore } from '@/lib/store/mod_meta';
@@ -8,6 +6,8 @@ import {
 	isSeparator,
 	type ModItemSeparatorUnion,
 } from '@/lib/store/mod_separator';
+
+import { TABLE_DIMENSIONS } from '@/modlist/utils';
 
 export const Category = memo(
 	({ mod }: { mod: ModItemSeparatorUnion }) => {
@@ -17,25 +17,33 @@ export const Category = memo(
 		const categories = 'categories' in mod ? mod.categories : undefined;
 
 		const metaData = modMetaStore(state => state.data);
-		const selectedModMeta = metaData.find(
-			md => md.mod_id === mod.identifier,
-		);
 
-		let categoriesTxt = categories;
-		if (
-			typeof selectedModMeta !== 'undefined' &&
-			typeof selectedModMeta.categories !== 'undefined' &&
-			selectedModMeta.categories !== null &&
-			selectedModMeta.categories !== ''
-		) {
-			categoriesTxt = selectedModMeta.categories;
-		}
+		const categoriesTxt = useMemo(() => {
+			const selectedMeta = metaData.find(
+				md => md.mod_id === mod.identifier,
+			);
+
+			let finalCategories = categories;
+			if (
+				typeof selectedMeta !== 'undefined' &&
+				typeof selectedMeta.categories !== 'undefined' &&
+				selectedMeta.categories !== null &&
+				selectedMeta.categories !== ''
+			) {
+				finalCategories = selectedMeta.categories;
+			}
+
+			return finalCategories;
+		}, [metaData, mod.identifier, categories]);
 
 		if (toggle_category) {
 			return (
-				<TableCell className="text-xs select-none flex-shrink-0 w-[120px]">
+				<div
+					className="text-xs select-none flex items-center"
+					style={TABLE_DIMENSIONS.CATEGORY}
+				>
 					{categoriesTxt ?? ''}
-				</TableCell>
+				</div>
 			);
 		}
 

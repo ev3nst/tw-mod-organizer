@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import {
 	Dialog,
@@ -22,24 +23,40 @@ function SendToSeparatorDialog() {
 		useState<ModSeparatorItem>();
 	const [search, setSearch] = useState('');
 
-	const mods = modsStore(state => state.mods);
-	const setMods = modsStore(state => state.setMods);
-
-	const modOrderData = modOrderStore(state => state.data);
-	const setModOrderData = modOrderStore(state => state.setData);
-	const sendToSeparatorOpen = modOrderStore(
-		state => state.sendToSeparatorOpen,
+	const { mods, setMods } = modsStore(
+		useShallow(state => ({
+			mods: state.mods,
+			setMods: state.setMods,
+		})),
 	);
-	const selectedMod = modOrderStore(state => state.selectedMod);
-	const toggleSendToSeparator = modOrderStore(
-		state => state.toggleSendToSeparator,
+
+	const {
+		modOrderData,
+		setModOrderData,
+		sendToSeparatorOpen,
+		selectedMod,
+		toggleSendToSeparator,
+	} = modOrderStore(
+		useShallow(state => ({
+			modOrderData: state.data,
+			setModOrderData: state.setData,
+			sendToSeparatorOpen: state.sendToSeparatorOpen,
+			selectedMod: state.selectedMod,
+			toggleSendToSeparator: state.toggleSendToSeparator,
+		})),
 	);
 
 	const separators = modSeparatorStore(state => state.data);
-	const filteredSeparators = separators.filter(
-		separator =>
-			separator.title.toLowerCase().includes(search.toLowerCase()) ||
-			separator.title.toLowerCase() === search.toLowerCase(),
+	const filteredSeparators = useMemo(
+		() =>
+			separators.filter(
+				separator =>
+					separator.title
+						.toLowerCase()
+						.includes(search.toLowerCase()) ||
+					separator.title.toLowerCase() === search.toLowerCase(),
+			),
+		[separators, search],
 	);
 
 	const handleSend = () => {

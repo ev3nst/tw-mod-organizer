@@ -877,3 +877,9 @@ html.dark .w-color-alpha {
 .dark-scrollbar::-webkit-scrollbar {
 	height: 10px;
 }
+
+.mod-row {
+	contain: layout style paint;
+	will-change: transform;
+	transform: translateZ(0); /* Force GPU acceleration */
+}

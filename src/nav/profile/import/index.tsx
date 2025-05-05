@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { DownloadIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -43,8 +44,14 @@ export const ImportProfile = () => {
 	const mods = modsStore(state => state.mods);
 	const modMetaData = modMetaStore(state => state.data);
 	const modsOnly = mods.filter(mod => !isSeparator(mod)) as ModItem[];
-	const games = settingStore(state => state.games);
-	const setLockScreen = settingStore(state => state.setLockScreen);
+
+	const { games, setLockScreen } = settingStore(
+		useShallow(state => ({
+			games: state.games,
+			setLockScreen: state.setLockScreen,
+		})),
+	);
+
 	const profiles = profileStore(state => state.profiles);
 
 	let steamModExists: ModItem[] = [];
@@ -140,10 +147,15 @@ export const ImportProfile = () => {
 					mod.item_type === 'steam_mod' &&
 					!modsOnly.some(mo => mo.identifier === mod.identifier)
 				) {
-					await api.subscribe(
-						profileExportData.app_id,
-						Number(mod.identifier),
-					);
+					try {
+						await api.subscribe(
+							profileExportData.app_id,
+							Number(mod.identifier),
+						);
+					} catch (error) {
+						console.log('Error subscribing to mod:', mod);
+						toastError(error);
+					}
 					setDidInstallNewMods(true);
 				}
 			}
@@ -346,17 +358,31 @@ export const ImportProfile = () => {
 		if (didInstallNewMods) {
 			setLockScreen(true);
 			return (
-				<>
-					<div
-						className="fixed h-screen w-screen select-none hover:cursor-not-allowed z-50"
-						onClick={e => e.stopPropagation()}
-					/>
-					<div className="text-orange-500 text-xl leading-8 bg-background z-10 p-10">
-						Import Process within App is complete. You should close
-						this application and wait for downloads to complete
-						within Steam Client and than re-open the mod manager.
-					</div>
-				</>
+				<div className="text-lg flex flex-col gap-2 bg-background z-10">
+					<p className="text-green-500">
+						Import Process within App is complete.
+					</p>
+					<p className="text-orange-500">
+						You should close this application and wait for downloads
+						to complete within Steam Client and than re-open the mod
+						manager.
+					</p>
+					<p className="text-orange-500">
+						It is also recommended to verify the game files after
+						the download is complete.
+					</p>
+					<Button
+						variant="destructive"
+						size="sm"
+						className="w-full"
+						onClick={() => {
+							setLockScreen(false);
+							window.location.reload();
+						}}
+					>
+						Close Application
+					</Button>
+				</div>
 			);
 		} else {
 			setTimeout(() => {

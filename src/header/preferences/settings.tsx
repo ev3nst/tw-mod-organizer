@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { EyeIcon, FolderIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -17,23 +18,34 @@ import api from '@/lib/api';
 import { settingStore } from '@/lib/store/setting';
 import { ClearCache } from './clear-cache';
 
+const PROTECTED_PATHS = [
+	'C:\\Windows',
+	'C:\\Program Files',
+	'C:\\Program Files (x86)',
+	'C:\\Users\\All Users',
+	'C:\\ProgramData',
+];
+
 export function Settings() {
 	const [installPath, setInstallPath] = useState('');
 	const [downloadPath, setDownloadPath] = useState('');
 
-	const setModInstallationPath = settingStore(
-		state => state.setModInstallationPath,
-	);
-	const mod_installation_path = settingStore(
-		state => state.mod_installation_path,
-	);
-	const setModDownloadPath = settingStore(state => state.setModDownloadPath);
-	const mod_download_path = settingStore(state => state.mod_download_path);
-	const dependency_confirmation = settingStore(
-		state => state.dependency_confirmation,
-	);
-	const setDependencyConfirmation = settingStore(
-		state => state.setDependencyConfirmation,
+	const {
+		setModInstallationPath,
+		mod_installation_path,
+		setModDownloadPath,
+		mod_download_path,
+		dependency_confirmation,
+		setDependencyConfirmation,
+	} = settingStore(
+		useShallow(state => ({
+			setModInstallationPath: state.setModInstallationPath,
+			mod_installation_path: state.mod_installation_path,
+			setModDownloadPath: state.setModDownloadPath,
+			mod_download_path: state.mod_download_path,
+			dependency_confirmation: state.dependency_confirmation,
+			setDependencyConfirmation: state.setDependencyConfirmation,
+		})),
 	);
 
 	const handleFolderSelection = async (type: 'install' | 'download') => {
@@ -45,13 +57,6 @@ export function Settings() {
 
 		const folder = await open(openFolderDialogConfig);
 		if (folder) {
-			const PROTECTED_PATHS = [
-				'C:\\Windows',
-				'C:\\Program Files',
-				'C:\\Program Files (x86)',
-				'C:\\Users\\All Users',
-				'C:\\ProgramData',
-			];
 			const isProtectedPath = PROTECTED_PATHS.some(protectedPath =>
 				folder.startsWith(protectedPath),
 			);

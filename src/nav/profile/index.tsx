@@ -1,3 +1,5 @@
+import { useShallow } from 'zustand/react/shallow';
+
 import {
 	Select,
 	SelectContent,
@@ -12,8 +14,12 @@ import { ProfileDialog } from './profile-dialog';
 import { DeleteProfile } from './delete-profile';
 
 export const ProfileSwitcher = () => {
-	const profile = profileStore(state => state.profile);
-	const profiles = profileStore(state => state.profiles);
+	const { profile, profiles } = profileStore(
+		useShallow(state => ({
+			profile: state.profile,
+			profiles: state.profiles,
+		})),
+	);
 
 	const onGameChange = async (value: string) => {
 		const findProfile = profiles.find(f => f.name === value);

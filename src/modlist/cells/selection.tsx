@@ -1,6 +1,5 @@
-import { memo } from 'react';
+import { memo, useMemo, useCallback } from 'react';
 
-import { TableCell } from '@/components/table';
 import { Checkbox } from '@/components/checkbox';
 
 import { ModItem, modsStore } from '@/lib/store/mods';
@@ -14,6 +13,8 @@ import {
 	isSeparator,
 	type ModItemSeparatorUnion,
 } from '@/lib/store/mod_separator';
+
+import { TABLE_DIMENSIONS } from '@/modlist/utils';
 
 const selectionCheckboxClass = `
 	border-muted-foreground
@@ -33,53 +34,75 @@ export const Selection = memo(
 	({ mod }: { mod: ModItemSeparatorUnion }) => {
 		const mods = modsStore(state => state.mods);
 		const modActivation = modActivationStore(state => state.data);
-		const currentSelection = modActivation.find(
-			ma => ma.mod_id === mod.identifier,
+		const currentSelection = useMemo(
+			() => modActivation.find(ma => ma.mod_id === mod.identifier),
+			[modActivation, mod.identifier],
 		);
 
 		if (isSeparator(mod)) {
-			const childMods = getChildMods(mods, mod.identifier);
-			const allActive = childMods.every(
-				child =>
-					modActivation.find(ma => ma.mod_id === child.identifier)
-						?.is_active !== false,
-			);
+			const { childMods, allActive } = useMemo(() => {
+				const children = getChildMods(mods, mod.identifier);
+				const active = children.every(
+					child =>
+						modActivation.find(ma => ma.mod_id === child.identifier)
+							?.is_active !== false,
+				);
+				return { childMods: children, allActive: active };
+			}, [mods, mod.identifier, modActivation]);
+
+			const handleSeparatorToggle = useCallback(() => {
+				toggleSeparatorActivation(mod);
+			}, [mod.identifier]);
 
 			return (
-				<TableCell className="select-none w-[40px]">
+				<div
+					className="flex justify-center items-center select-none"
+					style={TABLE_DIMENSIONS.SELECTION}
+				>
 					<Checkbox
 						className={selectionCheckboxClass}
 						checked={childMods.length > 0 && allActive}
-						onCheckedChange={() => toggleSeparatorActivation(mod)}
+						onCheckedChange={handleSeparatorToggle}
 					/>
-				</TableCell>
+				</div>
 			);
 		} else {
-			const isBaseAndAlwaysActive =
-				(mod as ModItem).item_type === 'base_mod' &&
-				mod.identifier !== 'BirthAndDeath';
+			const { isBaseAndAlwaysActive, isChecked } = useMemo(
+				() => ({
+					isBaseAndAlwaysActive:
+						(mod as ModItem).item_type === 'base_mod' &&
+						mod.identifier !== 'BirthAndDeath',
+					isChecked:
+						(mod as ModItem).item_type === 'base_mod' &&
+						mod.identifier !== 'BirthAndDeath'
+							? true
+							: currentSelection?.is_active,
+				}),
+				[mod.identifier, currentSelection],
+			);
+
+			const handleModToggle = useCallback(
+				(checked: boolean) => {
+					toggleModActivation(checked, mod as ModItem);
+				},
+				[mod],
+			);
 			return (
-				<TableCell className="select-none w-[40px]">
+				<div
+					className="flex justify-center items-center select-none"
+					style={TABLE_DIMENSIONS.SELECTION}
+				>
 					<Checkbox
 						className={
 							isBaseAndAlwaysActive
 								? undefined
 								: selectionCheckboxClass
 						}
-						checked={
-							isBaseAndAlwaysActive
-								? isBaseAndAlwaysActive
-								: currentSelection?.is_active
-						}
+						checked={isChecked}
 						disabled={isBaseAndAlwaysActive}
-						onCheckedChange={checked =>
-							toggleModActivation(
-								checked as boolean,
-								mod as ModItem,
-							)
-						}
+						onCheckedChange={handleModToggle}
 					/>
-				</TableCell>
+				</div>
 			);
 		}
 	},

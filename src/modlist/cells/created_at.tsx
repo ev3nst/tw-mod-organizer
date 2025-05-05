@@ -1,12 +1,12 @@
 import { memo } from 'react';
 
-import { TableCell } from '@/components/table';
-
 import { settingStore } from '@/lib/store/setting';
 import {
 	isSeparator,
 	type ModItemSeparatorUnion,
 } from '@/lib/store/mod_separator';
+
+import { TABLE_DIMENSIONS } from '@/modlist/utils';
 
 export const CreatedAt = memo(
 	({ mod }: { mod: ModItemSeparatorUnion }) => {
@@ -23,24 +23,33 @@ export const CreatedAt = memo(
 					const dateCreatedAt = new Date(createdAt);
 					if (dateCreatedAt.getFullYear() === 1970) {
 						return (
-							<TableCell className="text-xs select-none">
+							<div
+								className="text-xs select-none"
+								style={TABLE_DIMENSIONS.CREATED_AT}
+							>
 								{''}
-							</TableCell>
+							</div>
 						);
 					}
 
 					return (
-						<TableCell className="text-xs select-none">
+						<div
+							className="text-xs select-none"
+							style={TABLE_DIMENSIONS.CREATED_AT}
+						>
 							{dateCreatedAt.toLocaleDateString()}
-						</TableCell>
+						</div>
 					);
 				} catch (_e) {}
 			}
 
 			return (
-				<TableCell className="text-xs select-none">
+				<div
+					className="text-xs select-none"
+					style={TABLE_DIMENSIONS.CREATED_AT}
+				>
 					{createdAt ?? ''}
-				</TableCell>
+				</div>
 			);
 		}
 

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { toast } from 'sonner';
 
 import {
@@ -17,20 +18,28 @@ import { toastError } from '@/lib/utils';
 function EditSeparatorDialog() {
 	const [isLoading, setIsLoading] = useState(false);
 
-	const init_reload = settingStore(state => state.init_reload);
-	const setInitReload = settingStore(state => state.setInitReload);
+	const { init_reload, setInitReload } = settingStore(
+		useShallow(state => ({
+			init_reload: state.init_reload,
+			setInitReload: state.setInitReload,
+		})),
+	);
 
-	const editSeparatorDialogOpen = modSeparatorStore(
-		state => state.editSeparatorDialogOpen,
+	const {
+		editSeparatorDialogOpen,
+		selectedSeparator,
+		toggleEditSeparator,
+		separators,
+		setSeparators,
+	} = modSeparatorStore(
+		useShallow(state => ({
+			editSeparatorDialogOpen: state.editSeparatorDialogOpen,
+			selectedSeparator: state.selectedSeparator,
+			toggleEditSeparator: state.toggleEditSeparator,
+			separators: state.data,
+			setSeparators: state.setData,
+		})),
 	);
-	const selectedSeparator = modSeparatorStore(
-		state => state.selectedSeparator,
-	);
-	const toggleEditSeparator = modSeparatorStore(
-		state => state.toggleEditSeparator,
-	);
-	const separators = modSeparatorStore(state => state.data);
-	const setSeparators = modSeparatorStore(state => state.setData);
 
 	if (!selectedSeparator) return null;
 

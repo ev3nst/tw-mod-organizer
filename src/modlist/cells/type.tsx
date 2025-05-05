@@ -1,11 +1,14 @@
-import { memo } from 'react';
-import { TableCell } from '@/components/table';
+import { memo, useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
+import { FileIcon } from 'lucide-react';
+
 import { settingStore } from '@/lib/store/setting';
 import {
 	isSeparator,
 	type ModItemSeparatorUnion,
 } from '@/lib/store/mod_separator';
-import { FileIcon } from 'lucide-react';
+
+import { TABLE_DIMENSIONS } from '@/modlist/utils';
 
 const ICON_SIZE = 20;
 
@@ -14,74 +17,77 @@ export const Type = memo(
 		if (isSeparator(mod)) return null;
 
 		const type = 'item_type' in mod ? mod.item_type : undefined;
-		const selectedGame = settingStore(state => state.selectedGame);
-		const toggle_type = settingStore(state => state.toggle_type);
 
-		let typeToRender: any = type;
-		switch (type) {
-			case 'base_mod':
-				switch (selectedGame?.slug) {
-					case 'mbbl':
-						typeToRender = (
-							<img
-								src="/mbbl.jpg"
-								className="rounded-full object-cover"
-								style={{ width: ICON_SIZE, height: ICON_SIZE }}
-								alt="Bannerlord Logo"
-							/>
-						);
-						break;
-					default:
-						break;
-				}
-				break;
+		const { selectedGame, toggle_type } = settingStore(
+			useShallow(state => ({
+				selectedGame: state.selectedGame,
+				toggle_type: state.toggle_type,
+			})),
+		);
 
-			case 'steam_mod':
-				typeToRender = (
-					<img
-						src="/steam-logo.png"
-						className="rounded-full object-cover"
-						style={{ width: ICON_SIZE, height: ICON_SIZE }}
-						alt="Steam Logo"
-					/>
-				);
-				break;
+		const typeToRender = useMemo(() => {
+			switch (type) {
+				case 'base_mod':
+					switch (selectedGame?.slug) {
+						case 'mbbl':
+							return (
+								<img
+									src="/mbbl.jpg"
+									className="rounded-full object-cover"
+									style={{
+										width: ICON_SIZE,
+										height: ICON_SIZE,
+									}}
+									alt="Bannerlord Logo"
+								/>
+							);
+						default:
+							return type;
+					}
 
-			case 'nexus_mod':
-				typeToRender = (
-					<img
-						src="/nexus-logo.png"
-						className="rounded-full object-cover"
-						style={{ width: ICON_SIZE, height: ICON_SIZE }}
-						alt="Nexus Logo"
-					/>
-				);
-				break;
+				case 'steam_mod':
+					return (
+						<img
+							src="/steam-logo.png"
+							className="rounded-full object-cover"
+							style={{ width: ICON_SIZE, height: ICON_SIZE }}
+							alt="Steam Logo"
+						/>
+					);
 
-			case 'local_mod':
-				typeToRender = (
-					<FileIcon
-						className="rounded-full object-cover select-none"
-						style={{ width: ICON_SIZE, height: ICON_SIZE }}
-					/>
-				);
-				break;
+				case 'nexus_mod':
+					return (
+						<img
+							src="/nexus-logo.png"
+							className="rounded-full object-cover"
+							style={{ width: ICON_SIZE, height: ICON_SIZE }}
+							alt="Nexus Logo"
+						/>
+					);
 
-			default:
-				break;
-		}
+				case 'local_mod':
+					return (
+						<FileIcon
+							className="rounded-full object-cover select-none"
+							style={{ width: ICON_SIZE, height: ICON_SIZE }}
+						/>
+					);
 
-		if (toggle_type) {
-			return (
-				<TableCell className="text-xs select-none text-center w-[40px] h-full align-middle">
-					<div className="flex items-center justify-center h-full w-full">
-						{typeToRender}
-					</div>
-				</TableCell>
-			);
-		}
+				default:
+					return type;
+			}
+		}, [type, selectedGame?.slug]);
 
-		return null;
+		if (!toggle_type) return null;
+
+		return (
+			<div
+				className="flex items-center justify-center text-xs select-none text-center"
+				style={TABLE_DIMENSIONS.TYPE}
+			>
+				{typeToRender}
+			</div>
+		);
 	},
 	(prevProps, nextProps) =>
 		prevProps.mod.identifier === nextProps.mod.identifier,

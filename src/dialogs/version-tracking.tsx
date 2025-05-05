@@ -1,4 +1,7 @@
+import { useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { CheckCircleIcon } from 'lucide-react';
+
 import {
 	Dialog,
 	DialogContent,
@@ -12,18 +15,32 @@ import api from '@/lib/api';
 import { modVersionStore } from '@/lib/store/mod_version';
 
 const VersionTrackingDialog = () => {
-	const modVersionData = modVersionStore(state => state.data);
-	const setModVersionData = modVersionStore(state => state.setData);
-	const changedMods = modVersionStore(state => state.changedMods);
-	const setChangedMods = modVersionStore(state => state.setChangedMods);
-	const versionInfoOpen = modVersionStore(state => state.versionInfoOpen);
-	const toggleVersionInfo = modVersionStore(state => state.toggleVersionInfo);
-
-	const changedSteamMods = changedMods.filter(
-		m => m.mod_type === 'steam_mod',
+	const {
+		modVersionData,
+		setModVersionData,
+		changedMods,
+		setChangedMods,
+		versionInfoOpen,
+		toggleVersionInfo,
+	} = modVersionStore(
+		useShallow(state => ({
+			modVersionData: state.data,
+			setModVersionData: state.setData,
+			changedMods: state.changedMods,
+			setChangedMods: state.setChangedMods,
+			versionInfoOpen: state.versionInfoOpen,
+			toggleVersionInfo: state.toggleVersionInfo,
+		})),
 	);
-	const changedNexusMods = changedMods.filter(
-		m => m.mod_type === 'nexus_mod',
+
+	const changedSteamMods = useMemo(
+		() => changedMods.filter(m => m.mod_type === 'steam_mod'),
+		[changedMods],
+	);
+
+	const changedNexusMods = useMemo(
+		() => changedMods.filter(m => m.mod_type === 'nexus_mod'),
+		[changedMods],
 	);
 
 	const handleAcknowledge = (
@@ -54,89 +71,105 @@ const VersionTrackingDialog = () => {
 		return version;
 	};
 
-	const ModSection = ({
-		title,
-		logoSrc,
-		description,
-		mods,
-		showAcknowledge = false,
-	}: {
-		title: string;
-		logoSrc: string;
-		description: string;
-		mods: typeof changedMods;
-		showAcknowledge?: boolean;
-	}) => (
-		<div>
-			<div className="flex items-center gap-2">
-				<img
-					src={logoSrc}
-					alt={`${title} Logo`}
-					className="rounded-full object-cover"
-					style={{ width: 20, height: 20 }}
-				/>
-				<div className="flex-grow">
-					{title}
-					<span className="ms-1 text-sm text-muted-foreground">
-						{description}
-					</span>
-				</div>
-			</div>
-
-			<div className="flex flex-col max-h-[150px] overflow-auto text-sm divide-y mt-2">
-				{mods.map(mod => (
-					<div
-						key={`version_tracking_${mod.mod_id}`}
-						className="flex justify-between p-2 hover:bg-primary-foreground rounded-sm cursor-pointer"
-						onClick={() =>
-							typeof mod.url === 'string' &&
-							api.open_external_url(mod.url)
-						}
-					>
-						<div>{mod.title}</div>
-
-						<div className="flex items-center gap-1">
-							{mod.mod_type === 'steam_mod' ? (
-								<>
-									<span className="text-xs italic">
-										{formatVersion(mod, mod.latest_version)}
-									</span>
-									<span>-</span>
-									<span className="text-xs italic text-green-500">
-										{formatVersion(mod, mod.version)}
-									</span>
-								</>
-							) : (
-								<>
-									<span className="text-xs italic">
-										{formatVersion(mod, mod.version)}
-									</span>
-									<span>-</span>
-									<span className="text-xs italic text-green-500">
-										{formatVersion(mod, mod.latest_version)}
-									</span>
-								</>
-							)}
-
-							{showAcknowledge && (
-								<span
-									className="text-green-500 hover:opacity-75 transition-opacity"
-									onClick={e => {
-										e.stopPropagation();
-										handleAcknowledge(
-											mod.mod_id,
-											mod.version,
-										);
-									}}
-								>
-									<CheckCircleIcon className="w-4 h-4" />
-								</span>
-							)}
+	const ModSection = useMemo(
+		() =>
+			({
+				title,
+				logoSrc,
+				description,
+				mods,
+				showAcknowledge = false,
+			}: {
+				title: string;
+				logoSrc: string;
+				description: string;
+				mods: typeof changedMods;
+				showAcknowledge?: boolean;
+			}) => (
+				<div>
+					<div className="flex items-center gap-2">
+						<img
+							src={logoSrc}
+							alt={`${title} Logo`}
+							className="rounded-full object-cover"
+							style={{ width: 20, height: 20 }}
+						/>
+						<div className="flex-grow">
+							{title}
+							<span className="ms-1 text-sm text-muted-foreground">
+								{description}
+							</span>
 						</div>
 					</div>
-				))}
-			</div>
-		</div>
+
+					<div className="flex flex-col max-h-[150px] overflow-auto text-sm divide-y mt-2">
+						{mods.map(mod => (
+							<div
+								key={`version_tracking_${mod.mod_id}`}
+								className="flex justify-between p-2 hover:bg-primary-foreground rounded-sm cursor-pointer"
+								onClick={() =>
+									typeof mod.url === 'string' &&
+									api.open_external_url(mod.url)
+								}
+							>
+								<div>{mod.title}</div>
+
+								<div className="flex items-center gap-1 whitespace-nowrap">
+									{mod.mod_type === 'steam_mod' ? (
+										<>
+											<span className="text-xs italic">
+												{formatVersion(
+													mod,
+													mod.latest_version,
+												)}
+											</span>
+											<span>-</span>
+											<span className="text-xs italic text-green-500">
+												{formatVersion(
+													mod,
+													mod.version,
+												)}
+											</span>
+										</>
+									) : (
+										<>
+											<span className="text-xs italic">
+												{formatVersion(
+													mod,
+													mod.version,
+												)}
+											</span>
+											<span>-</span>
+											<span className="text-xs italic text-green-500">
+												{formatVersion(
+													mod,
+													mod.latest_version,
+												)}
+											</span>
+										</>
+									)}
+
+									{showAcknowledge && (
+										<span
+											className="text-green-500 hover:opacity-75 transition-opacity"
+											onClick={e => {
+												e.stopPropagation();
+												handleAcknowledge(
+													mod.mod_id,
+													mod.version,
+												);
+											}}
+										>
+											<CheckCircleIcon className="w-4 h-4" />
+										</span>
+									)}
+								</div>
+							</div>
+						))}
+					</div>
+				</div>
+			),
+		[],
 	);
 
 	return (

@@ -12,6 +12,81 @@ import { ModMetaModel } from '@/lib/store/mod_meta';
 import { ModVersionModel } from '@/lib/store/mod_version';
 import { normalizeOrder } from '@/lib/utils';
 
+export const TABLE_DIMENSIONS = {
+	SORTING: {
+		flex: '0 0 40px',
+		minWidth: '40px',
+		maxWidth: '40px',
+		display: 'flex',
+	},
+	ORDER: {
+		flex: '0 0 40px',
+		minWidth: '40px',
+		maxWidth: '40px',
+		display: 'flex',
+	},
+	SELECTION: {
+		flex: '0 0 40px',
+		minWidth: '40px',
+		maxWidth: '40px',
+		display: 'flex',
+	},
+	TYPE: {
+		flex: '0 0 40px',
+		minWidth: '40px',
+		maxWidth: '40px',
+		display: 'flex',
+	},
+	TITLE: {
+		flex: '7 1 0',
+		minWidth: 0,
+		maxWidth: '100%',
+		display: 'flex',
+	},
+	CATEGORY: {
+		flex: '0 0 120px',
+		minWidth: '120px',
+		maxWidth: '120px',
+		display: 'flex',
+	},
+	CONFLICT: {
+		flex: '0 0 60px',
+		minWidth: '60px',
+		maxWidth: '60px',
+		display: 'flex',
+	},
+	VERSION: {
+		flex: '0 0 100px',
+		minWidth: '100px',
+		maxWidth: '100px',
+		display: 'flex',
+	},
+	CREATOR: {
+		flex: '1 1 0',
+		minWidth: 0,
+		maxWidth: '100%',
+		display: 'flex',
+	},
+	CREATED_AT: {
+		flex: '1 1 0',
+		minWidth: 0,
+		maxWidth: '100%',
+		display: 'flex',
+	},
+	UPDATED_AT: {
+		flex: '1 1 0',
+		minWidth: 0,
+		maxWidth: '100%',
+		display: 'flex',
+	},
+	ACTIONS: {
+		flex: '0 0 40px',
+		minWidth: '40px',
+		maxWidth: '40px',
+		display: 'flex',
+	},
+};
+
 export function sortMods(
 	items: ModItemSeparatorUnion[],
 	active: Active,

@@ -1,3 +1,5 @@
+import { useShallow } from 'zustand/react/shallow';
+
 import {
 	Select,
 	SelectContent,
@@ -9,10 +11,15 @@ import {
 import { SettingModel, settingStore } from '@/lib/store/setting';
 
 export function GameSwitcher() {
-	const games = settingStore(state => state.games);
-	const selectedGame = settingStore(state => state.selectedGame);
-	const isGameRunning = settingStore(state => state.isGameRunning);
-	const shouldLockScreen = settingStore(state => state.shouldLockScreen);
+	const { games, selectedGame, isGameRunning, shouldLockScreen } =
+		settingStore(
+			useShallow(state => ({
+				games: state.games,
+				selectedGame: state.selectedGame,
+				isGameRunning: state.isGameRunning,
+				shouldLockScreen: state.shouldLockScreen,
+			})),
+		);
 
 	return (
 		<Select

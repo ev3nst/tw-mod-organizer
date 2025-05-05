@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
 
 import { appConfigDir } from '@tauri-apps/api/path';
 
@@ -402,170 +403,162 @@ type SettingStore = {
 	setInitReload: (init_reload: boolean) => void;
 };
 
-export const settingStore = create<SettingStore>(set => ({
-	loading: false,
-	setLoading: loading => {
-		set({ loading });
-	},
+export const settingStore = create<SettingStore>()(
+	subscribeWithSelector(
+		(set): SettingStore => ({
+			loading: false,
+			setLoading: loading => set({ loading }),
 
-	steam_library_paths: {
-		library_folder_paths: [],
-		game_install_paths: {},
-		game_workshop_paths: {},
-	},
-	setSteamLibraryPaths: steam_library_paths => {
-		set({ steam_library_paths });
-	},
+			steam_library_paths: {
+				library_folder_paths: [],
+				game_install_paths: {},
+				game_workshop_paths: {},
+			},
+			setSteamLibraryPaths: steam_library_paths =>
+				set({ steam_library_paths }),
 
-	mod_download_path: '',
-	setModDownloadPath: mod_download_path => {
-		if (
-			typeof mod_download_path !== 'undefined' &&
-			mod_download_path !== null &&
-			mod_download_path !== ''
-		) {
-			set({ mod_download_path });
-			debounceCallback(syncSetting);
-		}
-	},
+			mod_download_path: '',
+			setModDownloadPath: mod_download_path => {
+				if (mod_download_path) {
+					set({ mod_download_path });
+					debounceCallback(syncSetting);
+				}
+			},
 
-	mod_installation_path: '',
-	setModInstallationPath: mod_installation_path => {
-		if (
-			typeof mod_installation_path !== 'undefined' &&
-			mod_installation_path !== null &&
-			mod_installation_path !== ''
-		) {
-			set({ mod_installation_path });
-			debounceCallback(syncSetting);
-		}
-	},
+			mod_installation_path: '',
+			setModInstallationPath: mod_installation_path => {
+				if (mod_installation_path) {
+					set({ mod_installation_path });
+					debounceCallback(syncSetting);
+				}
+			},
 
-	selectedGame: undefined,
-	setSelectedGame: selectedGame => {
-		set({ selectedGame });
-		debounceCallback(syncSetting);
-	},
+			selectedGame: undefined,
+			setSelectedGame: selectedGame => {
+				set({ selectedGame });
+				debounceCallback(syncSetting);
+			},
 
-	games: [],
-	setGames: (games, steam_library_paths) => {
-		games = games.map(game => {
-			const gamePathExists =
-				typeof steam_library_paths.game_install_paths !== 'undefined' &&
-				typeof steam_library_paths.game_install_paths[game.slug] !==
-					'undefined' &&
-				steam_library_paths.game_install_paths[game.slug].length > 0;
-			return {
-				...game,
-				game_path_exists: gamePathExists,
-			};
-		});
+			games: [],
+			setGames: (games, steam_library_paths) => {
+				const updated = games.map(game => {
+					const exists =
+						steam_library_paths.game_install_paths?.[game.slug]
+							?.length > 0;
+					return {
+						...game,
+						game_path_exists: exists,
+					};
+				});
+				set({ games: updated });
+			},
 
-		set({ games });
-	},
+			nexus_api_key: '',
+			setNexusAuthApi: nexus_api_key => {
+				set({ nexus_api_key });
+				debounceCallback(syncSetting);
+			},
 
-	nexus_api_key: '',
-	setNexusAuthApi: nexus_api_key => {
-		set({ nexus_api_key });
-		debounceCallback(syncSetting);
-	},
+			nexus_auth_params: {
+				id: null,
+				token: null,
+			},
+			setNexusAuthParams: nexus_auth_params => {
+				set({ nexus_auth_params });
+				debounceCallback(syncSetting);
+			},
 
-	nexus_auth_params: {
-		id: null,
-		token: null,
-	},
-	setNexusAuthParams: nexus_auth_params => {
-		set({ nexus_auth_params });
-		debounceCallback(syncSetting);
-	},
+			tableManagerOpen: false,
+			toggleTableManager: tableManagerOpen => set({ tableManagerOpen }),
 
-	tableManagerOpen: false,
-	toggleTableManager: tableManagerOpen => set({ tableManagerOpen }),
-	toggle_type: true,
-	toggle_category: true,
-	toggle_conflict: true,
-	toggle_version: true,
-	toggle_creator: false,
-	toggle_created_at: false,
-	toggle_updated_at: false,
+			toggle_type: true,
+			toggle_category: true,
+			toggle_conflict: true,
+			toggle_version: true,
+			toggle_creator: false,
+			toggle_created_at: false,
+			toggle_updated_at: false,
 
-	setColumnSelection: (key, value) => {
-		const keyStr = `toggle_${key}`;
-		const columns = [
-			'toggle_type',
-			'toggle_category',
-			'toggle_conflict',
-			'toggle_version',
-			'toggle_creator',
-			'toggle_created_at',
-			'toggle_updated_at',
-		] as any;
-		if (columns.includes(keyStr)) {
-			set({ [keyStr]: value });
-			debounceCallback(syncSetting);
-		}
-	},
+			setColumnSelection: (key, value) => {
+				const keyStr = `toggle_${key}` as const;
+				const validKeys = [
+					'toggle_type',
+					'toggle_category',
+					'toggle_conflict',
+					'toggle_version',
+					'toggle_creator',
+					'toggle_created_at',
+					'toggle_updated_at',
+				] as const;
 
-	dependency_confirmation: 1,
-	setDependencyConfirmation: dependency_confirmation => {
-		set({ dependency_confirmation });
-		debounceCallback(syncSetting);
-	},
+				if (validKeys.includes(keyStr)) {
+					set({ [keyStr]: value } as any);
+					debounceCallback(syncSetting);
+				}
+			},
 
-	sort_by: 'load_order',
-	setSortBy: sort_by => {
-		set({ sort_by });
-		debounceCallback(syncSetting);
-	},
+			dependency_confirmation: 1,
+			setDependencyConfirmation: val => {
+				set({ dependency_confirmation: val });
+				debounceCallback(syncSetting);
+			},
 
-	sort_by_direction: 'asc',
-	setSortByDirection: sort_by_direction => {
-		set({ sort_by_direction });
-		debounceCallback(syncSetting);
-	},
+			sort_by: 'load_order',
+			setSortBy: sort_by => {
+				set({ sort_by });
+				debounceCallback(syncSetting);
+			},
 
-	preview_size: 6,
-	setPreviewSize: (preview_size: number) => {
-		set({ preview_size });
-		debounceCallback(syncSetting);
-	},
+			sort_by_direction: 'asc',
+			setSortByDirection: sort_by_direction => {
+				set({ sort_by_direction });
+				debounceCallback(syncSetting);
+			},
 
-	include_hidden_downloads: 0,
-	setIncludeHiddenDownloads: include_hidden_downloads => {
-		set({ include_hidden_downloads });
-		debounceCallback(syncSetting);
-	},
+			preview_size: 6,
+			setPreviewSize: preview_size => {
+				set({ preview_size });
+				debounceCallback(syncSetting);
+			},
 
-	compact_archive_names: 0,
-	setCompactArchiveNames: compact_archive_names => {
-		set({ compact_archive_names });
-		debounceCallback(syncSetting);
-	},
+			include_hidden_downloads: 0,
+			setIncludeHiddenDownloads: value => {
+				set({ include_hidden_downloads: value });
+				debounceCallback(syncSetting);
+			},
 
-	compact_save_names: 0,
-	setCompactSaveNames: compact_save_names => {
-		set({ compact_save_names });
-		debounceCallback(syncSetting);
-	},
+			compact_archive_names: 0,
+			setCompactArchiveNames: value => {
+				set({ compact_archive_names: value });
+				debounceCallback(syncSetting);
+			},
 
-	sidebar_accordion: 'saves',
-	setSidebarAccordion: sidebar_accordion => {
-		set({ sidebar_accordion });
-		debounceCallback(syncSetting);
-	},
+			compact_save_names: 0,
+			setCompactSaveNames: value => {
+				set({ compact_save_names: value });
+				debounceCallback(syncSetting);
+			},
 
-	isGameLoading: false,
-	setIsGameLoading: (isGameLoading: boolean) => set({ isGameLoading }),
+			sidebar_accordion: 'saves',
+			setSidebarAccordion: value => {
+				set({ sidebar_accordion: value });
+				debounceCallback(syncSetting);
+			},
 
-	isGameRunning: false,
-	setIsGameRunning: isGameRunning => set({ isGameRunning }),
+			isGameLoading: false,
+			setIsGameLoading: isGameLoading => set({ isGameLoading }),
 
-	shouldLockScreen: false,
-	setLockScreen: shouldLockScreen => set({ shouldLockScreen }),
+			isGameRunning: false,
+			setIsGameRunning: isGameRunning => set({ isGameRunning }),
 
-	init_reload: false,
-	setInitReload: init_reload => set({ init_reload }),
-}));
+			shouldLockScreen: false,
+			setLockScreen: shouldLockScreen => set({ shouldLockScreen }),
+
+			init_reload: false,
+			setInitReload: init_reload => set({ init_reload }),
+		}),
+	),
+);
 
 const syncSetting = async () => {
 	const state = settingStore.getState();

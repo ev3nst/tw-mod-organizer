@@ -1,6 +1,4 @@
-import { memo } from 'react';
-
-import { TableCell } from '@/components/table';
+import { memo, useMemo } from 'react';
 
 import { settingStore } from '@/lib/store/setting';
 import {
@@ -8,43 +6,44 @@ import {
 	type ModItemSeparatorUnion,
 } from '@/lib/store/mod_separator';
 
+import { TABLE_DIMENSIONS } from '@/modlist/utils';
+
 export const UpdatedAt = memo(
 	({ mod }: { mod: ModItemSeparatorUnion }) => {
 		if (isSeparator(mod)) return null;
 
-		const updatedAt = 'updated_at' in mod ? mod.updated_at : undefined;
 		const toggle_updated_at = settingStore(
 			state => state.toggle_updated_at,
 		);
 
-		if (toggle_updated_at) {
-			if (typeof updatedAt === 'number') {
-				try {
-					const dateUpdatedAt = new Date(updatedAt);
-					if (dateUpdatedAt.getFullYear() === 1970) {
-						return (
-							<TableCell className="text-xs select-none">
-								{''}
-							</TableCell>
-						);
-					}
+		const updatedAt = 'updated_at' in mod ? mod.updated_at : undefined;
 
-					return (
-						<TableCell className="text-xs select-none">
-							{dateUpdatedAt.toLocaleDateString()}
-						</TableCell>
-					);
-				} catch (_e) {}
+		const formattedDate = useMemo(() => {
+			if (!toggle_updated_at || typeof updatedAt !== 'number') {
+				return '';
 			}
 
-			return (
-				<TableCell className="text-xs select-none">
-					{updatedAt ?? ''}
-				</TableCell>
-			);
-		}
+			try {
+				const dateUpdatedAt = new Date(updatedAt);
+				if (dateUpdatedAt.getFullYear() === 1970) {
+					return '';
+				}
+				return dateUpdatedAt.toLocaleDateString();
+			} catch (_e) {
+				return updatedAt?.toString() ?? '';
+			}
+		}, [updatedAt, toggle_updated_at]);
 
-		return null;
+		if (!toggle_updated_at) return null;
+
+		return (
+			<div
+				className="text-xs select-none"
+				style={TABLE_DIMENSIONS.UPDATED_AT}
+			>
+				{formattedDate}
+			</div>
+		);
 	},
 	(prevProps, nextProps) =>
 		prevProps.mod.identifier === nextProps.mod.identifier,
