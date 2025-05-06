@@ -56,7 +56,7 @@ export const Selection = memo(
 
 			return (
 				<div
-					className="flex justify-center items-center select-none"
+					className="flex select-none items-center justify-center"
 					style={TABLE_DIMENSIONS.SELECTION}
 				>
 					<Checkbox
@@ -89,7 +89,7 @@ export const Selection = memo(
 			);
 			return (
 				<div
-					className="flex justify-center items-center select-none"
+					className="flex select-none items-center justify-center"
 					style={TABLE_DIMENSIONS.SELECTION}
 				>
 					<Checkbox

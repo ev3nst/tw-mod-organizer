@@ -47,15 +47,15 @@ export const Sort = memo(
 		return (
 			<div
 				onPointerDown={handlePointerDown}
-				className={`justify-center select-none ${
+				className={`select-none justify-center ${
 					isSortingEnabled ? 'cursor-move' : 'cursor-default'
 				}`}
 				style={TABLE_DIMENSIONS.SORTING}
 				{...sortableProps}
 			>
-				<div className="flex items-center justify-center h-full relative">
+				<div className="relative flex h-full items-center justify-center">
 					<GripVerticalIcon
-						className={`h-4 w-4 text-muted-foreground dark:text-primary/60 ${
+						className={`size-4 text-muted-foreground dark:text-primary/60 ${
 							isSortingEnabled ? '' : 'opacity-50'
 						}`}
 					/>

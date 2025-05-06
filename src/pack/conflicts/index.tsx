@@ -1,6 +1,6 @@
 const PackDBConflicts = () => {
 	return (
-		<div className="relative h-full w-full overflow-auto dark-scrollbar">
+		<div className="dark-scrollbar relative size-full overflow-auto">
 			Not implemented yet
 		</div>
 	);

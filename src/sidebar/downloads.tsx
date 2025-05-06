@@ -335,25 +335,25 @@ export const Downloads = () => {
 
 		switch (download.status) {
 			case 'queued':
-				return <div className="ml-2 text-blue-500 text-xs">Queued</div>;
+				return <div className="ml-2 text-xs text-blue-500">Queued</div>;
 			case 'paused':
-				return <div className="ml-2 text-blue-500 text-xs">Paused</div>;
+				return <div className="ml-2 text-xs text-blue-500">Paused</div>;
 			case 'in_progress':
 				if (isPaused) {
 					return (
-						<div className="ml-2 text-orange-500 text-xs">
+						<div className="ml-2 text-xs text-orange-500">
 							Paused
 						</div>
 					);
 				}
 
 				return (
-					<div className="ml-2 text-green-500 text-xs animate-pulse">
+					<div className="ml-2 animate-pulse text-xs text-green-500">
 						Active
 					</div>
 				);
 			case 'error':
-				return <div className="ml-2 text-red-500 text-xs">Failed</div>;
+				return <div className="ml-2 text-xs text-red-500">Failed</div>;
 			default:
 				return null;
 		}
@@ -362,7 +362,7 @@ export const Downloads = () => {
 	const renderDownloadItem = (download: DownloadRecord) => (
 		<div
 			key={`downloads_${download.app_id}_${download.item_id}`}
-			className="p-2 hover:cursor-pointer hover:bg-black/90 relative w-full"
+			className="relative w-full p-2 hover:cursor-pointer hover:bg-black/90"
 		>
 			<div className="text-xs leading-5">
 				<div className="flex  justify-between">
@@ -370,7 +370,7 @@ export const Downloads = () => {
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<div
-									className={`hover:cursor-pointer hover:text-blue-500 pe-[30px] ${
+									className={`pe-[30px] hover:cursor-pointer hover:text-blue-500 ${
 										download.hidden === 1
 											? 'text-orange-500'
 											: ''
@@ -407,13 +407,13 @@ export const Downloads = () => {
 									}}
 								>
 									{download.hidden === 1 ? (
-										<div className="flex gap-2 items-center">
-											<EyeIcon className="w-4 h-4" /> Set
+										<div className="flex items-center gap-2">
+											<EyeIcon className="size-4" /> Set
 											Visible
 										</div>
 									) : (
-										<div className="flex gap-2 items-center">
-											<EyeOffIcon className="w-4 h-4" />{' '}
+										<div className="flex items-center gap-2">
+											<EyeOffIcon className="size-4" />{' '}
 											Hide
 										</div>
 									)}
@@ -459,9 +459,9 @@ export const Downloads = () => {
 				</div>
 				{download.status === 'in_progress' &&
 					typeof download.progress !== 'undefined' && (
-						<div className="w-full mt-1 bg-gray-700 rounded-full h-1.5">
+						<div className="mt-1 h-1.5 w-full rounded-full bg-gray-700">
 							<div
-								className="bg-blue-600 h-1.5 rounded-full"
+								className="h-1.5 rounded-full bg-blue-600"
 								style={{
 									width: `${Math.min(
 										100,
@@ -473,7 +473,7 @@ export const Downloads = () => {
 					)}
 			</div>
 			<Button
-				className="hover:text-red-500 h-6 w-6 absolute right-3 top-1 [&_svg]:size-3"
+				className="absolute right-3 top-1 size-6 hover:text-red-500 [&_svg]:size-3"
 				variant="ghost"
 				size="icon"
 				onClick={() => handleRemoveDownload(download.id)}
@@ -485,10 +485,10 @@ export const Downloads = () => {
 
 	return (
 		<div>
-			<div className="absolute top-[5px] left-[110px] z-10 flex items-center gap-2">
+			<div className="absolute left-[110px] top-[5px] z-10 flex items-center gap-2">
 				{downloads.length > 0 && (
 					<Button
-						className="hover:text-blue-500 h-7 w-7"
+						className="size-7 hover:text-blue-500"
 						variant="ghost"
 						size="icon"
 						onClick={handlePauseResume}
@@ -500,7 +500,7 @@ export const Downloads = () => {
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<Button
-							className="hover:text-blue-500 h-7 w-7"
+							className="size-7 hover:text-blue-500"
 							variant="ghost"
 							size="icon"
 							onClick={() =>
@@ -524,7 +524,7 @@ export const Downloads = () => {
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<Button
-							className="hover:text-blue-500 h-7 w-7"
+							className="size-7 hover:text-blue-500"
 							variant="ghost"
 							size="icon"
 							onClick={() =>
@@ -548,7 +548,7 @@ export const Downloads = () => {
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<Button
-							className="hover:text-blue-500 h-7 w-7"
+							className="size-7 hover:text-blue-500"
 							variant="ghost"
 							size="icon"
 							onClick={() =>
@@ -568,17 +568,17 @@ export const Downloads = () => {
 				</Tooltip>
 
 				{nxmProtocolLoading && (
-					<div className="text-center animate-pulse">
-						<LoaderIcon className="animate-spin w-5 h-5 text-foreground mx-auto" />
+					<div className="animate-pulse text-center">
+						<LoaderIcon className="mx-auto size-5 animate-spin text-foreground" />
 					</div>
 				)}
 			</div>
-			<div className="divide-y w-full">
+			<div className="w-full divide-y">
 				{downloads.map(renderDownloadItem)}
 			</div>
 
 			{downloads.length === 0 && (
-				<div className="text-center p-4 text-muted-foreground">
+				<div className="p-4 text-center text-muted-foreground">
 					No downloaded files found
 				</div>
 			)}

@@ -43,9 +43,9 @@ export class ErrorBoundary extends React.Component<
 		if (this.state.hasError) {
 			return (
 				<main>
-					<div className="flex justify-between app-drag-region border-b fixed top-0 left-0 right-0 py-1">
-						<div className="flex items-center gap-4 py-1 px-3">
-							<img src="/logo.png" className="h-6 w-6" />
+					<div className="app-drag-region fixed inset-x-0 top-0 flex justify-between border-b py-1">
+						<div className="flex items-center gap-4 px-3 py-1">
+							<img src="/logo.png" className="size-6" />
 							<div className="text-sm font-bold">
 								TW Mod Organizer
 							</div>
@@ -53,8 +53,8 @@ export class ErrorBoundary extends React.Component<
 						<WindowActions className="px-1" />
 					</div>
 
-					<div className="flex items-center justify-center h-screen w-screen">
-						<div className="relative text-left max-w-3xl p-6  text-white rounded-md">
+					<div className="flex h-screen w-screen items-center justify-center">
+						<div className="relative max-w-3xl rounded-md p-6  text-left text-white">
 							<h1 className="text-4xl font-semibold text-red-500">
 								Error
 							</h1>
@@ -65,7 +65,7 @@ export class ErrorBoundary extends React.Component<
 							<h2 className="mt-6 text-2xl font-medium">
 								Stack Trace
 							</h2>
-							<pre className="mt-2 p-4 bg-black text-sm overflow-auto max-h-[400px] rounded-md border border-gray-700">
+							<pre className="mt-2 max-h-[400px] overflow-auto rounded-md border border-gray-700 bg-black p-4 text-sm">
 								{this.state.errorStack}
 							</pre>
 

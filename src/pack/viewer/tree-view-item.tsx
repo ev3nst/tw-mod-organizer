@@ -66,35 +66,34 @@ export function TreeViewItem({
 	) => {
 		if (!hasChildren) {
 			if (item.id.startsWith('db/')) {
-				return <DatabaseIcon className="text-blue-500 mt-0.5" />;
+				return <DatabaseIcon className="mt-0.5 text-blue-500" />;
 			}
 
 			const idEndsWith = item.id.substring(item.id.lastIndexOf('.'));
 			switch (idEndsWith) {
 				case '.lua':
-					return <CodeIcon className="text-orange-500 mt-0.5" />;
+					return <CodeIcon className="mt-0.5 text-orange-500" />;
 				case '.xml':
-					return <CodeIcon className="text-orange-500 mt-0.5" />;
+					return <CodeIcon className="mt-0.5 text-orange-500" />;
 				case '.json':
-					return <BracesIcon className="text-orange-500 mt-0.5" />;
+					return <BracesIcon className="mt-0.5 text-orange-500" />;
 				case '.png':
-					return <ImageIcon className="text-purple-500 mt-0.5" />;
+					return <ImageIcon className="mt-0.5 text-purple-500" />;
 				case '.dds':
-					return <ImageIcon className="text-purple-500 mt-0.5" />;
+					return <ImageIcon className="mt-0.5 text-purple-500" />;
 				case '.loc':
-					return <TypeIcon className="text-red-500 mt-0.5" />;
+					return <TypeIcon className="mt-0.5 text-red-500" />;
 				case '.variantmeshdefinition':
-					return <BoxIcon className="text-green-500 mt-0.5" />;
+					return <BoxIcon className="mt-0.5 text-green-500" />;
 				case '.material':
-					return <GemIcon className="text-green-500 mt-0.5" />;
+					return <GemIcon className="mt-0.5 text-green-500" />;
 				case '.ca_vp8':
 					return (
-						<ClapperboardIcon className="text-yellow-500 mt-0.5" />
+						<ClapperboardIcon className="mt-0.5 text-yellow-500" />
 					);
 
 				default:
 					return <CircleHelpIcon className=" mt-0.5" />;
-					break;
 			}
 		} else {
 			if (level !== 0) {
@@ -109,7 +108,7 @@ export function TreeViewItem({
 				<CollapsibleTrigger asChild>
 					<Button
 						variant="ghost"
-						className={`w-full justify-between text-left rounded-none text-xs break-all whitespace-normal min-h-8 max-h-12 h-auto px-1 [&_svg]:size-3 ${
+						className={`h-auto max-h-12 min-h-8 w-full justify-between whitespace-normal break-all rounded-none px-1 text-left text-xs [&_svg]:size-3 ${
 							level === 0 ? 'font-semibold' : ''
 						} ${
 							selectedTreeItem?.id === item.id
@@ -130,7 +129,7 @@ export function TreeViewItem({
 						>
 							{imgSrc && (
 								<img
-									className={`object-cover ms-1 h-6 w-6 rounded-full select-none`}
+									className={`ms-1 size-6 select-none rounded-full object-cover`}
 									src={imgSrc}
 								/>
 							)}
@@ -151,7 +150,7 @@ export function TreeViewItem({
 				</CollapsibleTrigger>
 
 				{hasChildren && (
-					<CollapsibleContent className="ml-2 before:content-[''] before:absolute before:top-0 before:bottom-0 before:left-[10px] before:border-l before:border-secondary-border relative">
+					<CollapsibleContent className="relative ml-2 before:absolute before:inset-y-0 before:left-[10px] before:border-l before:border-secondary-border before:content-['']">
 						{item.children!.map(child => (
 							<TreeViewItem
 								key={child.id}

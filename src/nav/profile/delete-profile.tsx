@@ -47,7 +47,7 @@ export const DeleteProfile = () => {
 				<Button
 					variant="ghost"
 					size="icon"
-					className="w-7 h-7 text-primary"
+					className="size-7 text-primary"
 				>
 					<XIcon />
 				</Button>

@@ -28,13 +28,13 @@ const DependencyModComponent = ({
 }) => {
 	return (
 		<li
-			className="flex gap-3 items-center text-sm"
+			className="flex items-center gap-3 text-sm"
 			key={`required_items_dialog_${dependencyMod.identifier}`}
 		>
 			{isActive ? (
-				<CheckIcon className="w-4 h-4 text-green-500" />
+				<CheckIcon className="size-4 text-green-500" />
 			) : (
-				<XIcon className="w-4 h-4 text-red-500" />
+				<XIcon className="size-4 text-red-500" />
 			)}
 			<div>{dependencyMod.title}</div>
 		</li>
@@ -76,15 +76,18 @@ function RequiredItemsDialog() {
 		[modActivationData],
 	);
 
-	const isActive = requiredItemsMod && activatedMods.has(requiredItemsMod.identifier);
+	const isActive =
+		requiredItemsMod && activatedMods.has(requiredItemsMod.identifier);
 	const dependencyMods = useMemo(
 		() =>
-			requiredItemsMod ? getCascadingDependencies(
-				requiredItemsMod,
-				modLookup,
-				nonSeparatorMods,
-				isActive ? 'dependencies' : 'dependents',
-			) : [],
+			requiredItemsMod
+				? getCascadingDependencies(
+						requiredItemsMod,
+						modLookup,
+						nonSeparatorMods,
+						isActive ? 'dependencies' : 'dependents',
+					)
+				: [],
 		[requiredItemsMod, modLookup, nonSeparatorMods, isActive],
 	);
 
@@ -107,7 +110,7 @@ function RequiredItemsDialog() {
 	const handleEnable = () => handleActivationChange(true);
 	const handleDisable = () => handleActivationChange(false);
 
-	if(!requiredItemsMod) return null;
+	if (!requiredItemsMod) return null;
 	return (
 		<Dialog
 			open={requiredItemsModal && requiredItemsMod !== undefined}
@@ -124,7 +127,7 @@ function RequiredItemsDialog() {
 					<DialogTitle className="flex items-baseline gap-3">
 						<div>Mod Dependency</div>
 					</DialogTitle>
-					<DialogDescription className="text-xs mt-1 break-all">
+					<DialogDescription className="mt-1 break-all text-xs">
 						{requiredItemsMod.title}
 					</DialogDescription>
 				</DialogHeader>
@@ -143,7 +146,7 @@ function RequiredItemsDialog() {
 							))}
 						</ul>
 						<Separator className="my-2" />
-						<div className="flex gap-2 items-center">
+						<div className="flex items-center gap-2">
 							<Button
 								size="sm"
 								variant="success"
@@ -153,7 +156,7 @@ function RequiredItemsDialog() {
 							</Button>
 							<p className="text-sm">
 								These mods are required for{' '}
-								<span className="text-blue-500 mx-1">
+								<span className="mx-1 text-blue-500">
 									{requiredItemsMod.title}
 								</span>{' '}
 								to work. Would you like to enable them as well?
@@ -174,7 +177,7 @@ function RequiredItemsDialog() {
 							))}
 						</ul>
 						<Separator className="my-2" />
-						<div className="flex gap-2 items-center">
+						<div className="flex items-center gap-2">
 							<Button
 								size="sm"
 								variant="destructive"
@@ -184,7 +187,7 @@ function RequiredItemsDialog() {
 							</Button>
 							<p className="text-sm">
 								These mods depend on{' '}
-								<span className="text-blue-500 mx-1">
+								<span className="mx-1 text-blue-500">
 									{requiredItemsMod.title}
 								</span>
 								, which you just disabled. Would you like to

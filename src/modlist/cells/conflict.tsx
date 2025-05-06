@@ -99,16 +99,16 @@ export const Conflict = memo(
 			<div
 				style={TABLE_DIMENSIONS.CONFLICT}
 				onClick={handleClick}
-				className="flex justify-center items-center"
+				className="flex items-center justify-center"
 			>
-				<div className="flex gap-1 text-center justify-center items-center hover:cursor-pointer hover:opacity-80">
+				<div className="flex items-center justify-center gap-1 text-center hover:cursor-pointer hover:opacity-80">
 					{win.total > 0 && (
-						<span className="text-green-500 text-xs">
+						<span className="text-xs text-green-500">
 							{win.total}
 						</span>
 					)}
 					{lose.total > 0 && (
-						<span className="text-red-500 text-xs">
+						<span className="text-xs text-red-500">
 							{lose.total}
 						</span>
 					)}

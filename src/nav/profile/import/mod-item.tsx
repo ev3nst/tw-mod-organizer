@@ -64,10 +64,10 @@ export const ModItemComponent = ({
 		<div
 			style={style}
 			key={`import_profile_mitem_${item.identifier}`}
-			className={`text-sm py-1 ${styleClasses}`}
+			className={`py-1 text-sm ${styleClasses}`}
 		>
-			<div className="flex justify-between items-center">
-				<div className="flex items-center gap-1 break-words overflow-hidden">
+			<div className="flex items-center justify-between">
+				<div className="flex items-center gap-1 overflow-hidden break-words">
 					<div
 						onClick={isSteamMod ? handleUrlOpen : undefined}
 						className=""
@@ -76,7 +76,7 @@ export const ModItemComponent = ({
 					</div>
 					{isNexusMod && downloadLink !== '' && (
 						<ExternalLinkIcon
-							className="w-4 h-4 hover:text-blue-500 hover:cursor-pointer"
+							className="size-4 hover:cursor-pointer hover:text-blue-500"
 							onClick={() => {
 								api.open_external_url(downloadLink);
 							}}
@@ -85,14 +85,14 @@ export const ModItemComponent = ({
 				</div>
 				{item.item_type !== 'base_mod' && (
 					<XIcon
-						className="w-4 h-4 text-red-500 hover:cursor-pointer"
+						className="size-4 text-red-500 hover:cursor-pointer"
 						onClick={() => {
 							onRemoveMod(item);
 						}}
 					/>
 				)}
 			</div>
-			<em className="block text-muted-foreground text-xs">
+			<em className="block text-xs text-muted-foreground">
 				{item.mod_file}
 			</em>
 		</div>

@@ -42,7 +42,7 @@ const ConflictCaseItem = ({
 				</AccordionTrigger>
 				<AccordionContent>
 					{cases.map((d: string) => (
-						<div key={`cci_${d}`} className="text-xs ps-4 truncate">
+						<div key={`cci_${d}`} className="truncate ps-4 text-xs">
 							- {d}
 						</div>
 					))}
@@ -69,7 +69,7 @@ const ConflictItem = ({
 				{name} ({titles.length})
 			</AccordionTrigger>
 			<AccordionContent>
-				<div className="text-sm flex flex-col gap-2 h-[300px] overflow-y-auto">
+				<div className="flex h-[300px] flex-col gap-2 overflow-y-auto text-sm">
 					{titles.map((title: string, ti) => (
 						<ConflictCaseItem
 							key={`conflict_case_${name}_${title}_${ti}`}
@@ -119,7 +119,7 @@ const ConflictDetailsDialog = () => {
 							{currentConflictData.mod.title}
 						</div>
 					</DialogTitle>
-					<DialogDescription className="text-xs mt-1 break-all">
+					<DialogDescription className="mt-1 break-all text-xs">
 						{currentConflictData.mod.mod_file_path}
 					</DialogDescription>
 				</DialogHeader>

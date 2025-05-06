@@ -179,7 +179,7 @@ export function ImportData() {
 
 	return (
 		<div className="flex flex-col gap-3">
-			<div className="flex flex-col text-sm font-bold mb-1">
+			<div className="mb-1 flex flex-col text-sm font-bold">
 				Import Data From: WH3-Mod-Manager
 			</div>
 			<p className="text-sm text-orange-500">Highly Experimental</p>

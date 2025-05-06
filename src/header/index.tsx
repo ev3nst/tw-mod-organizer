@@ -17,7 +17,7 @@ export function AppHeader() {
 	const { toggleSidebar } = useSidebar();
 
 	return (
-		<header className="flex sticky top-0 z-50 w-full shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear ps-4 pe-2 app-drag-region bg-background right-0 border-b sm:left-0 h-[--header-height]">
+		<header className="app-drag-region sticky right-0 top-0 z-50 flex h-[--header-height] w-full shrink-0 items-center justify-between gap-2 border-b bg-background pe-2 ps-4 transition-[width,height] ease-linear sm:left-0">
 			<div className="flex items-center">
 				<img className="h-10" src="/logo.png" />
 				<GameSwitcher />
@@ -26,7 +26,7 @@ export function AppHeader() {
 				<Refresh />
 				<Version />
 			</div>
-			<div className="flex gap-2 items-center">
+			<div className="flex items-center gap-2">
 				<Button
 					className="clickable-content"
 					variant="ghost"

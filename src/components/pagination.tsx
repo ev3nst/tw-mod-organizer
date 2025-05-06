@@ -40,7 +40,7 @@ const PaginationLink = ({
 	...props
 }: PaginationLinkProps) => (
 	<Button
-		className="[&_svg]:size-3.5 w-8 h-8"
+		className="size-8 [&_svg]:size-3.5"
 		variant={isActive ? 'outline' : 'ghost'}
 		aria-current={isActive ? 'page' : undefined}
 		size={size}
@@ -81,7 +81,7 @@ const PaginationEllipsis = ({
 	<span
 		aria-hidden
 		className={cn(
-			'flex h-5 w-5 text-muted-foreground items-center justify-center',
+			'flex size-5 items-center justify-center text-muted-foreground',
 			className,
 		)}
 		{...props}

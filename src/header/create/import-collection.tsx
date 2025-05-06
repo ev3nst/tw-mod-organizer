@@ -253,16 +253,16 @@ export const ImportCollection = () => {
 	};
 
 	return (
-		<div className="flex flex-col w-full h-full justify-between px-2 pt-2">
+		<div className="flex size-full flex-col justify-between px-2 pt-2">
 			<div className="flex flex-col gap-3">
 				<div className="flex flex-col gap-3">
 					<Label className="text-blue-500">Steam URL</Label>
 					<div className="flex flex-col gap-2">
-						<div className="flex justify-between items-center gap-3">
+						<div className="flex items-center justify-between gap-3">
 							<Input
 								autoComplete="off"
 								autoCorrect="off"
-								className="flex-grow"
+								className="grow"
 								placeholder="eg. https://steamcommunity.com/sharedfiles/filedetails/?id=123456789"
 								value={steamURL}
 								onChange={e =>
@@ -288,7 +288,7 @@ export const ImportCollection = () => {
 
 						{isFormValid && (
 							<>
-								<div className="flex items-center justify-between gap-2 mt-3">
+								<div className="mt-3 flex items-center justify-between gap-2">
 									<div className="flex items-center space-x-2">
 										<Checkbox
 											id="useSeparator"
@@ -309,7 +309,7 @@ export const ImportCollection = () => {
 									{typeof collection !== 'undefined' &&
 										collection.items.length > 0 && (
 											<div className="flex items-center gap-4 text-sm">
-												<div className="w-3 h-3 bg-green-500" />
+												<div className="size-3 bg-green-500" />
 												<div>
 													Mods that already exist.
 												</div>
@@ -352,7 +352,7 @@ export const ImportCollection = () => {
 											</Label>
 											<div className="col-span-3">
 												<ColorPicker
-													className="!w-full flex-grow"
+													className="!w-full grow"
 													color={backgroundColor}
 													onChange={color =>
 														setBackgroundColor(
@@ -369,7 +369,7 @@ export const ImportCollection = () => {
 											</Label>
 											<div className="col-span-3">
 												<ColorPicker
-													className="!w-full flex-grow"
+													className="!w-full grow"
 													color={textColor}
 													onChange={color =>
 														setTextColor(color.hex)
@@ -380,7 +380,7 @@ export const ImportCollection = () => {
 										<div className="flex items-center space-x-2">
 											<Checkbox
 												id="moveExistingModsUnderSeparator"
-												className="data-[state=checked]:bg-orange-500 border-orange-500"
+												className="border-orange-500 data-[state=checked]:bg-orange-500"
 												checked={
 													moveExistingModsUnderSeparator
 												}
@@ -392,7 +392,7 @@ export const ImportCollection = () => {
 											/>
 											<label
 												htmlFor="moveExistingModsUnderSeparator"
-												className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-orange-500 italic"
+												className="text-sm font-medium italic leading-none text-orange-500 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 											>
 												Move existing mods under
 												separator
@@ -407,17 +407,17 @@ export const ImportCollection = () => {
 				<div className="flex flex-col divide-y">
 					{collection?.items.map(mod => (
 						<div
-							className={`flex divide-x text-sm items-center p-1 hover:bg-secondary-bg transition-opacity ${
+							className={`flex items-center divide-x p-1 text-sm transition-opacity hover:bg-secondary-bg ${
 								ignoredMods.has(mod.published_file_id)
 									? 'opacity-40'
 									: ''
 							}`}
 							key={`mod_to_import_${mod.published_file_id}`}
 						>
-							<div className="flex items-center justify-between w-full gap-2">
-								<div className="flex-1 flex items-center justify-between">
+							<div className="flex w-full items-center justify-between gap-2">
+								<div className="flex flex-1 items-center justify-between">
 									<div
-										className={`truncate hover:text-sky-500 hover:cursor-pointer flex gap-2 items-center ${
+										className={`flex items-center gap-2 truncate hover:cursor-pointer hover:text-sky-500 ${
 											alreadyExistingIds.indexOf(
 												mod.published_file_id,
 											) !== -1
@@ -432,34 +432,34 @@ export const ImportCollection = () => {
 									>
 										<img
 											src={mod.preview_url}
-											className="w-5 h-5 rounded-md"
+											className="size-5 rounded-md"
 										/>
 										{mod.title}
-										<ExternalLinkIcon className="w-3 h-3" />
+										<ExternalLinkIcon className="size-3" />
 									</div>
-									<div className="text-muted-foreground italic text-xs whitespace-nowrap">
+									<div className="whitespace-nowrap text-xs italic text-muted-foreground">
 										{formatFileSizeSI(mod.file_size)}
 									</div>
 								</div>
 								<Button
 									variant="ghost"
 									size="icon"
-									className="h-6 w-6"
+									className="size-6"
 									onClick={() =>
 										toggleModIgnore(mod.published_file_id)
 									}
 								>
 									{ignoredMods.has(mod.published_file_id) ? (
-										<UndoIcon className="h-4 w-4" />
+										<UndoIcon className="size-4" />
 									) : (
-										<XIcon className="h-4 w-4" />
+										<XIcon className="size-4" />
 									)}
 								</Button>
 							</div>
 						</div>
 					))}
 				</div>
-				<div className="flex justify-between px-1 mb-3">
+				<div className="mb-3 flex justify-between px-1">
 					<span className="text-sm font-medium leading-none text-muted-foreground">
 						{estimateTotalSize(
 							collection?.items.filter(

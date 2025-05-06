@@ -135,7 +135,6 @@ export const LoadExactly = () => {
 					break;
 				default:
 					throw new Error('Unsupported Game');
-					break;
 			}
 
 			setSaveFileDialogOpen(false);

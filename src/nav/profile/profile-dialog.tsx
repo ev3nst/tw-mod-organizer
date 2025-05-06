@@ -30,7 +30,7 @@ export const ProfileDialog = () => {
 				<Button
 					variant="ghost"
 					size="icon"
-					className="w-7 h-7 text-primary"
+					className="size-7 text-primary"
 				>
 					<PlusIcon />
 				</Button>
@@ -39,7 +39,7 @@ export const ProfileDialog = () => {
 				{/* suppress radix error */}
 				<DialogTitle className="hidden" />
 				<Tabs defaultValue="add_profile">
-					<TabsList className="grid grid-cols-3 mr-10 mb-3">
+					<TabsList className="mb-3 mr-10 grid grid-cols-3">
 						<TabsTrigger
 							value="add_profile"
 							disabled={isGameRunning || shouldLockScreen}

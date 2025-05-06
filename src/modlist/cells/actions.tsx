@@ -280,31 +280,31 @@ export const ModActionDropdownRenderer = ({
 			<div style={{ ...cellStyle, ...TABLE_DIMENSIONS.ACTIONS }}>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<div className="w-full flex items-center justify-center p-0">
-							<EllipsisVerticalIcon className="w-4 h-4" />
+						<div className="flex w-full items-center justify-center p-0">
+							<EllipsisVerticalIcon className="size-4" />
 						</div>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent className="w-56">
 						<DropdownMenuGroup>
 							<DropdownMenuItem
-								className="text-xs py-2 my-0"
+								className="my-0 py-2 text-xs"
 								onClick={handleEdit}
 							>
-								<InfoIcon className="w-3 h-3" />
+								<InfoIcon className="size-3" />
 								Edit (Meta Information)
 							</DropdownMenuItem>
 							<DropdownMenuItem
-								className="text-xs py-2 my-0"
+								className="my-0 py-2 text-xs"
 								onClick={handleSetPriority}
 							>
-								<ArrowRightIcon className="w-3 h-3" />
+								<ArrowRightIcon className="size-3" />
 								Set Priority
 							</DropdownMenuItem>
 							<DropdownMenuItem
-								className="text-xs py-2 my-0"
+								className="my-0 py-2 text-xs"
 								onClick={handleDelete}
 							>
-								<TrashIcon className="w-3 h-3 text-red-500" />
+								<TrashIcon className="size-3 text-red-500" />
 								Delete
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
@@ -325,70 +325,70 @@ export const ModActionDropdownRenderer = ({
 		<div style={TABLE_DIMENSIONS.ACTIONS}>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-					<div className="w-full flex items-center justify-center p-0">
-						<EllipsisVerticalIcon className="w-4 h-4" />
+					<div className="flex w-full items-center justify-center p-0">
+						<EllipsisVerticalIcon className="size-4" />
 					</div>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent className="w-56">
 					<DropdownMenuGroup>
 						<DropdownMenuItem
-							className="text-xs py-2 my-0"
+							className="my-0 py-2 text-xs"
 							onClick={handleMetaInfo}
 						>
-							<InfoIcon className="w-3 h-3" />
+							<InfoIcon className="size-3" />
 							Edit (Meta Information)
 						</DropdownMenuItem>
 
 						<DropdownMenuSub>
 							<DropdownMenuSubTrigger>
-								<StarIcon className="w-3 h-3" />
+								<StarIcon className="size-3" />
 								Open Mod
 							</DropdownMenuSubTrigger>
 							<DropdownMenuPortal>
 								<DropdownMenuSubContent>
 									<DropdownMenuItem
-										className="text-xs py-2 my-0"
+										className="my-0 py-2 text-xs"
 										onClick={() =>
 											api.highlight_path(
 												currentMod.mod_file_path,
 											)
 										}
 									>
-										<EyeIcon className="w-3 h-3" />
+										<EyeIcon className="size-3" />
 										Mod Location
 									</DropdownMenuItem>
 
 									{showExternalLink && (
 										<DropdownMenuItem
-											className="text-xs py-2 my-0"
+											className="my-0 py-2 text-xs"
 											onClick={() =>
 												handleOpenModUrl(false)
 											}
 										>
-											<LinkIcon className="w-3 h-3" />
+											<LinkIcon className="size-3" />
 											Mod Page in Browser
 										</DropdownMenuItem>
 									)}
 									{currentMod.item_type === 'steam_mod' && (
 										<DropdownMenuItem
-											className="text-xs py-2 my-0"
+											className="my-0 py-2 text-xs"
 											onClick={() =>
 												handleOpenModUrl(true)
 											}
 										>
-											<EyeIcon className="w-3 h-3" />
+											<EyeIcon className="size-3" />
 											Mod Page in Steam Client
 										</DropdownMenuItem>
 									)}
 									<DropdownMenuItem
-										className="text-xs py-2 my-0"
+										className="my-0 py-2 text-xs"
 										onClick={() =>
 											api.open_pack_file(
 												currentMod.mod_file_path,
 											)
 										}
 									>
-										<AppWindowIcon className="w-3 h-3" />
+										<AppWindowIcon className="size-3" />
 										Mod in RPFM
 									</DropdownMenuItem>
 								</DropdownMenuSubContent>
@@ -399,7 +399,7 @@ export const ModActionDropdownRenderer = ({
 							typeof currentMod.creator_id === 'string' &&
 							currentMod.creator_id !== null && (
 								<DropdownMenuItem
-									className="text-xs py-2 my-0"
+									className="my-0 py-2 text-xs"
 									onClick={() =>
 										api.open_external_url(
 											`steam://openurl/https://steamcommunity.com/profiles/${
@@ -410,7 +410,7 @@ export const ModActionDropdownRenderer = ({
 										)
 									}
 								>
-									<UserIcon className="w-3 h-3" />
+									<UserIcon className="size-3" />
 									More from this Author
 								</DropdownMenuItem>
 							)}
@@ -421,7 +421,7 @@ export const ModActionDropdownRenderer = ({
 								'https://www.nexusmods.com',
 							) && (
 								<DropdownMenuItem
-									className="text-xs py-2 my-0"
+									className="my-0 py-2 text-xs"
 									onClick={() =>
 										api.open_external_url(
 											`${
@@ -432,30 +432,30 @@ export const ModActionDropdownRenderer = ({
 										)
 									}
 								>
-									<UserIcon className="w-3 h-3" />
+									<UserIcon className="size-3" />
 									More from this Author
 								</DropdownMenuItem>
 							)}
 
 						<DropdownMenuSub>
 							<DropdownMenuSubTrigger>
-								<ArrowRightIcon className="w-3 h-3" />
+								<ArrowRightIcon className="size-3" />
 								Send Mod to
 							</DropdownMenuSubTrigger>
 							<DropdownMenuPortal>
 								<DropdownMenuSubContent>
 									<DropdownMenuItem
-										className="text-xs py-2 my-0"
+										className="my-0 py-2 text-xs"
 										onClick={handleSetPriority}
 									>
-										<ArrowRightIcon className="w-3 h-3" />
+										<ArrowRightIcon className="size-3" />
 										Set Priority
 									</DropdownMenuItem>
 									<DropdownMenuItem
-										className="text-xs py-2 my-0"
+										className="my-0 py-2 text-xs"
 										onClick={handleSendToSeparator}
 									>
-										<UngroupIcon className="w-3 h-3" />
+										<UngroupIcon className="size-3" />
 										Send to Separator
 									</DropdownMenuItem>
 								</DropdownMenuSubContent>
@@ -463,10 +463,10 @@ export const ModActionDropdownRenderer = ({
 						</DropdownMenuSub>
 
 						<DropdownMenuItem
-							className="text-xs py-2 my-0"
+							className="my-0 py-2 text-xs"
 							onClick={handleRemove}
 						>
-							<TrashIcon className="w-3 h-3 text-red-500" />
+							<TrashIcon className="size-3 text-red-500" />
 							{deleteText}
 						</DropdownMenuItem>
 					</DropdownMenuGroup>
@@ -512,15 +512,15 @@ export const ModActionContextMenuRenderer = ({
 				</ContextMenuLabel>
 				<ContextMenuSeparator />
 				<ContextMenuItem onSelect={handleEdit}>
-					<InfoIcon className="w-3 h-3 mr-2" />
+					<InfoIcon className="mr-2 size-3" />
 					Edit (Meta Information)
 				</ContextMenuItem>
 				<ContextMenuItem onSelect={handleSetPriority}>
-					<ArrowRightIcon className="w-3 h-3 mr-2" />
+					<ArrowRightIcon className="mr-2 size-3" />
 					Set Priority
 				</ContextMenuItem>
 				<ContextMenuItem onSelect={handleDelete}>
-					<TrashIcon className="w-3 h-3 mr-2 text-red-500" />
+					<TrashIcon className="mr-2 size-3 text-red-500" />
 					Delete
 				</ContextMenuItem>
 			</ContextMenuGroup>
@@ -542,13 +542,13 @@ export const ModActionContextMenuRenderer = ({
 			</ContextMenuLabel>
 			<ContextMenuSeparator />
 			<ContextMenuItem onSelect={handleMetaInfo}>
-				<InfoIcon className="w-3 h-3 mr-2" />
+				<InfoIcon className="mr-2 size-3" />
 				Edit (Meta Information)
 			</ContextMenuItem>
 
 			<ContextMenuSub>
 				<ContextMenuSubTrigger>
-					<StarIcon className="w-3 h-3 mr-2" />
+					<StarIcon className="mr-2 size-3" />
 					Open Mod
 				</ContextMenuSubTrigger>
 				<ContextMenuSubContent>
@@ -557,14 +557,14 @@ export const ModActionContextMenuRenderer = ({
 							api.highlight_path(currentMod.mod_file_path)
 						}
 					>
-						<EyeIcon className="w-3 h-3 mr-2" />
+						<EyeIcon className="mr-2 size-3" />
 						Mod Location
 					</ContextMenuItem>
 					{showExternalLink && (
 						<ContextMenuItem
 							onSelect={() => handleOpenModUrl(false)}
 						>
-							<LinkIcon className="w-3 h-3 mr-2" />
+							<LinkIcon className="mr-2 size-3" />
 							Mod Page in Browser
 						</ContextMenuItem>
 					)}
@@ -573,7 +573,7 @@ export const ModActionContextMenuRenderer = ({
 						<ContextMenuItem
 							onSelect={() => handleOpenModUrl(true)}
 						>
-							<EyeIcon className="w-3 h-3 mr-2" />
+							<EyeIcon className="mr-2 size-3" />
 							Mod Page in Steam Client
 						</ContextMenuItem>
 					)}
@@ -583,7 +583,7 @@ export const ModActionContextMenuRenderer = ({
 							api.open_pack_file(currentMod.mod_file_path)
 						}
 					>
-						<AppWindowIcon className="w-3 h-3 mr-2" />
+						<AppWindowIcon className="mr-2 size-3" />
 						Mod in RPFM
 					</ContextMenuItem>
 				</ContextMenuSubContent>
@@ -603,31 +603,31 @@ export const ModActionContextMenuRenderer = ({
 							)
 						}
 					>
-						<UserIcon className="w-3 h-3 mr-2" />
+						<UserIcon className="mr-2 size-3" />
 						More from this Author
 					</ContextMenuItem>
 				)}
 
 			<ContextMenuSub>
 				<ContextMenuSubTrigger>
-					<ArrowRightIcon className="w-3 h-3 mr-2" />
+					<ArrowRightIcon className="mr-2 size-3" />
 					Send Mod to
 				</ContextMenuSubTrigger>
 				<ContextMenuSubContent>
 					<ContextMenuItem onSelect={handleSetPriority}>
-						<ArrowRightIcon className="w-3 h-3 mr-2" />
+						<ArrowRightIcon className="mr-2 size-3" />
 						Set Priority
 					</ContextMenuItem>
 
 					<ContextMenuItem onSelect={handleSendToSeparator}>
-						<UngroupIcon className="w-3 h-3 mr-2" />
+						<UngroupIcon className="mr-2 size-3" />
 						Send to Separator
 					</ContextMenuItem>
 				</ContextMenuSubContent>
 			</ContextMenuSub>
 
 			<ContextMenuItem onSelect={handleRemove}>
-				<TrashIcon className="w-3 h-3 mr-2 text-red-500" />
+				<TrashIcon className="mr-2 size-3 text-red-500" />
 				{deleteText}
 			</ContextMenuItem>
 		</ContextMenuGroup>

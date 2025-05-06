@@ -32,10 +32,10 @@ export function AppSidebar() {
 	return (
 		<Sidebar
 			side="right"
-			className="top-[--header-height] !h-[calc(100svh-var(--header-height))] bg-background flex flex-col"
+			className="top-[--header-height] flex !h-[calc(100svh-var(--header-height))] flex-col bg-background"
 		>
-			<SidebarContent className="flex flex-col h-full scrollbar-hide">
-				<div className="flex-grow overflow-visible flex flex-col">
+			<SidebarContent className="scrollbar-hide flex h-full flex-col">
+				<div className="flex grow flex-col overflow-visible">
 					<Accordion
 						type="single"
 						collapsible
@@ -45,8 +45,8 @@ export function AppSidebar() {
 						className="flex flex-col"
 					>
 						<AccordionItem value="saves">
-							<div className="flex justify-between items-center">
-								<AccordionTrigger className="text-base font-medium text-foreground px-3 py-2 sticky top-0 bg-background z-10 w-[300px]">
+							<div className="flex items-center justify-between">
+								<AccordionTrigger className="sticky top-0 z-10 w-[300px] bg-background px-3 py-2 text-base font-medium text-foreground">
 									Saves
 								</AccordionTrigger>
 								<Dialog>
@@ -54,7 +54,7 @@ export function AppSidebar() {
 										<Button
 											variant="ghost"
 											size="icon"
-											className="text-blue-500 m-0 flex-shrink"
+											className="m-0 shrink text-blue-500"
 											onClick={e => e.stopPropagation()}
 										>
 											<InfoIcon />
@@ -66,7 +66,7 @@ export function AppSidebar() {
 												Save Game Mod Compatibility
 											</DialogTitle>
 											<DialogDescription asChild>
-												<div className="!text-base pt-2">
+												<div className="pt-2 !text-base">
 													Mod manager in the event of
 													a save game file being
 													created or modified while
@@ -91,7 +91,7 @@ export function AppSidebar() {
 								</Dialog>
 							</div>
 							<AccordionContent
-								className="overflow-auto max-h-[calc(100vh-12rem)]"
+								className="max-h-[calc(100vh-12rem)] overflow-auto"
 								forceMount
 								hidden={'saves' !== sidebar_accordion}
 							>
@@ -99,11 +99,11 @@ export function AppSidebar() {
 							</AccordionContent>
 						</AccordionItem>
 						<AccordionItem value="downloads" className="relative">
-							<AccordionTrigger className="text-base font-medium text-foreground px-3 py-2 sticky top-0 bg-background z-10">
+							<AccordionTrigger className="sticky top-0 z-10 bg-background px-3 py-2 text-base font-medium text-foreground">
 								Downloads
 							</AccordionTrigger>
 							<AccordionContent
-								className="overflow-auto max-h-[calc(100vh-12rem)]"
+								className="max-h-[calc(100vh-12rem)] overflow-auto"
 								forceMount
 								hidden={'downloads' !== sidebar_accordion}
 							>

@@ -83,7 +83,7 @@ const NativeFileInput = ({
 				disabled={disabled}
 			>
 				{currentFile ? (
-					<div className="flex gap-2 text-foreground text-xs items-end">
+					<div className="flex items-end gap-2 text-xs text-foreground">
 						<span>{currentFile.name}</span>
 						<span>{formatFileSize(currentFile.size)}</span>
 					</div>

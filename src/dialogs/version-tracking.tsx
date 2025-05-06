@@ -94,7 +94,7 @@ const VersionTrackingDialog = () => {
 							className="rounded-full object-cover"
 							style={{ width: 20, height: 20 }}
 						/>
-						<div className="flex-grow">
+						<div className="grow">
 							{title}
 							<span className="ms-1 text-sm text-muted-foreground">
 								{description}
@@ -102,11 +102,11 @@ const VersionTrackingDialog = () => {
 						</div>
 					</div>
 
-					<div className="flex flex-col max-h-[150px] overflow-auto text-sm divide-y mt-2">
+					<div className="mt-2 flex max-h-[150px] flex-col divide-y overflow-auto text-sm">
 						{mods.map(mod => (
 							<div
 								key={`version_tracking_${mod.mod_id}`}
-								className="flex justify-between p-2 hover:bg-primary-foreground rounded-sm cursor-pointer"
+								className="flex cursor-pointer justify-between rounded-sm p-2 hover:bg-primary-foreground"
 								onClick={() =>
 									typeof mod.url === 'string' &&
 									api.open_external_url(mod.url)
@@ -151,7 +151,7 @@ const VersionTrackingDialog = () => {
 
 									{showAcknowledge && (
 										<span
-											className="text-green-500 hover:opacity-75 transition-opacity"
+											className="text-green-500 transition-opacity hover:opacity-75"
 											onClick={e => {
 												e.stopPropagation();
 												handleAcknowledge(
@@ -160,7 +160,7 @@ const VersionTrackingDialog = () => {
 												);
 											}}
 										>
-											<CheckCircleIcon className="w-4 h-4" />
+											<CheckCircleIcon className="size-4" />
 										</span>
 									)}
 								</div>
@@ -179,7 +179,7 @@ const VersionTrackingDialog = () => {
 					<DialogTitle className="flex items-baseline gap-3">
 						<span>Mod Version Tracking</span>
 					</DialogTitle>
-					<DialogDescription className="text-xs mt-1 break-all">
+					<DialogDescription className="mt-1 break-all text-xs">
 						Mod version tracking summary.
 					</DialogDescription>
 				</DialogHeader>

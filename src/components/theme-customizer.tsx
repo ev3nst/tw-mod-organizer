@@ -32,7 +32,7 @@ export function ThemeCustomizer() {
 					<PopoverTrigger asChild>
 						<Button
 							variant="ghost"
-							className="clickable-content group/toggle h-8 w-8 px-0"
+							className="clickable-content group/toggle size-8 px-0"
 						>
 							<PaletteIcon />
 							<span className="sr-only">Customize</span>
@@ -135,11 +135,11 @@ function CustomizerPopup() {
 								>
 									<span
 										className={cn(
-											'mr-1 flex h-5 w-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-[--theme-primary]',
+											'mr-1 flex size-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-[--theme-primary]',
 										)}
 									>
 										{isActive && (
-											<Check className="h-4 w-4 text-white" />
+											<Check className="size-4 text-white" />
 										)}
 									</span>
 									{theme.name}

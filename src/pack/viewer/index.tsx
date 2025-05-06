@@ -15,7 +15,7 @@ const PackViewer = () => {
 			className="!h-[calc(100%-37px)]"
 		>
 			<ResizablePanel defaultSize={25}>
-				<div className="overflow-y-auto h-full overflow-x-hidden divide-y dark-scrollbar">
+				<div className="dark-scrollbar h-full divide-y overflow-y-auto overflow-x-hidden">
 					<TreeView />
 				</div>
 			</ResizablePanel>

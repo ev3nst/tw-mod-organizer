@@ -221,7 +221,6 @@ export const Play = () => {
 					break;
 				default:
 					throw new Error('Unsupported Game');
-					break;
 			}
 		} catch (error) {
 			toastError(error);
@@ -239,10 +238,10 @@ export const Play = () => {
 	}, [isGameRunning, saveFile?.path]);
 
 	return (
-		<SidebarFooter className="mt-auto sticky bottom-0 bg-background pt-2 pb-2 z-10">
+		<SidebarFooter className="sticky bottom-0 z-10 mt-auto bg-background py-2">
 			<div className="flex items-center justify-between gap-2">
 				<RippleButton
-					className={`flex-grow bg-gradient-to-r px-6 py-3 text-white font-medium transition-all duration-100 ease-in-out hover:from-green-500 hover:to-emerald-600 hover:shadow-[0_0_10px_rgba(16,185,129,0.8)] ${
+					className={`grow bg-gradient-to-r px-6 py-3 font-medium text-white transition-all duration-100 ease-in-out hover:from-green-500 hover:to-emerald-600 hover:shadow-[0_0_10px_rgba(16,185,129,0.8)] ${
 						isGameRunning || shouldLockScreen || isGameLoading
 							? 'disabled'
 							: ''
@@ -272,7 +271,7 @@ export const Play = () => {
 								<AlertDialogDescription>
 									This action will force quit the game. Are
 									you sure you want to do this?
-									<span className="text-orange-500 mt-2 block">
+									<span className="mt-2 block text-orange-500">
 										This should only be used as a last
 										resort if mod organizer stuck as
 										"Running". You can also do this with

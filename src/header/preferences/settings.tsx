@@ -97,33 +97,33 @@ export function Settings() {
 				<DialogDescription>
 					Contents of the paths will not be moved. Please move the
 					contents
-					<span className="text-orange-500 mx-1">(mods)</span>
+					<span className="mx-1 text-orange-500">(mods)</span>
 					manually.
 				</DialogDescription>
 			</DialogHeader>
 			<div>
 				<div className="flex gap-3">
-					<div className="flex flex-col text-md font-bold mb-1">
+					<div className="text-md mb-1 flex flex-col font-bold">
 						Mod Installation Path
 					</div>
 				</div>
 				<Separator />
 				{installPath !== '' ? (
 					<>
-						<em className="text-xs my-2 block text-red-500">
+						<em className="my-2 block text-xs text-red-500">
 							{mod_installation_path.replace('/', '\\')}
 						</em>
-						<em className="text-xs my-2 block text-green-500">
+						<em className="my-2 block text-xs text-green-500">
 							{installPath.replace('/', '\\')}
 						</em>
 					</>
 				) : (
-					<em className="text-xs my-2 block">
+					<em className="my-2 block text-xs">
 						{mod_installation_path.replace('/', '\\')}
 					</em>
 				)}
 				<Separator />
-				<div className="w-full flex justify-between mt-2">
+				<div className="mt-2 flex w-full justify-between">
 					<Button
 						size="sm"
 						variant="info-outline"
@@ -148,27 +148,27 @@ export function Settings() {
 
 			<div>
 				<div className="flex gap-3">
-					<div className="flex flex-col text-md font-bold mb-1">
+					<div className="text-md mb-1 flex flex-col font-bold">
 						Downloads Path
 					</div>
 				</div>
 				<Separator />
 				{downloadPath !== '' ? (
 					<>
-						<em className="text-xs my-2 block text-red-500">
+						<em className="my-2 block text-xs text-red-500">
 							{mod_download_path.replace('/', '\\')}
 						</em>
-						<em className="text-xs my-2 block text-green-500">
+						<em className="my-2 block text-xs text-green-500">
 							{downloadPath.replace('/', '\\')}
 						</em>
 					</>
 				) : (
-					<em className="text-xs my-2 block">
+					<em className="my-2 block text-xs">
 						{mod_download_path.replace('/', '\\')}
 					</em>
 				)}
 				<Separator />
-				<div className="w-full flex justify-between mt-2">
+				<div className="mt-2 flex w-full justify-between">
 					<Button
 						size="sm"
 						variant="info-outline"

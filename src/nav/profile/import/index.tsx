@@ -278,7 +278,7 @@ export const ImportProfile = () => {
 		}
 
 		return (
-			<div className="flex flex-col gap-3 max-h-[400px] overflow-y-auto">
+			<div className="flex max-h-[400px] flex-col gap-3 overflow-y-auto">
 				<div className="mb-2">
 					<div className="flex items-center gap-2">
 						<div className="font-bold">Import Details:</div>
@@ -322,7 +322,7 @@ export const ImportProfile = () => {
 						p.name.toLowerCase() ===
 						importProfileName.trim().toLowerCase(),
 				) && (
-					<p className="text-red-500 text-sm">
+					<p className="text-sm text-red-500">
 						A profile with same name exists, existing one will be
 						deleted before import unless you change it to something
 						else.
@@ -358,7 +358,7 @@ export const ImportProfile = () => {
 		if (didInstallNewMods) {
 			setLockScreen(true);
 			return (
-				<div className="text-lg flex flex-col gap-2 bg-background z-10">
+				<div className="z-10 flex flex-col gap-2 bg-background text-lg">
 					<p className="text-green-500">
 						Import Process within App is complete.
 					</p>
@@ -393,7 +393,7 @@ export const ImportProfile = () => {
 
 	return (
 		<div className="flex flex-col gap-3">
-			<div className="flex justify-between items-center gap-2">
+			<div className="flex items-center justify-between gap-2">
 				<NativeFileInput
 					key={importFile?.path ?? 'import-profile-file-input'}
 					className="w-full"

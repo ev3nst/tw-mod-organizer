@@ -30,9 +30,9 @@ export const Order = memo(
 						onClick={() => toggleCollapse(mod.identifier)}
 					>
 						{modCollapsed ? (
-							<PlusIcon className="w-4 h-4" />
+							<PlusIcon className="size-4" />
 						) : (
-							<MinusIcon className="w-4 h-4" />
+							<MinusIcon className="size-4" />
 						)}
 					</div>
 				</div>
@@ -40,7 +40,7 @@ export const Order = memo(
 		} else {
 			return (
 				<div
-					className="flex items-center justify-center select-none"
+					className="flex select-none items-center justify-center"
 					style={TABLE_DIMENSIONS.ORDER}
 				>
 					<em className="text-muted-foreground">{modIndex + 1}</em>

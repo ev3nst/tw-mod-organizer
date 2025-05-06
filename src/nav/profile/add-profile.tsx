@@ -130,7 +130,7 @@ export const AddProfile = () => {
 	return (
 		<div>
 			<div className="grid gap-4 py-4">
-				<div className="flex flex-col gap-3 mb-3">
+				<div className="mb-3 flex flex-col gap-3">
 					<Label htmlFor="name">
 						Name <span className="text-red-500">*</span>
 					</Label>

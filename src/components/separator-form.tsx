@@ -54,7 +54,7 @@ export const SeparatorForm = ({
 	};
 
 	return (
-		<div className="flex flex-col w-full h-full justify-between">
+		<div className="flex size-full flex-col justify-between">
 			<div className="flex flex-col gap-4">
 				<div className="grid grid-cols-4 items-center gap-3 pt-3">
 					<Label>Title</Label>
@@ -75,7 +75,7 @@ export const SeparatorForm = ({
 					</Label>
 					<div className="col-span-3">
 						<ColorPicker
-							className="!w-full flex-grow"
+							className="!w-full grow"
 							color={backgroundColor}
 							onChange={color => setBackgroundColor(color.hex)}
 						/>
@@ -88,7 +88,7 @@ export const SeparatorForm = ({
 					</Label>
 					<div className="col-span-3">
 						<ColorPicker
-							className="!w-full flex-grow"
+							className="!w-full grow"
 							color={textColor}
 							onChange={color => setTextColor(color.hex)}
 						/>
@@ -98,7 +98,7 @@ export const SeparatorForm = ({
 				<div className="flex flex-col gap-1">
 					<div>Preview:</div>
 					<div
-						className="py-2 rounded-sm px-5 min-h-[40px]"
+						className="min-h-[40px] rounded-sm px-5 py-2"
 						style={{
 							backgroundColor,
 							color: textColor,

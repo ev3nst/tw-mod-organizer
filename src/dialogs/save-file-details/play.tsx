@@ -183,7 +183,6 @@ export const Play = () => {
 					break;
 				default:
 					throw new Error('Unsupported Game');
-					break;
 			}
 
 			setSaveFileDialogOpen(false);

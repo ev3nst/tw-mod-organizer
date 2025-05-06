@@ -53,7 +53,7 @@ export const FileContents = () => {
 
 		default:
 			return (
-				<div className="w-full h-full flex justify-center items-center text-center">
+				<div className="flex size-full items-center justify-center text-center">
 					<div className="flex gap-3">
 						<FileIcon />
 						No file selected or rendering is not available.

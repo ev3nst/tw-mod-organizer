@@ -127,16 +127,21 @@ export const AppData = ({ children }: { children: React.ReactNode }) => {
 			let sortedMods: ModItemSeparatorUnion[] = [];
 			switch (sort_by) {
 				case 'load_order':
-					const orderMap: Record<string, number> = modOrder.reduce(
-						(acc: any, item: any) => {
-							acc[item.mod_id] = item.order;
-							return acc;
-						},
-						{} as Record<string, number>,
-					);
-					sortedMods = [...modsWithSeparators].sort((a, b) => {
-						return orderMap[a.identifier] - orderMap[b.identifier];
-					});
+					{
+						const orderMap: Record<string, number> =
+							modOrder.reduce(
+								(acc: any, item: any) => {
+									acc[item.mod_id] = item.order;
+									return acc;
+								},
+								{} as Record<string, number>,
+							);
+						sortedMods = [...modsWithSeparators].sort((a, b) => {
+							return (
+								orderMap[a.identifier] - orderMap[b.identifier]
+							);
+						});
+					}
 					break;
 				case 'title':
 					sortedMods = [...mods].sort((a, b) =>

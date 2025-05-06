@@ -81,20 +81,20 @@ function TableManagerDialog() {
 					<DialogTitle className="flex items-baseline gap-3">
 						<div>Table Manager</div>
 					</DialogTitle>
-					<DialogDescription className="text-xs mt-1 break-all">
+					<DialogDescription className="mt-1 break-all text-xs">
 						You can configure mod list table structure from here.
 					</DialogDescription>
 				</DialogHeader>
 				<div>
 					<div className="flex gap-3">
-						<div className="flex flex-col text-md font-bold mb-1">
+						<div className="text-md mb-1 flex flex-col font-bold">
 							Toggle Columns
 						</div>
 					</div>
-					<div className="mt-4 flex gap-3 flex-wrap">
+					<div className="mt-4 flex flex-wrap gap-3">
 						<label
 							htmlFor="toggle_type"
-							className="flex items-center space-x-2 border py-2 px-3 rounded-sm cursor-pointer"
+							className="flex cursor-pointer items-center space-x-2 rounded-sm border px-3 py-2"
 						>
 							<Checkbox
 								id="toggle_type"
@@ -107,13 +107,13 @@ function TableManagerDialog() {
 									)
 								}
 							/>
-							<span className="text-sm font-medium select-none leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+							<span className="select-none text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
 								Type
 							</span>
 						</label>
 						<label
 							htmlFor="toggle_category"
-							className="flex items-center space-x-2 border py-2 px-3 rounded-sm cursor-pointer"
+							className="flex cursor-pointer items-center space-x-2 rounded-sm border px-3 py-2"
 						>
 							<Checkbox
 								id="toggle_category"
@@ -126,13 +126,13 @@ function TableManagerDialog() {
 									)
 								}
 							/>
-							<span className="text-sm font-medium select-none leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+							<span className="select-none text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
 								Categories
 							</span>
 						</label>
 						<label
 							htmlFor="toggle_conflict"
-							className="flex items-center space-x-2 border py-2 px-3 rounded-sm cursor-pointer"
+							className="flex cursor-pointer items-center space-x-2 rounded-sm border px-3 py-2"
 						>
 							<Checkbox
 								id="toggle_conflict"
@@ -150,7 +150,7 @@ function TableManagerDialog() {
 								}
 							/>
 							<span
-								className={`text-sm font-medium select-none leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${
+								className={`select-none text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${
 									selectedGame!.slug === 'mbbl'
 										? 'text-muted-foreground'
 										: ''
@@ -161,7 +161,7 @@ function TableManagerDialog() {
 						</label>
 						<label
 							htmlFor="toggle_version"
-							className="flex items-center space-x-2 border py-2 px-3 rounded-sm cursor-pointer"
+							className="flex cursor-pointer items-center space-x-2 rounded-sm border px-3 py-2"
 						>
 							<Checkbox
 								id="toggle_version"
@@ -174,13 +174,13 @@ function TableManagerDialog() {
 									)
 								}
 							/>
-							<span className="text-sm font-medium select-none leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+							<span className="select-none text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
 								Version
 							</span>
 						</label>
 						<label
 							htmlFor="toggle_creator"
-							className="flex items-center space-x-2 border py-2 px-3 rounded-sm cursor-pointer"
+							className="flex cursor-pointer items-center space-x-2 rounded-sm border px-3 py-2"
 						>
 							<Checkbox
 								id="toggle_creator"
@@ -193,13 +193,13 @@ function TableManagerDialog() {
 									)
 								}
 							/>
-							<span className="text-sm font-medium select-none leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+							<span className="select-none text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
 								Creator
 							</span>
 						</label>
 						<label
 							htmlFor="toggle_created_at"
-							className="flex items-center space-x-2 border py-2 px-3 rounded-sm cursor-pointer"
+							className="flex cursor-pointer items-center space-x-2 rounded-sm border px-3 py-2"
 						>
 							<Checkbox
 								id="toggle_created_at"
@@ -212,13 +212,13 @@ function TableManagerDialog() {
 									)
 								}
 							/>
-							<span className="text-sm font-medium select-none leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+							<span className="select-none text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
 								Created
 							</span>
 						</label>
 						<label
 							htmlFor="toggle_updated_at"
-							className="flex items-center space-x-2 border py-2 px-3 rounded-sm cursor-pointer"
+							className="flex cursor-pointer items-center space-x-2 rounded-sm border px-3 py-2"
 						>
 							<Checkbox
 								id="toggle_updated_at"
@@ -231,15 +231,15 @@ function TableManagerDialog() {
 									)
 								}
 							/>
-							<span className="text-sm font-medium select-none leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+							<span className="select-none text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
 								Updated
 							</span>
 						</label>
 					</div>
 
-					<Separator className="mt-5 mb-4" />
+					<Separator className="mb-4 mt-5" />
 					<div className="flex gap-3">
-						<div className="flex items-center gap-2 font-bold mb-3">
+						<div className="mb-3 flex items-center gap-2 font-bold">
 							<div>Sort By</div>
 							<div className="text-xs text-muted-foreground">
 								({sort_by_direction.toUpperCase()})
@@ -303,9 +303,9 @@ function TableManagerDialog() {
 						</div>
 					</RadioGroup>
 
-					<Separator className="mt-5 mb-4" />
+					<Separator className="mb-4 mt-5" />
 					<div className="flex gap-3">
-						<div className="flex items-center gap-2 font-bold mb-3">
+						<div className="mb-3 flex items-center gap-2 font-bold">
 							<div>Preview Image Size</div>
 						</div>
 					</div>
@@ -316,32 +316,32 @@ function TableManagerDialog() {
 						}}
 						className="flex"
 					>
-						<label className="flex items-center space-x-2 p-2 py-1 hover:cursor-pointer hover:brightness-125 border rounded-sm">
+						<label className="flex items-center space-x-2 rounded-sm border p-2 py-1 hover:cursor-pointer hover:brightness-125">
 							<RadioGroupItem id="preview_size_6" value="6" />
 							<span>6</span>
 						</label>
 
-						<label className="flex items-center space-x-2 p-2 py-1 hover:cursor-pointer hover:brightness-125 border rounded-sm">
+						<label className="flex items-center space-x-2 rounded-sm border p-2 py-1 hover:cursor-pointer hover:brightness-125">
 							<RadioGroupItem id="preview_size_8" value="8" />
 							<span>8</span>
 						</label>
 
-						<label className="flex items-center space-x-2 p-2 py-1 hover:cursor-pointer hover:brightness-125 border rounded-sm">
+						<label className="flex items-center space-x-2 rounded-sm border p-2 py-1 hover:cursor-pointer hover:brightness-125">
 							<RadioGroupItem id="preview_size_10" value="10" />
 							<span>10</span>
 						</label>
 
-						<label className="flex items-center space-x-2 p-2 py-1 hover:cursor-pointer hover:brightness-125 border rounded-sm">
+						<label className="flex items-center space-x-2 rounded-sm border p-2 py-1 hover:cursor-pointer hover:brightness-125">
 							<RadioGroupItem id="preview_size_12" value="12" />
 							<span>12</span>
 						</label>
 
-						<label className="flex items-center space-x-2 p-2 py-1 hover:cursor-pointer hover:brightness-125 border rounded-sm">
+						<label className="flex items-center space-x-2 rounded-sm border p-2 py-1 hover:cursor-pointer hover:brightness-125">
 							<RadioGroupItem id="preview_size_16" value="16" />
 							<span>16</span>
 						</label>
 
-						<label className="flex items-center space-x-2 p-2 py-1 hover:cursor-pointer hover:brightness-125 border rounded-sm">
+						<label className="flex items-center space-x-2 rounded-sm border p-2 py-1 hover:cursor-pointer hover:brightness-125">
 							<RadioGroupItem id="preview_size_20" value="20" />
 							<span>20</span>
 						</label>

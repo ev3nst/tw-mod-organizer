@@ -343,7 +343,7 @@ const ModListSortableTable = () => {
 	}, [activeId, selectedRows]);
 
 	return (
-		<div className="relative flex-1 h-full">
+		<div className="relative h-full flex-1">
 			<DndContext
 				sensors={sensors}
 				collisionDetection={closestCenter}

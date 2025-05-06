@@ -21,7 +21,7 @@ const LegendItem = ({
 	description: string;
 }) => (
 	<div className="flex gap-4">
-		<div className={`${color} w-[50px] flex-shrink-0`}>{label}</div>
+		<div className={`${color} w-[50px] shrink-0`}>{label}</div>
 		<div>{description}</div>
 	</div>
 );
@@ -33,7 +33,7 @@ const LegendIconItem = ({
 	icon: JSX.Element;
 	label: string;
 }) => (
-	<div className="flex gap-4 items-center text-foreground">
+	<div className="flex items-center gap-4 text-foreground">
 		{icon}
 		<div>{label}</div>
 	</div>
@@ -77,26 +77,26 @@ export const LegendDialog = () => (
 							/>
 							<Separator className="my-2" />
 							<LegendIconItem
-								icon={<CheckIcon className="w-4 h-4" />}
+								icon={<CheckIcon className="size-4" />}
 								label="Mod is active"
 							/>
 							<LegendIconItem
-								icon={<XIcon className="w-4 h-4" />}
+								icon={<XIcon className="size-4" />}
 								label="Mod is passive"
 							/>
 							<LegendIconItem
-								icon={<FileWarningIcon className="w-4 h-4" />}
+								icon={<FileWarningIcon className="size-4" />}
 								label="File is missing."
 							/>
 							<LegendIconItem
-								icon={<MinusIcon className="w-4 h-4" />}
+								icon={<MinusIcon className="size-4" />}
 								label="Separator (ignored for gameplay)"
 							/>
 
 							<Separator className="my-2" />
 
-							<div className="text-muted-foreground mt-1">
-								<span className="text-foreground me-1">
+							<div className="mt-1 text-muted-foreground">
+								<span className="me-1 text-foreground">
 									Play
 								</span>
 								It will load the save with required mods and its
@@ -104,8 +104,8 @@ export const LegendDialog = () => (
 								pushed to bottom and also be loaded.
 							</div>
 						</div>
-						<div className="text-muted-foreground mt-2">
-							<span className="text-foreground me-1">
+						<div className="mt-2 text-muted-foreground">
+							<span className="me-1 text-foreground">
 								Load Exactly
 							</span>
 							This action will load the save with required mods

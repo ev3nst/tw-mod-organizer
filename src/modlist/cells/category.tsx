@@ -39,7 +39,7 @@ export const Category = memo(
 		if (toggle_category) {
 			return (
 				<div
-					className="text-xs select-none flex items-center"
+					className="flex select-none items-center text-xs"
 					style={TABLE_DIMENSIONS.CATEGORY}
 				>
 					{categoriesTxt ?? ''}

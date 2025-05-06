@@ -132,66 +132,71 @@ export const InstallMod = () => {
 
 					switch (selectedGame!.type) {
 						case 'totalwar':
-							const packFiles = zipContents.filter(zc =>
-								zc.filename.endsWith('.pack'),
-							);
-
-							if (packFiles.length === 0) {
-								toast.error(
-									'No mod files were found in given archive',
+							{
+								const packFiles = zipContents.filter(zc =>
+									zc.filename.endsWith('.pack'),
 								);
-								return;
-							}
 
-							if (packFiles.length > 1) {
-								setModFiles(packFiles);
-							}
+								if (packFiles.length === 0) {
+									toast.error(
+										'No mod files were found in given archive',
+									);
+									return;
+								}
 
-							const twModFile = packFiles[0];
-							const twExistingMod = mods.find(
-								m =>
-									!isSeparator(m) &&
-									(m as ModItem).mod_file ===
-										twModFile.filename,
-							);
-							if (twExistingMod) {
-								toast.error(
-									`This .pack file already exists inside the mod with a name of: ${twExistingMod.title} `,
+								if (packFiles.length > 1) {
+									setModFiles(packFiles);
+								}
+
+								const twModFile = packFiles[0];
+								const twExistingMod = mods.find(
+									m =>
+										!isSeparator(m) &&
+										(m as ModItem).mod_file ===
+											twModFile.filename,
 								);
-								setArchivePath(undefined);
-								return;
-							}
+								if (twExistingMod) {
+									toast.error(
+										`This .pack file already exists inside the mod with a name of: ${twExistingMod.title} `,
+									);
+									setArchivePath(undefined);
+									return;
+								}
 
-							setModPath(twModFile.filename);
+								setModPath(twModFile.filename);
+							}
 							break;
 
 						case 'bannerlord':
-							const subModuleFiles = zipContents
-								.sort(
-									(a, b) =>
-										a.filename.length - b.filename.length,
-								)
-								.filter(zc =>
-									zc.filename.endsWith('SubModule.xml'),
-								);
+							{
+								const subModuleFiles = zipContents
+									.sort(
+										(a, b) =>
+											a.filename.length -
+											b.filename.length,
+									)
+									.filter(zc =>
+										zc.filename.endsWith('SubModule.xml'),
+									);
 
-							if (subModuleFiles.length === 0) {
-								toast.error(
-									'No mod files were found in given archive',
-								);
-								return;
+								if (subModuleFiles.length === 0) {
+									toast.error(
+										'No mod files were found in given archive',
+									);
+									return;
+								}
+
+								if (subModuleFiles.length > 1) {
+									setModFiles(subModuleFiles);
+								}
+
+								const blModFile =
+									subModuleFiles[0].filename.replace(
+										'\\SubModule.xml',
+										'\\',
+									);
+								setModPath(blModFile);
 							}
-
-							if (subModuleFiles.length > 1) {
-								setModFiles(subModuleFiles);
-							}
-
-							const blModFile =
-								subModuleFiles[0].filename.replace(
-									'\\SubModule.xml',
-									'\\',
-								);
-							setModPath(blModFile);
 							break;
 						default:
 							break;
@@ -307,7 +312,7 @@ export const InstallMod = () => {
 	};
 
 	return (
-		<div className="flex flex-col w-full h-full justify-between">
+		<div className="flex size-full flex-col justify-between">
 			<div>
 				<div className="grid grid-cols-4 items-center gap-3 pt-3">
 					<Label>
@@ -323,7 +328,7 @@ export const InstallMod = () => {
 					/>
 				</div>
 				{sameNameWithSeparators && (
-					<p className="text-red-500 text-sm mt-1">
+					<p className="mt-1 text-sm text-red-500">
 						A separator with this name already exists.
 					</p>
 				)}
@@ -352,7 +357,7 @@ export const InstallMod = () => {
 					/>
 				</div>
 
-				<div className="grid grid-cols-4 items-center gap-3 mt-4">
+				<div className="mt-4 grid grid-cols-4 items-center gap-3">
 					<Label>Archive</Label>
 					<NativeFileInput
 						key={archivePath}
@@ -383,13 +388,13 @@ export const InstallMod = () => {
 					)}
 
 				{sameNameWithMods && (
-					<div className="grid items-center mt-4">
-						<Separator className="flex-grow mb-4" />
+					<div className="mt-4 grid items-center">
+						<Separator className="mb-4 grow" />
 						<p className="mb-4 text-sm ">
 							Mod with same name exists. If you proceed to install
 							it with this name and if its a local mod existing
 							mod will be replaced. If its a
-							<span className="text-blue-500 mx-1">steam</span>
+							<span className="mx-1 text-blue-500">steam</span>
 							mod action will fail.
 						</p>
 					</div>
@@ -401,7 +406,7 @@ export const InstallMod = () => {
 						defaultValue={modFiles[0].filename}
 						onValueChange={value => setModPath(value)}
 					>
-						<p className="text-sm mb-2">
+						<p className="mb-2 text-sm">
 							Multiple mod files/folders found, please select
 							which one to install. You may install same archive
 							multiple times for different packs if desired.
@@ -409,7 +414,7 @@ export const InstallMod = () => {
 						{modFiles.map(pf => (
 							<div
 								key={`rgi_${pf}`}
-								className="flex items-center space-x-2 mt-1"
+								className="mt-1 flex items-center space-x-2"
 							>
 								<RadioGroupItem
 									id={`rgi_${pf.filename}`}

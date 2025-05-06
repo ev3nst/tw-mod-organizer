@@ -16,14 +16,14 @@ const SIDEBAR_WIDTH = '21rem';
 const SIDEBAR_WIDTH_ICON = '3rem';
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b';
 
-type SidebarContext = {
+type SidebarContextProps = {
 	state: 'expanded' | 'collapsed';
 	open: boolean;
 	setOpen: (open: boolean) => void;
 	toggleSidebar: () => void;
 };
 
-const SidebarContext = React.createContext<SidebarContext | null>(null);
+const SidebarContext = React.createContext<SidebarContextProps | null>(null);
 
 function useSidebar() {
 	const context = React.useContext(SidebarContext);
@@ -99,7 +99,7 @@ const SidebarProvider = React.forwardRef<
 		// This makes it easier to style the sidebar with Tailwind classes.
 		const state = open ? 'expanded' : 'collapsed';
 
-		const contextValue = React.useMemo<SidebarContext>(
+		const contextValue = React.useMemo<SidebarContextProps>(
 			() => ({
 				state,
 				open,
@@ -120,7 +120,7 @@ const SidebarProvider = React.forwardRef<
 						} as React.CSSProperties
 					}
 					className={cn(
-						'group/sidebar-wrapper flex w-full h-full overflow-y-auto has-[[data-variant=inset]]:bg-sidebar relative scrollbar-hide',
+						'group/sidebar-wrapper scrollbar-hide relative flex size-full overflow-y-auto has-[[data-variant=inset]]:bg-sidebar',
 						className,
 					)}
 					ref={ref}
@@ -206,7 +206,7 @@ const Sidebar = React.forwardRef<
 				>
 					<div
 						data-sidebar="sidebar"
-						className="flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
+						className="flex size-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
 					>
 						{children}
 					</div>
@@ -229,7 +229,7 @@ const SidebarTrigger = React.forwardRef<
 			data-sidebar="trigger"
 			variant="ghost"
 			size="icon"
-			className={cn('h-7 w-7', className)}
+			className={cn('size-7', className)}
 			onClick={event => {
 				onClick?.(event);
 				toggleSidebar();
@@ -281,7 +281,7 @@ const SidebarInset = React.forwardRef<
 			ref={ref}
 			className={cn(
 				'relative flex flex-1 flex-col bg-transparent',
-				'peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow scrollbar-hide',
+				'scrollbar-hide peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow',
 				className,
 			)}
 			{...props}

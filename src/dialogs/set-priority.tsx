@@ -92,15 +92,15 @@ function SetPriorityDialog() {
 							{selectedMod.title}
 						</div>
 					</DialogTitle>
-					<DialogDescription className="text-xs mt-1 break-all">
+					<DialogDescription className="mt-1 break-all text-xs">
 						{typeof (selectedMod as ModItem)?.mod_file !==
 						'undefined'
 							? (selectedMod as ModItem)?.mod_file
 							: selectedMod?.title}
 					</DialogDescription>
 				</DialogHeader>
-				<div className="flex justify-between items-end gap-4">
-					<div className="flex flex-col gap-3 flex-grow">
+				<div className="flex items-end justify-between gap-4">
+					<div className="flex grow flex-col gap-3">
 						<Label>Priority</Label>
 						<Input
 							value={priority}

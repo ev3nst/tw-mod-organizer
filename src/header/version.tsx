@@ -51,7 +51,7 @@ export const Version = () => {
 
 	if (!newVersion) {
 		return (
-			<div className="text-muted-foreground ms-3">v{currentVersion}</div>
+			<div className="ms-3 text-muted-foreground">v{currentVersion}</div>
 		);
 	}
 
@@ -86,14 +86,14 @@ export const Version = () => {
 							</p>
 
 							<div># Changelog</div>
-							<div className="whitespace-pre-wrap break-words max-h-[300px] overflow-y-auto text-sm">
+							<div className="max-h-[300px] overflow-y-auto whitespace-pre-wrap break-words text-sm">
 								{changeLog}
 							</div>
 						</div>
 					</DialogContent>
 				</Dialog>
 			) : (
-				<div className="text-muted-foreground ms-3">
+				<div className="ms-3 text-muted-foreground">
 					v{currentVersion}
 				</div>
 			)}

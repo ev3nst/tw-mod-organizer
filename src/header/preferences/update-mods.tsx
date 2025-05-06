@@ -66,19 +66,19 @@ export function UpdateMods() {
 			</DialogHeader>
 			<div>Mods: {onlySteamMods.length}</div>
 			{loading && (
-				<div className="w-full bg-gray-200 rounded h-4 overflow-hidden">
+				<div className="h-4 w-full overflow-hidden rounded bg-gray-200">
 					<div
-						className="bg-blue-500 h-4 transition-all"
+						className="h-4 bg-blue-500 transition-all"
 						style={{ width: `${progressPercent}%` }}
 					/>
 				</div>
 			)}
 			{loading && (
-				<div className="text-xs text-center">
+				<div className="text-center text-xs">
 					{progress} / {onlySteamMods.length} ({progressPercent}%)
 				</div>
 			)}
-			<div className="text-xs flex flex-col gap-2 max-h-[250px] overflow-y-auto">
+			<div className="flex max-h-[250px] flex-col gap-2 overflow-y-auto text-xs">
 				{onlySteamMods.map(sm => (
 					<div key={`mod_to_update_${sm.identifier}`}>{sm.title}</div>
 				))}

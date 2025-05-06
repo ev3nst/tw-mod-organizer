@@ -182,10 +182,10 @@ function BulkCategoryUpdateDialog() {
 					<DialogTitle>
 						<div>Bulk Update Categories</div>
 					</DialogTitle>
-					<DialogDescription className="text-xs mt-1 break-all"></DialogDescription>
+					<DialogDescription className="mt-1 break-all text-xs"></DialogDescription>
 				</DialogHeader>
 				<div className="flex flex-col gap-2.5">
-					<div className="flex justify-between items-center gap-2">
+					<div className="flex items-center justify-between gap-2">
 						<Select
 							value={activationFilter}
 							onValueChange={value => setActivationFilter(value)}
@@ -200,19 +200,19 @@ function BulkCategoryUpdateDialog() {
 							</SelectContent>
 						</Select>
 						<Input
-							className="flex-grow"
+							className="grow"
 							placeholder="C: Category (Optional) - Search Term ..."
 							onChange={handleSearchChange}
 						/>
 					</div>
 					<Input
-						className="flex-grow"
+						className="grow"
 						placeholder="New categories to add (eg. Empire, Lords)"
 						defaultValue={categoriesToAdd}
 						onChange={handleCategoryChange}
 					/>
 					<Input
-						className="flex-grow"
+						className="grow"
 						placeholder="Categories to remove (eg. Empire, Lords)"
 						defaultValue={categoriesToRemove}
 						onChange={handleCategoryRemoveChange}
@@ -229,10 +229,10 @@ function BulkCategoryUpdateDialog() {
 								Mods ({filteredMods.length})
 							</AccordionTrigger>
 							<AccordionContent>
-								<div className="max-h-[180px] overflow-y-auto divide-y">
+								<div className="max-h-[180px] divide-y overflow-y-auto">
 									{filteredMods.map(m => (
 										<div
-											className="flex justify-between text-xs py-2 px-4 hover:bg-secondary-bg border-secondary-border/60"
+											className="flex justify-between border-secondary-border/60 px-4 py-2 text-xs hover:bg-secondary-bg"
 											key={`bulk_c_filt_mod_${m.identifier}`}
 										>
 											<div className="flex gap-1">
@@ -256,7 +256,7 @@ function BulkCategoryUpdateDialog() {
 													)
 												}
 											>
-												<PlusIcon className="w-4 h-4" />
+												<PlusIcon className="size-4" />
 											</div>
 										</div>
 									))}
@@ -278,7 +278,7 @@ function BulkCategoryUpdateDialog() {
 											);
 										return (
 											<div
-												className="flex justify-between text-xs py-2 px-4 hover:bg-black/80"
+												className="flex justify-between px-4 py-2 text-xs hover:bg-black/80"
 												key={`bulk_c_preview_mod_${mtc.identifier}`}
 											>
 												<div className="flex flex-col gap-1">
@@ -290,7 +290,7 @@ function BulkCategoryUpdateDialog() {
 															<div className="text-red-500">
 																{mtc.categories}
 															</div>
-															<ArrowRightIcon className="w-4 h-4" />
+															<ArrowRightIcon className="size-4" />
 															<div className="text-green-500">
 																{
 																	previewCategories
@@ -316,7 +316,7 @@ function BulkCategoryUpdateDialog() {
 														)
 													}
 												>
-													<XIcon className="w-4 h-4" />
+													<XIcon className="size-4" />
 												</div>
 											</div>
 										);

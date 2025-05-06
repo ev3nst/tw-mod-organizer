@@ -187,14 +187,14 @@ export function TreeView() {
 			{filteredPackTree.map(item => (
 				<TreeViewItem key={item.id} item={item} />
 			))}
-			<div className="flex items-center gap-2 sticky bottom-0 bg-secondary-bg w-full">
+			<div className="sticky bottom-0 flex w-full items-center gap-2 bg-secondary-bg">
 				<div>
 					<Select
 						value={activationFilter}
 						onValueChange={setActivationFilter}
 					>
 						<SelectTrigger
-							className="w-[70px] justify-center rounded-none h-full border-t-0 border-l-0 border-b-0 border-secondary-border"
+							className="h-full w-[70px] justify-center rounded-none border-y-0 border-l-0 border-secondary-border"
 							disableIcon
 						>
 							<SelectValue placeholder={activationFilter} />
@@ -206,12 +206,12 @@ export function TreeView() {
 						</SelectContent>
 					</Select>
 				</div>
-				<div className="relative flex items-center justify-between w-full">
-					<div className="flex-grow">
-						<SearchIcon className="absolute bottom-[12px] w-3.5 h-3.5 text-muted-foreground" />
+				<div className="relative flex w-full items-center justify-between">
+					<div className="grow">
+						<SearchIcon className="absolute bottom-[12px] size-3.5 text-muted-foreground" />
 						<Input
 							ref={searchInputRef}
-							className="rounded-none ps-6 h-10 border-0"
+							className="h-10 rounded-none border-0 ps-6"
 							placeholder="C: Category (Optional) - Search Term ..."
 							onChange={handleSearchChange}
 						/>

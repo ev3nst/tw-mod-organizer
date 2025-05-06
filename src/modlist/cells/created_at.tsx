@@ -24,7 +24,7 @@ export const CreatedAt = memo(
 					if (dateCreatedAt.getFullYear() === 1970) {
 						return (
 							<div
-								className="text-xs select-none"
+								className="select-none text-xs"
 								style={TABLE_DIMENSIONS.CREATED_AT}
 							>
 								{''}
@@ -34,7 +34,7 @@ export const CreatedAt = memo(
 
 					return (
 						<div
-							className="text-xs select-none"
+							className="select-none text-xs"
 							style={TABLE_DIMENSIONS.CREATED_AT}
 						>
 							{dateCreatedAt.toLocaleDateString()}
@@ -45,7 +45,7 @@ export const CreatedAt = memo(
 
 			return (
 				<div
-					className="text-xs select-none"
+					className="select-none text-xs"
 					style={TABLE_DIMENSIONS.CREATED_AT}
 				>
 					{createdAt ?? ''}

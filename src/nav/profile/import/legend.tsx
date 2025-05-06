@@ -26,7 +26,7 @@ export const Legend = ({
 				<Button
 					variant="ghost"
 					size="icon"
-					className="text-sky-500 m-0 flex-shrink"
+					className="m-0 shrink text-sky-500"
 					onClick={e => e.stopPropagation()}
 				>
 					<TriangleAlertIcon />
@@ -38,41 +38,41 @@ export const Legend = ({
 					<DialogDescription asChild>
 						<div className="flex flex-col gap-2 pt-4">
 							<p className="text-muted-foreground">
-								<span className="text-white w-[60px] inline-block">
+								<span className="inline-block w-[60px] text-white">
 									White
 								</span>
 								Steam mods that are present.
 							</p>
 							<p className="text-muted-foreground">
-								<span className="text-muted-foreground w-[60px] inline-block">
+								<span className="inline-block w-[60px] text-muted-foreground">
 									Gray
 								</span>
 								Steam mods that are not present.
 							</p>
 
 							<p className="text-muted-foreground">
-								<span className="text-blue-500 w-[60px] inline-block">
+								<span className="inline-block w-[60px] text-blue-500">
 									Blue
 								</span>
 								Nexus mods that are found in the system.
 							</p>
 
 							<p className="text-muted-foreground">
-								<span className="text-purple-500 w-[60px] inline-block">
+								<span className="inline-block w-[60px] text-purple-500">
 									Purple
 								</span>
 								Nexus mods that dont exists.
 							</p>
 
 							<p className="text-muted-foreground">
-								<span className="text-orange-500 w-[60px] inline-block">
+								<span className="inline-block w-[60px] text-orange-500">
 									Orange
 								</span>
 								Local mods that are found in the system.
 							</p>
 
 							<p className="text-muted-foreground">
-								<span className="text-red-500 w-[60px] inline-block">
+								<span className="inline-block w-[60px] text-red-500">
 									Red
 								</span>
 								Local mods that dont exists.
@@ -81,7 +81,7 @@ export const Legend = ({
 							<Separator />
 
 							{localModsDontExists > 0 && (
-								<p className="text-red-500 text-sm">
+								<p className="text-sm text-red-500">
 									There are some local mods that could not be
 									found in your system, if you continue
 									anyways they will be ignored.
@@ -89,7 +89,7 @@ export const Legend = ({
 							)}
 							<Separator />
 							{nexusModsDontExists > 0 && (
-								<p className="text-purple-500 text-sm">
+								<p className="text-sm text-purple-500">
 									There are some nexus mods that could not be
 									found in your system, you may view them in
 									the list and install them manually

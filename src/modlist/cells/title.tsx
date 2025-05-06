@@ -128,7 +128,7 @@ export const Title = memo(
 		if (isSeparator(mod)) {
 			return (
 				<div
-					className={`p-0 m-0 ${
+					className={`m-0 p-0 ${
 						toggle_type ? 'ps-3' : 'ps-0'
 					} select-none items-center`}
 					style={TABLE_DIMENSIONS.TITLE}
@@ -142,10 +142,10 @@ export const Title = memo(
 					className="select-none pe-3"
 					style={TABLE_DIMENSIONS.TITLE}
 				>
-					<div className="flex flex-row flex-nowrap items-center gap-2 w-full">
+					<div className="flex flex-row flex-nowrap items-center gap-2">
 						{imgSrc && (
 							<img
-								className={`object-cover align-middle flex-shrink-0 h-${preview_size} ${
+								className={`h- shrink-0 object-cover${preview_size} ${
 									preview_size < 10
 										? `w-${preview_size} rounded-full`
 										: ''
@@ -153,12 +153,12 @@ export const Title = memo(
 								src={imgSrc}
 							/>
 						)}
-						<div className="whitespace-pre-wrap break-words min-w-0 flex-1 items-center">
+						<div className="flex-1 whitespace-pre-wrap break-words">
 							<span className="align-middle">
 								{titleTxt ?? ''}
 							</span>
 							{selectedModMeta?.title !== '' && (
-								<InfoIcon className="inline-block align-middle relative top-[-1px] text-sky-300 w-3 h-3 ml-2" />
+								<InfoIcon className="relative top-[-1px] ml-2 inline-block size-3 align-middle text-sky-300" />
 							)}
 							{hasViolation &&
 								dependentCount &&
@@ -169,10 +169,10 @@ export const Title = memo(
 									>
 										<PopoverTrigger asChild>
 											<span
-												className="ml-2 text-xs px-1 py-0.5 rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 inline-flex items-center gap-1 cursor-pointer align-middle"
+												className="ml-2 inline-flex cursor-pointer items-center gap-1 rounded bg-red-100 px-1 py-0.5 align-middle text-xs text-red-800 dark:bg-red-900 dark:text-red-200"
 												title="This mod should be loaded before mods that depend on it"
 											>
-												<TriangleAlertIcon className="w-3.5 h-3.5" />
+												<TriangleAlertIcon className="size-3.5" />
 												{dependentCount}
 											</span>
 										</PopoverTrigger>
@@ -181,14 +181,14 @@ export const Title = memo(
 											align="start"
 											className="w-64"
 										>
-											<h4 className="font-semibold mb-1 text-base text-red-600">
+											<h4 className="mb-1 text-base font-semibold text-red-600">
 												Dependency Order
 											</h4>
-											<p className="text-sm mb-2 text-muted-foreground">
+											<p className="mb-2 text-sm text-muted-foreground">
 												These mods depend on this mod
 												but are loaded before it:
 											</p>
-											<ul className="text-sm space-y-1 max-h-48 overflow-y-auto">
+											<ul className="max-h-48 space-y-1 overflow-y-auto text-sm">
 												{dependentModIds?.map(
 													dependentId => {
 														const dependentMod =
@@ -220,10 +220,10 @@ export const Title = memo(
 									>
 										<PopoverTrigger asChild>
 											<span
-												className="ml-2 text-xs px-1 py-0.5 rounded bg-red-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 inline-flex items-center gap-1 cursor-pointer align-middle"
+												className="ml-2 inline-flex cursor-pointer items-center gap-1 rounded bg-red-100 px-1 py-0.5 align-middle text-xs text-orange-800 dark:bg-orange-900 dark:text-orange-200"
 												title="This mod requires active parent mod(s)"
 											>
-												<CircleAlertIcon className="w-3.5 h-3.5" />
+												<CircleAlertIcon className="size-3.5" />
 												{passiveRequiredParents.length}
 											</span>
 										</PopoverTrigger>
@@ -232,15 +232,15 @@ export const Title = memo(
 											align="start"
 											className="w-64"
 										>
-											<h4 className="font-semibold mb-1 text-base text-orange-600">
+											<h4 className="mb-1 text-base font-semibold text-orange-600">
 												Dependency Not Active
 											</h4>
-											<p className="text-sm mb-2 text-muted-foreground">
+											<p className="mb-2 text-sm text-muted-foreground">
 												These mods are required for this
 												mod to work but they are not
 												active.
 											</p>
-											<ul className="text-sm space-y-1 max-h-48 overflow-y-auto">
+											<ul className="max-h-48 space-y-1 overflow-y-auto text-sm">
 												{passiveRequiredParents.map(
 													parentMod => {
 														const isMissingSteamMod =

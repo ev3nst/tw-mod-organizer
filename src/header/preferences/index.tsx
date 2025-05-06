@@ -30,7 +30,7 @@ export function Preferences() {
 			<DialogTrigger asChild>
 				<Button
 					variant="ghost"
-					className={`clickable-content group/toggle h-8 w-8 px-0 ${
+					className={`clickable-content group/toggle size-8 px-0 ${
 						isGameRunning || shouldLockScreen ? 'disabled' : ''
 					}`}
 					disabled={isGameRunning || shouldLockScreen}
@@ -47,7 +47,7 @@ export function Preferences() {
 				{/* suppress radix error */}
 				<DialogTitle className="hidden" />
 				<Tabs defaultValue="settings">
-					<TabsList className="grid grid-cols-3 mr-5 mb-3">
+					<TabsList className="mb-3 mr-5 grid grid-cols-3">
 						<TabsTrigger value="settings">Settings</TabsTrigger>
 						<TabsTrigger value="update_mods">
 							Update Mods

@@ -19,7 +19,6 @@ const Loading = ({
 		return () => {
 			clearTimeout(timeout);
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	if (loading) {
@@ -27,11 +26,11 @@ const Loading = ({
 	}
 
 	return (
-		<div className="flex items-center justify-center min-h-screen app-drag-region">
-			<div className="text-center animate-pulse">
+		<div className="app-drag-region flex min-h-screen items-center justify-center">
+			<div className="animate-pulse text-center">
 				<LoaderIcon
 					className={cn(
-						'animate-spin w-10 h-10 text-foreground mx-auto',
+						'mx-auto size-10 animate-spin text-foreground',
 						className,
 					)}
 				/>

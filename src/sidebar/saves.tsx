@@ -221,7 +221,7 @@ export const Saves = () => {
 
 	return (
 		<div>
-			<div className="flex gap-4 items-center px-3 mb-2">
+			<div className="mb-2 flex items-center gap-4 px-3">
 				<SidebarInput
 					placeholder="Type to search..."
 					value={searchQuery}
@@ -231,7 +231,7 @@ export const Saves = () => {
 					<ArrowDownUpIcon />
 				</Button>
 			</div>
-			<div className="flex items-center justify-between gap-4 mb-2">
+			<div className="mb-2 flex items-center justify-between gap-4">
 				<p className="px-3 text-sm text-muted-foreground">
 					You can select a save file to continue.
 				</p>
@@ -239,7 +239,7 @@ export const Saves = () => {
 					<Tooltip>
 						<TooltipTrigger asChild>
 							<Button
-								className="hover:text-blue-500 h-5 w-5 [&_svg]:size-3"
+								className="size-5 hover:text-blue-500 [&_svg]:size-3"
 								variant="ghost"
 								size="icon"
 								onClick={() =>
@@ -262,7 +262,7 @@ export const Saves = () => {
 					<Tooltip>
 						<TooltipTrigger asChild>
 							<Button
-								className="hover:text-blue-500 h-5 w-5 [&_svg]:size-3"
+								className="size-5 hover:text-blue-500 [&_svg]:size-3"
 								variant="ghost"
 								size="icon"
 								onClick={() =>
@@ -285,7 +285,7 @@ export const Saves = () => {
 				paginatedFiles.map((sf, sfi) => (
 					<div
 						key={`save_${sf.date}_${sfi}`}
-						className={`p-2 hover:cursor-pointer hover:bg-secondary-bg relative ${
+						className={`relative p-2 hover:cursor-pointer hover:bg-secondary-bg ${
 							saveFile?.path === sf.path ? 'bg-secondary-bg' : ''
 						}`}
 						onClick={() =>
@@ -312,7 +312,7 @@ export const Saves = () => {
 									? cleanFileName(sf.filename)
 									: sf.filename}
 							</div>
-							<div className="text-xs text-muted-foreground mt-1.5 flex justify-between">
+							<div className="mt-1.5 flex justify-between text-xs text-muted-foreground">
 								<span>
 									{new Date(sf.date).toLocaleDateString(
 										undefined,
@@ -328,7 +328,7 @@ export const Saves = () => {
 						<div className="absolute right-1 top-0 flex gap-0">
 							{sf.meta_exists && (
 								<Button
-									className="hover:text-blue-500 h-5 w-5 [&_svg]:size-3"
+									className="size-5 hover:text-blue-500 [&_svg]:size-3"
 									variant="ghost"
 									size="icon"
 									onClick={e => handleSaveFileMeta(e, sf)}
@@ -337,7 +337,7 @@ export const Saves = () => {
 								</Button>
 							)}
 							<Button
-								className="hover:text-red-500 h-5 w-5 [&_svg]:size-3"
+								className="size-5 hover:text-red-500 [&_svg]:size-3"
 								variant="ghost"
 								size="icon"
 								onClick={e => handleDeleteFile(e, sf)}
@@ -348,12 +348,12 @@ export const Saves = () => {
 					</div>
 				))
 			) : (
-				<div className="text-center p-4 text-muted-foreground">
+				<div className="p-4 text-center text-muted-foreground">
 					No save files found
 				</div>
 			)}
 
-			<div className="px-3 mt-3">
+			<div className="mt-3 px-3">
 				<PaginationControls
 					currentPage={currentPage}
 					totalItems={totalItems}

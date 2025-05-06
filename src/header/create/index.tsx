@@ -50,12 +50,12 @@ export const Create = () => {
 					New
 				</Button>
 			</DialogTrigger>
-			<DialogContent className="max-w-[600px] flex flex-col gap-4">
+			<DialogContent className="flex max-w-[600px] flex-col gap-4">
 				<DialogHeader>
 					<DialogTitle className="mb-1">New Resource</DialogTitle>
-					<p className="text-muted-foreground text-sm">
+					<p className="text-sm text-muted-foreground">
 						You may need to
-						<span className="text-green-500 mx-1">refresh</span>
+						<span className="mx-1 text-green-500">refresh</span>
 						after process completes.
 					</p>
 				</DialogHeader>

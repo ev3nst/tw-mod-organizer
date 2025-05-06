@@ -111,18 +111,20 @@ export const THVersion = memo(() => {
 						}
 						break;
 					case 'nexus_mod':
-						const timeSinceCheck = now - mv.last_time_checked;
-						if (timeSinceCheck > ONE_WEEK_IN_MS) {
-							// Only check if more than 1 week has passed since the last check
-							fetchModDetails(
-								mv,
-								vi,
-								modVersionData,
-								changed,
-								now,
-							);
-						} else if (mv.latest_version !== mv.version) {
-							changed.push(mv);
+						{
+							const timeSinceCheck = now - mv.last_time_checked;
+							if (timeSinceCheck > ONE_WEEK_IN_MS) {
+								// Only check if more than 1 week has passed since the last check
+								fetchModDetails(
+									mv,
+									vi,
+									modVersionData,
+									changed,
+									now,
+								);
+							} else if (mv.latest_version !== mv.version) {
+								changed.push(mv);
+							}
 						}
 						break;
 					default:
@@ -141,22 +143,22 @@ export const THVersion = memo(() => {
 	if (!toggle_version) return null;
 	return (
 		<div
-			className="flex items-center gap-1 hover:brightness-125 hover:cursor-pointer"
+			className="flex items-center gap-1 hover:cursor-pointer hover:brightness-125"
 			onClick={() =>
 				changedMods.length > 0 ? toggleVersionInfo(true) : null
 			}
 		>
 			VERSION
 			{changedMods.length > 0 && (
-				<span className="flex items-center justify-center ms-1 mt-0 h-4 w-4 rounded-full bg-blue-600 text-white text-[10px] leading-none">
+				<span className="ms-1 mt-0 flex size-4 items-center justify-center rounded-full bg-blue-600 text-[10px] leading-none text-white">
 					{changedMods.length}
 				</span>
 			)}
 			{sort_by === 'version' &&
 				(sort_by_direction === 'asc' ? (
-					<ArrowDownIcon className="w-4 h-4" />
+					<ArrowDownIcon className="size-4" />
 				) : (
-					<ArrowUpIcon className="w-4 h-4" />
+					<ArrowUpIcon className="size-4" />
 				))}
 		</div>
 	);

@@ -38,7 +38,7 @@ export const UpdatedAt = memo(
 
 		return (
 			<div
-				className="text-xs select-none"
+				className="select-none text-xs"
 				style={TABLE_DIMENSIONS.UPDATED_AT}
 			>
 				{formattedDate}

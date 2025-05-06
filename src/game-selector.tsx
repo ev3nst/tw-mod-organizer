@@ -35,7 +35,7 @@ const GameSelector = () => {
 		const gameImage = (
 			<img
 				alt={gameDetails.name}
-				className="w-full object-cover h-[300px] rounded-lg transition-all hover:scale-105 hover:cursor-pointer"
+				className="h-[300px] w-full rounded-lg object-cover transition-all hover:scale-105 hover:cursor-pointer"
 				src={`/${gameDetails.slug}.jpg`}
 				style={{
 					filter: gameDetails.game_path_exists
@@ -50,7 +50,7 @@ const GameSelector = () => {
 
 		return (
 			<Card
-				className="flex flex-col h-full border-0 flex-1 max-w-[320px]"
+				className="flex h-full max-w-[320px] flex-1 flex-col border-0"
 				key={`welcome_${gameDetails.steam_id}_${gameDetails.slug}`}
 			>
 				<CardHeader className="py-4">
@@ -78,15 +78,15 @@ const GameSelector = () => {
 
 	return (
 		<main>
-			<div className="flex justify-between app-drag-region border-b fixed top-0 left-0 right-0 py-1">
-				<div className="flex items-center gap-4 py-1 px-3">
-					<img src="/logo.png" className="h-6 w-6" />
+			<div className="app-drag-region fixed inset-x-0 top-0 flex justify-between border-b py-1">
+				<div className="flex items-center gap-4 px-3 py-1">
+					<img src="/logo.png" className="size-6" />
 					<div className="text-sm font-bold">TW Mod Organizer</div>
 				</div>
 				<WindowActions className="px-1" />
 			</div>
-			<div className="flex flex-col justify-center w-screen h-screen">
-				<div className="flex gap-3 px-10 justify-center">
+			<div className="flex h-screen w-screen flex-col justify-center">
+				<div className="flex justify-center gap-3 px-10">
 					{gamesRender}
 				</div>
 			</div>

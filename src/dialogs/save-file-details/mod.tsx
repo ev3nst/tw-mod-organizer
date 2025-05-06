@@ -39,14 +39,14 @@ export const SaveFileModComponent = ({
 	}
 
 	return (
-		<li className="flex gap-3 items-center text-sm">
+		<li className="flex items-center gap-3 text-sm">
 			{isModSeparator ? (
-				<MinusIcon className="w-4 h-4" />
+				<MinusIcon className="size-4" />
 			) : (
 				<>
 					{modActivation!.is_active ? (
 						<CheckIcon
-							className={`w-4 h-4 ${
+							className={`size-4 ${
 								saveFileMod && saveFileMod.is_active
 									? 'text-green-500'
 									: 'text-purple-600'
@@ -54,7 +54,7 @@ export const SaveFileModComponent = ({
 						/>
 					) : (
 						<XIcon
-							className={`w-4 h-4 ${
+							className={`size-4 ${
 								saveFileMod && saveFileMod.is_active
 									? 'text-red-500'
 									: 'text-purple-600'

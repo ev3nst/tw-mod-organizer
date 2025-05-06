@@ -33,11 +33,11 @@ export const ProfileSwitcher = () => {
 		<div className="flex justify-between gap-2 text-foreground">
 			<Select defaultValue={profile.name} onValueChange={onGameChange}>
 				<SelectTrigger
-					className="border-0 flex-grow px-0 shadow-none"
+					className="grow border-0 px-0 shadow-none"
 					aria-label="Select Profile"
 				>
 					<SelectValue placeholder="Select a game">
-						<span className="ml-2 font-bold pl-1 pr-3">
+						<span className="ml-2 pl-1 pr-3 font-bold">
 							Profile: {profile.name}
 						</span>
 					</SelectValue>
@@ -54,7 +54,7 @@ export const ProfileSwitcher = () => {
 					))}
 				</SelectContent>
 			</Select>
-			<div className="flex gap-1 items-center">
+			<div className="flex items-center gap-1">
 				<ProfileDialog />
 				<DeleteProfile />
 			</div>

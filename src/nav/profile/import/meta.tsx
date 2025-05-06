@@ -29,7 +29,7 @@ export const Meta = ({
 				Mod Meta Information
 			</AccordionTrigger>
 			<AccordionContent>
-				<div className="flex items-center space-x-2 mb-4">
+				<div className="mb-4 flex items-center space-x-2">
 					<Checkbox
 						id="import_profile_copy_meta"
 						aria-label="Copy Meta Information"

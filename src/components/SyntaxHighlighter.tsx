@@ -118,9 +118,9 @@ export const SyntaxHighlighter = ({
 	};
 
 	return (
-		<div className="h-full w-full" ref={containerRef}>
+		<div className="size-full" ref={containerRef}>
 			<div
-				className="h-full w-full"
+				className="size-full"
 				style={{
 					fontFamily:
 						'"Fira Code", Consolas, Menlo, Monaco, "Courier New", monospace',

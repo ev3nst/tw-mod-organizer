@@ -46,7 +46,7 @@ const SortByIndicator = ({
 	return (
 		<Tooltip>
 			<TooltipTrigger
-				className={`w-full h-full hover:brightness-125 ${textColorClass}`}
+				className={`size-full hover:brightness-125 ${textColorClass}`}
 			>
 				{title}
 			</TooltipTrigger>
@@ -267,7 +267,7 @@ export const Header = memo(() => {
 	};
 
 	return (
-		<div className="sticky top-0 z-10 bg-background flex flex-row w-full overflow-y-scroll text-muted-foreground text-sm font-semibold items-center h-[40px] border-b shadow-[0_1px_2px_0_hsl(var(--secondary-border)/0.6)]">
+		<div className="sticky top-0 z-10 flex h-[40px] w-full flex-row items-center overflow-y-scroll border-b bg-background text-sm font-semibold text-muted-foreground shadow-[0_1px_2px_0_hsl(var(--secondary-border)/0.6)]">
 			<div
 				className="flex items-center justify-center"
 				style={TABLE_DIMENSIONS.SORTING}
@@ -277,9 +277,9 @@ export const Header = memo(() => {
 						<Button
 							variant="ghost"
 							size="icon"
-							className="h-6 w-6 text-primary"
+							className="size-6 text-primary"
 						>
-							<RotateCcwIcon className="w-4 h-4" />
+							<RotateCcwIcon className="size-4" />
 						</Button>
 					</AlertDialogTrigger>
 					<AlertDialogContent>
@@ -291,11 +291,11 @@ export const Header = memo(() => {
 								This action is irreversible. You are about to
 								reset your current profile's load order.
 								Automatic sorting will make sure that
-								<span className="text-blue-500 mx-1">
+								<span className="mx-1 text-blue-500">
 									dependency
 								</span>
 								checks are resolved and sorted by their
-								<span className="text-blue-500 mx-1">
+								<span className="mx-1 text-blue-500">
 									{selectedGame?.type === 'totalwar'
 										? '.pack file names.'
 										: 'creation date.'}
@@ -318,7 +318,7 @@ export const Header = memo(() => {
 				{orderByText}
 			</div>
 			<div
-				className="justify-center items-center"
+				className="items-center justify-center"
 				style={TABLE_DIMENSIONS.SELECTION}
 			>
 				<ToggleAll />
@@ -340,7 +340,7 @@ export const Header = memo(() => {
 			)}
 			{selectedGame!.slug !== 'mbbl' && toggle_conflict && (
 				<div
-					className="justify-center items-center"
+					className="items-center justify-center"
 					style={TABLE_DIMENSIONS.CONFLICT}
 				>
 					<Tooltip>
@@ -368,9 +368,9 @@ export const Header = memo(() => {
 						UPDATED
 						{sort_by === 'updated_at' &&
 							(sort_by_direction === 'asc' ? (
-								<ArrowDownIcon className="w-4 h-4" />
+								<ArrowDownIcon className="size-4" />
 							) : (
-								<ArrowUpIcon className="w-4 h-4" />
+								<ArrowUpIcon className="size-4" />
 							))}
 					</div>
 				</div>
@@ -382,7 +382,7 @@ export const Header = memo(() => {
 				<Button
 					variant="ghost"
 					size="icon"
-					className="h-7 w-7"
+					className="size-7"
 					onClick={() => toggleTableManager(true)}
 				>
 					<Grid2X2Icon />

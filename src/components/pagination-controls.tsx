@@ -64,11 +64,11 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
 	const pageNumbers = getPageNumbers();
 
 	return (
-		<div className="flex flex-col sm:flex-row justify-between items-center w-full gap-2">
-			<div className="flex flex-col sm:flex-row items-center justify-between">
+		<div className="flex w-full flex-col items-center justify-between gap-2 sm:flex-row">
+			<div className="flex flex-col items-center justify-between sm:flex-row">
 				<div className="flex items-center gap-2">
 					{!isCompact && (
-						<span className="text-sm font-medium whitespace-nowrap">
+						<span className="whitespace-nowrap text-sm font-medium">
 							Per Page:
 						</span>
 					)}
@@ -80,7 +80,7 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
 							className={
 								isCompact
 									? 'w-[50px] justify-center'
-									: 'w-[80px] mx-1'
+									: 'mx-1 w-[80px]'
 							}
 							disableIcon={isCompact}
 						>
@@ -100,7 +100,7 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
 				</div>
 
 				{!isCompact && (
-					<div className="text-sm text-muted-foreground ms-4">
+					<div className="ms-4 text-sm text-muted-foreground">
 						Viewing {totalItems > 0 ? startItem : 0}-{endItem} of{' '}
 						{totalItems} items
 					</div>
@@ -157,14 +157,14 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
 					<PaginationContent>
 						<PaginationItem>
 							<Button
-								className="[&_svg]:size-3.5 w-8 h-8"
+								className="size-8 [&_svg]:size-3.5"
 								variant="ghost"
 								size="icon"
 								onClick={() => onPageChange(1)}
 								disabled={currentPage === 1}
 								aria-label="Go to first page"
 							>
-								<ChevronFirst className="h-4 w-4" />
+								<ChevronFirst className="size-4" />
 							</Button>
 						</PaginationItem>
 
@@ -209,14 +209,14 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
 
 						<PaginationItem>
 							<Button
-								className="[&_svg]:size-3.5 w-8 h-8"
+								className="size-8 [&_svg]:size-3.5"
 								variant="ghost"
 								size="icon"
 								onClick={() => onPageChange(totalPages)}
 								disabled={currentPage >= totalPages}
 								aria-label="Go to last page"
 							>
-								<ChevronLast className="h-4 w-4" />
+								<ChevronLast className="size-4" />
 							</Button>
 						</PaginationItem>
 						<div className="text-sm">Total: {totalPages}</div>

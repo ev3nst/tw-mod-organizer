@@ -76,7 +76,7 @@ function App() {
 	if (fetchAppManageLoading) return <Loading />;
 
 	return (
-		<div className="[--header-height:calc(theme(spacing.14))] h-screen w-screen overflow-hidden">
+		<div className="h-screen w-screen overflow-hidden [--header-height:calc(theme(spacing.14))]">
 			<TooltipProvider>
 				<SidebarProvider className="flex flex-col" defaultOpen>
 					<AppHeader />

@@ -26,17 +26,17 @@ export function LongTextDialog() {
 		>
 			<DialogContent className="min-w-[400px]">
 				<DialogHeader className="max-w-full overflow-hidden">
-					<DialogTitle className="flex flex-col gap-3 max-w-full overflow-hidden">
-						<div className="break-words max-w-full overflow-hidden">
+					<DialogTitle className="flex max-w-full flex-col gap-3 overflow-hidden">
+						<div className="max-w-full overflow-hidden break-words">
 							{longText?.key}
 						</div>
 					</DialogTitle>
 
-					<DialogDescription className="mt-1 flex flex-col space-y-1 max-w-full overflow-hidden">
-						<span className="font-semibold text-primary break-words max-w-full overflow-hidden text-lg">
+					<DialogDescription className="mt-1 flex max-w-full flex-col space-y-1 overflow-hidden">
+						<span className="max-w-full overflow-hidden break-words text-lg font-semibold text-primary">
 							{selectedTreeItem?.pack_file_name}
 						</span>
-						<span className="italic text-sm text-primary break-words max-w-full overflow-hidden">
+						<span className="max-w-full overflow-hidden break-words text-sm italic text-primary">
 							{selectedTreeItem?.id}
 						</span>
 					</DialogDescription>

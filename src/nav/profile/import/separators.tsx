@@ -18,7 +18,7 @@ export const Separators = ({ data }: SeparatorsProps) => {
 				{data.map(sep => (
 					<div
 						key={`import_profile_separator_${sep.identifier}`}
-						className="py-1.5 px-3 rounded-sm mb-2"
+						className="mb-2 rounded-sm px-3 py-1.5"
 						style={{
 							color: sep.text_color,
 							backgroundColor: sep.background_color,

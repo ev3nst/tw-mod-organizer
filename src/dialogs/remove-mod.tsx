@@ -143,7 +143,7 @@ function RemoveModDialog() {
 						</div>
 					</DialogTitle>
 					<DialogDescription
-						className="text-xs mt-1 break-all text-sky-700"
+						className="mt-1 break-all text-xs text-sky-700"
 						asChild
 					>
 						<div>

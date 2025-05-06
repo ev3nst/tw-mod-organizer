@@ -106,7 +106,7 @@ function EditSeparatorDialog() {
 					<DialogTitle className="flex items-baseline gap-3">
 						<div>Change Meta Information</div>
 					</DialogTitle>
-					<DialogDescription className="text-xs mt-1 break-all">
+					<DialogDescription className="mt-1 break-all text-xs">
 						{selectedSeparator.title}
 					</DialogDescription>
 				</DialogHeader>

@@ -61,7 +61,7 @@ export const PackLocRenderer = () => {
 		console.log(selectedTreeItemLoc, 'selectedTreeItemLoc');
 		console.log(selectedTreeItemData, 'selectedTreeItemData');
 		return (
-			<div className="w-full h-full flex justify-center items-center text-center">
+			<div className="flex size-full items-center justify-center text-center">
 				<div className="flex gap-3">
 					<FileIcon />
 					Data is empty or there was an unexpected error while
@@ -75,7 +75,7 @@ export const PackLocRenderer = () => {
 		if (value.length > 300) {
 			return (
 				<div
-					className="truncate max-w-[400px] hover:text-blue-500 hover:cursor-pointer underline"
+					className="max-w-[400px] truncate underline hover:cursor-pointer hover:text-blue-500"
 					onClick={() => {
 						setLongText({
 							key,
@@ -109,9 +109,9 @@ export const PackLocRenderer = () => {
 				const value = getValue();
 				if (typeof value === 'boolean') {
 					return value ? (
-						<CheckIcon className="h-4 w-4 text-green-500" />
+						<CheckIcon className="size-4 text-green-500" />
 					) : (
-						<XIcon className="h-4 w-4 text-red-500" />
+						<XIcon className="size-4 text-red-500" />
 					);
 				}
 
@@ -146,8 +146,8 @@ export const PackLocRenderer = () => {
 	});
 
 	return (
-		<div className="relative h-full w-full overflow-auto dark-scrollbar">
-			<div className="sticky bg-background left-0 top-0 z-10 w-full flex items-center justify-between px-3 py-2.5 border-b">
+		<div className="dark-scrollbar relative size-full overflow-auto">
+			<div className="sticky left-0 top-0 z-10 flex w-full items-center justify-between border-b bg-background px-3 py-2.5">
 				<PaginationControls
 					currentPage={currentPage}
 					totalItems={table.getFilteredRowModel().rows.length}
@@ -164,7 +164,7 @@ export const PackLocRenderer = () => {
 					perPageOptions={[10, 20, 30, 50, 100, 500, 1000, 2000]}
 				/>
 			</div>
-			<div className="min-w-max mb-[10px]">
+			<div className="mb-[10px] min-w-max">
 				<Table>
 					<TableHeader>
 						{table.getHeaderGroups().map(headerGroup => (
@@ -175,13 +175,13 @@ export const PackLocRenderer = () => {
 								{headerGroup.headers.map(header => (
 									<TableHead
 										key={header.id}
-										className="text-left px-5 pt-3 uppercase border-r hover:text-primary"
+										className="border-r px-5 pt-3 text-left uppercase hover:text-primary"
 									>
 										<div className="flex flex-col gap-2">
 											<div
 												className={
 													header.column.getCanSort()
-														? 'cursor-pointer select-none flex items-center gap-2'
+														? 'flex cursor-pointer select-none items-center gap-2'
 														: ''
 												}
 												onClick={header.column.getToggleSortingHandler()}
@@ -193,11 +193,11 @@ export const PackLocRenderer = () => {
 												)}
 												{header.column.getIsSorted() ===
 													'asc' && (
-													<ArrowUpIcon className="w-4 h-4 text-muted-foreground" />
+													<ArrowUpIcon className="size-4 text-muted-foreground" />
 												)}
 												{header.column.getIsSorted() ===
 													'desc' && (
-													<ArrowDownIcon className="w-4 h-4 text-muted-foreground" />
+													<ArrowDownIcon className="size-4 text-muted-foreground" />
 												)}
 											</div>
 
@@ -205,7 +205,7 @@ export const PackLocRenderer = () => {
 												header.column.id
 											] === 'boolean' ? (
 												<RadioGroup
-													className="flex gap-2 text-xs h-[39px] items-center"
+													className="flex h-[39px] items-center gap-2 text-xs"
 													value={
 														header.column.getFilterValue() ===
 														undefined
@@ -253,7 +253,7 @@ export const PackLocRenderer = () => {
 												</RadioGroup>
 											) : (
 												<Input
-													className="max-w-sm mb-2"
+													className="mb-2 max-w-sm"
 													placeholder="Filter"
 													value={
 														typeof header.column.getFilterValue() ===
@@ -283,7 +283,7 @@ export const PackLocRenderer = () => {
 								{row.getVisibleCells().map(cell => (
 									<TableCell
 										key={cell.id}
-										className="text-left px-5 break-all border"
+										className="break-all border px-5 text-left"
 									>
 										{flexRender(
 											cell.column.columnDef.cell,

@@ -59,16 +59,16 @@ function SaveFileDetailsDialog() {
 					<DialogTitle className="flex items-baseline gap-3">
 						<div>Save File Details</div>
 					</DialogTitle>
-					<DialogDescription className="text-xs mt-1 break-all">
+					<DialogDescription className="mt-1 break-all text-xs">
 						{selectedSaveFile?.filename}
 					</DialogDescription>
 				</DialogHeader>
 				<div className="flex flex-col gap-4">
-					<div className="flex justify-between items-center">
+					<div className="flex items-center justify-between">
 						<div>Loaded Mods:</div>
 						<LegendDialog />
 					</div>
-					<div className="flex flex-col gap-1 max-h-[250px] overflow-y-auto text-sm">
+					<div className="flex max-h-[250px] flex-col gap-1 overflow-y-auto text-sm">
 						{selectedSaveFile?.load_order_data &&
 							mods &&
 							mods.map(mod => (
@@ -87,10 +87,10 @@ function SaveFileDetailsDialog() {
 						<Separator className="my-1" />
 						{missingMods.map(mm => (
 							<li
-								className="flex gap-3 items-center text-sm"
+								className="flex items-center gap-3 text-sm"
 								key={`missing_mods_${mm.identifier}`}
 							>
-								<FileWarningIcon className="w-4 h-4 text-red-500" />
+								<FileWarningIcon className="size-4 text-red-500" />
 								<div className="italic text-red-500">
 									{mm.order_index}
 								</div>
@@ -100,7 +100,7 @@ function SaveFileDetailsDialog() {
 							</li>
 						))}
 					</div>
-					<div className="flex justify-between items-center w-full">
+					<div className="flex w-full items-center justify-between">
 						{missingMods?.length === 0 && <ReplaceProfileDialog />}
 						<div className="flex gap-1">
 							<Play />
@@ -108,12 +108,12 @@ function SaveFileDetailsDialog() {
 						</div>
 					</div>
 					{missingMods?.length > 0 && (
-						<div className="flex gap-1 items-center">
+						<div className="flex items-center gap-1">
 							<div>
 								This save cannot be opened because there are
 								missing
 							</div>
-							<FileWarningIcon className="w-4 h-4 text-red-500" />
+							<FileWarningIcon className="size-4 text-red-500" />
 							<div>mods.</div>
 						</div>
 					)}

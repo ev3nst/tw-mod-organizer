@@ -119,7 +119,7 @@ export const ExportProfile = () => {
 
 	return (
 		<div className="flex flex-col gap-3">
-			<div className="flex flex-col gap-3 mb-3 flex-grow">
+			<div className="mb-3 flex grow flex-col gap-3">
 				<Label htmlFor="name">Name</Label>
 				<Input
 					id="name"
@@ -147,9 +147,9 @@ export const ExportProfile = () => {
 					Ignore Passive Mods
 				</label>
 			</div>
-			<div className="flex justify-between items-center gap-2 mt-2">
+			<div className="mt-2 flex items-center justify-between gap-2">
 				<Button
-					className={`flex-grow ${
+					className={`grow ${
 						exportLoading === true ? 'disabled' : ''
 					}`}
 					variant="success"

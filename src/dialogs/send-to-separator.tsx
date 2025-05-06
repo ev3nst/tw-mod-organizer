@@ -126,7 +126,7 @@ function SendToSeparatorDialog() {
 							{selectedMod.title}
 						</div>
 					</DialogTitle>
-					<DialogDescription className="text-xs mt-1 break-all">
+					<DialogDescription className="mt-1 break-all text-xs">
 						{typeof (selectedMod as ModItem)?.mod_file !==
 						'undefined'
 							? (selectedMod as ModItem)?.mod_file
@@ -148,16 +148,16 @@ function SendToSeparatorDialog() {
 
 						<div className="relative">
 							{filteredSeparators.length === 0 ? (
-								<div className="text-sm text-muted-foreground p-2 text-center">
+								<div className="p-2 text-center text-sm text-muted-foreground">
 									No separator found.
 								</div>
 							) : (
-								<div className="max-h-[200px] overflow-y-auto border rounded-md">
+								<div className="max-h-[200px] overflow-y-auto rounded-md border">
 									{filteredSeparators.map(separator => (
 										<div
 											key={separator.identifier}
 											className={`
-                                                px-3 py-2 cursor-pointer hover:bg-secondary-bg
+                                                cursor-pointer px-3 py-2 hover:bg-secondary-bg
                                                 ${
 													selectedSeparator?.identifier ===
 													separator.identifier

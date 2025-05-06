@@ -73,9 +73,9 @@ export const ModTable: React.FC<ModTableProps> = memo(
 		);
 
 		return (
-			<div className="w-full flex flex-col h-full">
+			<div className="flex size-full flex-col">
 				<Header />
-				<div className="flex flex-col text-sm h-full">
+				<div className="flex h-full flex-col text-sm">
 					<GoTop ref={goTopRef} virtuosoRef={virtuosoRef} />
 					<SortableContext
 						items={sortableItems}

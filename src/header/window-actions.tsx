@@ -25,24 +25,24 @@ export function WindowActions({ className }: { className?: string }) {
 		<div className={cn('flex gap-1', className)}>
 			<Button
 				variant="ghost"
-				className="clickable-content h-8 w-8 px-0"
+				className="clickable-content size-8 px-0"
 				onClick={handleMinimize}
 			>
-				<MinusIcon className="h-[1rem] w-[1rem]" />
+				<MinusIcon className="size-[1rem]" />
 			</Button>
 			<Button
 				variant="ghost"
-				className="clickable-content h-8 w-8 px-0"
+				className="clickable-content size-8 px-0"
 				onClick={handleMaximize}
 			>
-				<SquareIcon className="h-[0.85rem] w-[0.85rem]" />
+				<SquareIcon className="size-[0.85rem]" />
 			</Button>
 			<Button
 				variant="ghost"
-				className="clickable-content h-8 w-8 px-0 hover:bg-red-800"
+				className="clickable-content size-8 px-0 hover:bg-red-800"
 				onClick={handleClose}
 			>
-				<XIcon className="h-[1.2rem] w-[1.2rem]" />
+				<XIcon className="size-[1.2rem]" />
 			</Button>
 		</div>
 	);

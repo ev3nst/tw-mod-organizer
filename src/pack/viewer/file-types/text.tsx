@@ -7,7 +7,7 @@ export const PackTextRenderer = () => {
 
 	return (
 		<ScrollArea className="h-full">
-			<pre className="p-5 whitespace-pre-wrap break-words">
+			<pre className="whitespace-pre-wrap break-words p-5">
 				{selectedTreeItemData.content}
 			</pre>
 		</ScrollArea>

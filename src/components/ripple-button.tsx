@@ -57,17 +57,17 @@ export const RippleButton = forwardRef<HTMLButtonElement, ButtonProps>(
 				onMouseDown={createRipple}
 				className={cn(
 					buttonVariants({ variant, size, className }),
-					'select-none relative overflow-hidden',
+					'relative select-none overflow-hidden',
 				)}
 				ref={ref}
 				{...props}
 			>
 				{children}
-				<span className="absolute inset-0 pointer-events-none">
+				<span className="pointer-events-none absolute inset-0">
 					{ripples.map(ripple => (
 						<span
 							key={ripple.id}
-							className="absolute bg-white opacity-30 rounded-full animate-ripple"
+							className="animate-ripple absolute rounded-full bg-white opacity-30"
 							style={{
 								width: ripple.size,
 								height: ripple.size,

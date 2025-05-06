@@ -93,7 +93,7 @@ function MetaInformationDialog() {
 					<DialogTitle className="flex items-baseline gap-3">
 						<div>Change Meta Information</div>
 					</DialogTitle>
-					<DialogDescription className="text-xs mt-1 break-all">
+					<DialogDescription className="mt-1 break-all text-xs">
 						{selectedMod.title}
 					</DialogDescription>
 				</DialogHeader>

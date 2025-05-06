@@ -68,7 +68,7 @@ export const Type = memo(
 				case 'local_mod':
 					return (
 						<FileIcon
-							className="rounded-full object-cover select-none"
+							className="select-none rounded-full object-cover"
 							style={{ width: ICON_SIZE, height: ICON_SIZE }}
 						/>
 					);
@@ -82,7 +82,7 @@ export const Type = memo(
 
 		return (
 			<div
-				className="flex items-center justify-center text-xs select-none text-center"
+				className="flex select-none items-center justify-center text-center text-xs"
 				style={TABLE_DIMENSIONS.TYPE}
 			>
 				{typeToRender}

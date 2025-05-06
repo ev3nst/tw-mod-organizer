@@ -36,10 +36,10 @@ export const RowDragOverlay = ({ mod, selectedCount }: RowDragOverlayProps) => {
 
 	return (
 		<DragOverlay>
-			<div className="ring-1 ring-blue-800 bg-blue-500/10 h-[35px] flex items-center">
-				<div className="flex items-center justify-center h-full relative w-[40px]">
+			<div className="flex h-[35px] items-center bg-blue-500/10 ring-1 ring-blue-800">
+				<div className="relative flex h-full w-[40px] items-center justify-center">
 					<GripVerticalIcon
-						className={`h-4 w-4 text-muted-foreground dark:text-primary/60 `}
+						className={`size-4 text-muted-foreground dark:text-primary/60 `}
 					/>
 				</div>
 
@@ -50,7 +50,7 @@ export const RowDragOverlay = ({ mod, selectedCount }: RowDragOverlayProps) => {
 					<div className="flex items-center gap-2">
 						{imgSrc && (
 							<img
-								className={`object-cover h-${preview_size} ${
+								className={`h- object-cover${preview_size} ${
 									preview_size < 10
 										? `w-${preview_size} rounded-full`
 										: ''
@@ -61,11 +61,11 @@ export const RowDragOverlay = ({ mod, selectedCount }: RowDragOverlayProps) => {
 						<span className="whitespace-pre-wrap">
 							{titleTxt ?? ''}
 							{selectedModMeta?.title !== '' && (
-								<InfoIcon className="inline-block align-middle relative top-[-1px] text-sky-300 w-3 h-3 ml-2" />
+								<InfoIcon className="relative top-[-1px] ml-2 inline-block size-3 align-middle text-sky-300" />
 							)}
 						</span>
 						{selectedCount > 1 && (
-							<div className="bg-blue-700 text-white text-xs px-2 py-1 rounded-full">
+							<div className="rounded-full bg-blue-700 px-2 py-1 text-xs text-white">
 								+{selectedCount - 1} more
 							</div>
 						)}

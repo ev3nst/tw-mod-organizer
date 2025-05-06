@@ -75,7 +75,7 @@ export const Nexus = () => {
 					}`}
 					disabled={isGameRunning || shouldLockScreen}
 				>
-					<img src="/nexus-logo.png" className="w-5 h-5" />
+					<img src="/nexus-logo.png" className="size-5" />
 					Nexus
 				</Button>
 			</AlertDialogTrigger>
@@ -117,7 +117,7 @@ export const Nexus = () => {
 				>
 					<img
 						src="/nexus-logo.png"
-						className="w-5 h-5"
+						className="size-5"
 						style={{
 							filter: 'grayscale(100%)',
 						}}

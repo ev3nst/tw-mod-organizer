@@ -35,7 +35,7 @@ export const Version = memo(
 
 		return (
 			<div
-				className="flex items-center text-xs select-none"
+				className="flex select-none items-center text-xs"
 				style={TABLE_DIMENSIONS.VERSION}
 			>
 				{formattedVersion}

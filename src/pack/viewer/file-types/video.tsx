@@ -16,9 +16,9 @@ export const PackVideoRenderer = () => {
 
 	const metadata = selectedTreeItemData.content as VideoMetadata;
 	return (
-		<div className="w-full h-full flex justify-center items-center">
-			<div className="space-y-4 p-6 rounded-lg border">
-				<h2 className="text-xl font-semibold mb-4">
+		<div className="flex size-full items-center justify-center">
+			<div className="space-y-4 rounded-lg border p-6">
+				<h2 className="mb-4 text-xl font-semibold">
 					Video Information
 				</h2>
 				<div className="grid grid-cols-2 gap-x-8 gap-y-2">

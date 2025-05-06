@@ -66,14 +66,14 @@ export const Filter = memo(
 			setSearchModText(event.currentTarget.value);
 
 		return (
-			<div className="fixed bottom-0 left-0 right-0 bg-secondary-bg w-full flex gap-4 shadow-[0_-1px_2px_0_hsl(var(--secondary-border)/0.6)]">
+			<div className="fixed inset-x-0 bottom-0 flex w-full gap-4 bg-secondary-bg shadow-[0_-1px_2px_0_hsl(var(--secondary-border)/0.6)]">
 				<div>
 					<Select
 						value={activationFilter}
 						onValueChange={setActivationFilter}
 					>
 						<SelectTrigger
-							className="w-[100px] justify-center rounded-none h-full border-t-0 border-l-0 border-b-0 border-secondary-border"
+							className="h-full w-[100px] justify-center rounded-none border-y-0 border-l-0 border-secondary-border"
 							disableIcon
 						>
 							<SelectValue placeholder={activationFilter} />
@@ -85,22 +85,22 @@ export const Filter = memo(
 						</SelectContent>
 					</Select>
 				</div>
-				<div className=" relative flex items-center justify-between w-[calc(100%-350px)]">
-					<div className="flex-grow border-r border-secondary-border">
-						<SearchIcon className="absolute bottom-[12px] w-3.5 h-3.5 text-muted-foreground" />
+				<div className=" relative flex w-[calc(100%-350px)] items-center justify-between">
+					<div className="grow border-r border-secondary-border">
+						<SearchIcon className="absolute bottom-[12px] size-3.5 text-muted-foreground" />
 						<Input
 							ref={searchInputRef}
-							className="rounded-none ps-6 h-10 border-0"
+							className="h-10 rounded-none border-0 ps-6"
 							placeholder="C: Category (Optional) - Search Term ..."
 							defaultValue={searchModText}
 							onChange={handleSearchChange}
 						/>
 					</div>
-					<div className="ps-3 w-[340px] gap-3 flex items-center text-sm">
+					<div className="flex w-[340px] items-center gap-3 ps-3 text-sm">
 						<div>Mod Count:</div>
 
 						<Tooltip>
-							<TooltipTrigger className="hover:cursor-default hover:brightness-125 text-green-500">
+							<TooltipTrigger className="text-green-500 hover:cursor-default hover:brightness-125">
 								A: {activeMods}
 							</TooltipTrigger>
 							<TooltipContent>
@@ -109,7 +109,7 @@ export const Filter = memo(
 						</Tooltip>
 
 						<Tooltip>
-							<TooltipTrigger className="hover:cursor-default hover:brightness-125 text-red-500">
+							<TooltipTrigger className="text-red-500 hover:cursor-default hover:brightness-125">
 								P: {passiveMods}
 							</TooltipTrigger>
 							<TooltipContent>
