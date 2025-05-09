@@ -16,6 +16,8 @@ import { ModMetaModel } from '@/lib/store/mod_meta';
 
 import api from '@/lib/api';
 import { toastError } from '@/lib/utils';
+import { ModItem, modsStore } from '@/lib/store/mods';
+import { isSeparator } from '@/lib/store/mod_separator';
 
 export function ImportData() {
 	const [loading, setLoading] = useState(false);
@@ -29,6 +31,7 @@ export function ImportData() {
 	);
 
 	const profiles = profileStore(state => state.profiles);
+	const mods = modsStore(state => state.mods);
 
 	async function handleSubmit() {
 		if (
@@ -44,6 +47,29 @@ export function ImportData() {
 				selectedGame!.steam_id,
 				configJSONPath,
 			);
+
+			let modsToSubscribe: any = [];
+			const onlySteamMods = mods.filter(
+				m =>
+					!isSeparator(m) && (m as ModItem).item_type === 'steam_mod',
+			);
+			const profileGameKeys = Object.keys(result.mod_profiles);
+			for (let pi = 0; pi < profileGameKeys.length; pi++) {
+				const gameKey = profileGameKeys[pi];
+				const game = games.find(g => g.slug_opt === gameKey);
+				if (!game) continue;
+
+				modsToSubscribe = result.mod_profiles[gameKey][0].mods.filter(
+					m =>
+						!Number.isNaN(Number(m.identifier)) &&
+						!onlySteamMods.find(
+							om => om.identifier === m.identifier,
+						),
+				);
+				break;
+			}
+
+			console.log(modsToSubscribe, 'modsToSubscribe');
 
 			const metaGameKeys = Object.keys(result.mod_meta_information);
 			for (let mgki = 0; mgki < metaGameKeys.length; mgki++) {
@@ -101,7 +127,6 @@ export function ImportData() {
 				}
 			}
 
-			const profileGameKeys = Object.keys(result.mod_profiles);
 			for (let gki = 0; gki < profileGameKeys.length; gki++) {
 				const gameKey = profileGameKeys[gki];
 				const game = games.find(g => g.slug_opt === gameKey);

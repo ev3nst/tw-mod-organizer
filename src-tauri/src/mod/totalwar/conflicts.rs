@@ -139,7 +139,12 @@ pub async fn conflicts(
                 let paths = packfile
                     .paths()
                     .keys()
-                    .filter(|path| !path.ends_with("/version.txt") && *path != "version.txt")
+                    .filter(|path| {
+                        !path.ends_with("/version.txt")
+                            && *path != "version.txt"
+                            && !path.ends_with("/update.txt")
+                            && *path != "update.txt"
+                    })
                     .cloned()
                     .collect::<FxHashSet<_>>();
                 Some((mod_file_path.to_string_lossy().to_string(), paths))

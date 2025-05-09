@@ -19,7 +19,10 @@ pub async fn clear_cache(handle: tauri::AppHandle) -> Result<(), String> {
 
         let is_clean_folder = entries.iter().all(|entry| {
             let path = entry.path();
-            path.is_file() && path.extension().map_or(false, |ext| ext == "json")
+            path.is_file()
+                && path
+                    .extension()
+                    .map_or(false, |ext| ext == "json" || ext == "bin")
         });
 
         if is_clean_folder {
@@ -29,7 +32,11 @@ pub async fn clear_cache(handle: tauri::AppHandle) -> Result<(), String> {
                 .into_iter()
                 .filter_map(|entry| {
                     let path = entry.path();
-                    if path.is_file() && path.extension().map_or(false, |ext| ext == "json") {
+                    if path.is_file()
+                        && path
+                            .extension()
+                            .map_or(false, |ext| ext == "json" || ext == "bin")
+                    {
                         Some(path)
                     } else {
                         None

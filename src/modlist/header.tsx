@@ -141,22 +141,18 @@ export const Header = memo(() => {
 			sortedMods.sort((a, b) => a.created_at - b.created_at);
 		}
 
-		// Track circular dependencies we've found
 		const circularPairs = new Set<string>();
 
-		// First pass: detect circular dependencies
 		for (let i = 0; i < sortedMods.length; i++) {
 			const mod = sortedMods[i];
 			if (mod.required_items && mod.required_items.length > 0) {
 				for (const depId of mod.required_items) {
-					// Find the dependency
 					const depMod = sortedMods.find(m => m.identifier === depId);
 					if (
 						depMod &&
 						depMod.required_items &&
 						depMod.required_items.includes(mod.identifier)
 					) {
-						// This is a circular dependency - mark it
 						circularPairs.add(`${mod.identifier},${depId}`);
 						circularPairs.add(`${depId},${mod.identifier}`);
 					}
@@ -164,7 +160,6 @@ export const Header = memo(() => {
 			}
 		}
 
-		// Second pass: resolve dependencies while preserving order
 		const modIndex = new Map(
 			sortedMods.map((mod, idx) => [mod.identifier, idx]),
 		);
@@ -178,18 +173,15 @@ export const Header = memo(() => {
 				const mod = sortedMods[i];
 				if (mod.required_items && mod.required_items.length > 0) {
 					for (const depId of mod.required_items) {
-						// Skip circular dependencies - we'll handle them separately
 						if (circularPairs.has(`${mod.identifier},${depId}`)) {
 							continue;
 						}
 
 						const depIdx = modIndex.get(depId);
 						if (depIdx !== undefined && depIdx > i) {
-							// Move the dependency before this mod
 							const [depMod] = sortedMods.splice(depIdx, 1);
 							sortedMods.splice(i, 0, depMod);
 
-							// Only update indices for affected range
 							for (let j = i; j <= depIdx; j++) {
 								if (j < sortedMods.length) {
 									modIndex.set(sortedMods[j].identifier, j);
@@ -205,7 +197,6 @@ export const Header = memo(() => {
 			safety++;
 		}
 
-		// Final pass: place circular dependencies next to each other
 		if (circularPairs.size > 0) {
 			let circularChanged = true;
 			while (circularChanged && safety < maxIterations + 5) {
@@ -213,17 +204,13 @@ export const Header = memo(() => {
 
 				for (let i = 0; i < sortedMods.length - 1; i++) {
 					const currentId = sortedMods[i].identifier;
-
-					// Check if any mod further down the list has a circular dependency with this one
 					for (let j = i + 2; j < sortedMods.length; j++) {
 						const otherId = sortedMods[j].identifier;
 
 						if (circularPairs.has(`${currentId},${otherId}`)) {
-							// Move the distant circular dependency next to the current one
 							const [movedMod] = sortedMods.splice(j, 1);
 							sortedMods.splice(i + 1, 0, movedMod);
 
-							// Update indices
 							for (let k = i + 1; k <= j; k++) {
 								if (k < sortedMods.length) {
 									modIndex.set(sortedMods[k].identifier, k);
