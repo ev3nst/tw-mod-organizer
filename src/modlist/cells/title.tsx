@@ -145,7 +145,7 @@ export const Title = memo(
 					<div className="flex flex-row flex-nowrap items-center gap-2">
 						{imgSrc && (
 							<img
-								className={`h- shrink-0 object-cover${preview_size} ${
+								className={`h-${preview_size} shrink-0 object-cover ${
 									preview_size < 10
 										? `w-${preview_size} rounded-full`
 										: ''

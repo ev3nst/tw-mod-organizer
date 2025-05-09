@@ -50,7 +50,7 @@ export const RowDragOverlay = ({ mod, selectedCount }: RowDragOverlayProps) => {
 					<div className="flex items-center gap-2">
 						{imgSrc && (
 							<img
-								className={`h- object-cover${preview_size} ${
+								className={`h-${preview_size} object-cover ${
 									preview_size < 10
 										? `w-${preview_size} rounded-full`
 										: ''
