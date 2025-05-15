@@ -32,7 +32,7 @@ import { ModMetaModel } from '@/lib/store/mod_meta';
 import api from '@/lib/api';
 import { toastError } from '@/lib/utils';
 import { ModItem, modsStore } from '@/lib/store/mods';
-import { isSeparator } from '@/lib/store/mod_separator';
+import { isSeparator, ModSeparatorModel } from '@/lib/store/mod_separator';
 import { SubscriptionErrorDialog } from '@/nav/profile/import/subscribe-error';
 
 export function ImportData() {
@@ -221,6 +221,81 @@ export function ImportData() {
 					continue;
 				}
 
+				const gameModsOnly = mods.filter(
+					m => !isSeparator(m),
+				) as ModItem[];
+
+				const importedModIds = new Set(
+					profileInfo.mods.map((m: any) => m.identifier),
+				);
+				const unrelatedMods = gameModsOnly.filter(
+					m => !importedModIds.has(m.identifier),
+				);
+
+				const modOrderData = profileInfo.mods.map(
+					(pr: any, pri: number) => ({
+						mod_id: pr.identifier,
+						title: pr.title,
+						mod_file_path: pr.mod_file_path,
+						order: pri + 1,
+					}),
+				);
+
+				const maxOrder = profileInfo.mods.length;
+
+				let othersSeparatorTitle = 'Others';
+
+				const existingSeparators = profileInfo.separators || [];
+				const existingOtherSeparators = existingSeparators
+					.filter(
+						(sep: any) =>
+							sep.title && sep.title.startsWith('Others'),
+					)
+					.map((sep: any) => sep.title);
+
+				if (existingOtherSeparators.includes('Others')) {
+					let counter = 2;
+					while (
+						existingOtherSeparators.includes(`Others - ${counter}`)
+					) {
+						counter++;
+					}
+					othersSeparatorTitle = `Others - ${counter}`;
+				}
+
+				let updatedModOrder = [...modOrderData];
+				let updatedSeparators = [...(profileInfo.separators || [])];
+
+				if (unrelatedMods.length > 0) {
+					const othersSeparator = {
+						identifier: `separator_${Date.now()}_${Math.random()
+							.toString(36)
+							.substring(2, 9)}`,
+						title: othersSeparatorTitle,
+						background_color: '#3a3a3c',
+						text_color: '#ffffff',
+						type: 'separator',
+						collapsed: true,
+					};
+
+					updatedSeparators.push(othersSeparator);
+
+					updatedModOrder.push({
+						mod_id: othersSeparator.identifier,
+						title: othersSeparator.title,
+						order: maxOrder + 1,
+					});
+
+					unrelatedMods.forEach((mod, index) => {
+						updatedModOrder.push({
+							mod_id: mod.identifier,
+							title: mod.title,
+							mod_file_path: mod.mod_file_path,
+							order: maxOrder + 2 + index,
+						});
+					});
+				}
+
 				const newProfile = new ProfileModel({
 					id: undefined as any,
 					name: sanitizedProfileName,
@@ -229,17 +304,27 @@ export function ImportData() {
 				});
 				await newProfile.save();
 
+				const activationData = profileInfo.mods.map((pm: any) => ({
+					mod_id: pm.identifier,
+					title: pm.title,
+					is_active: pm.is_active,
+				}));
+
+				if (unrelatedMods.length > 0) {
+					unrelatedMods.forEach(mod => {
+						activationData.push({
+							mod_id: mod.identifier,
+							title: mod.title,
+							is_active: false,
+						});
+					});
+				}
+
 				const newModActivation = new ModActivationModel({
 					id: undefined as any,
 					profile_id: newProfile.id,
 					app_id: game.steam_id,
-					data: profileInfo.mods.map((pm: any) => {
-						return {
-							mod_id: pm.identifier,
-							title: pm.title,
-							is_active: pm.is_active,
-						};
-					}),
+					data: activationData,
 				});
 				await newModActivation.save();
 
@@ -247,16 +332,19 @@ export function ImportData() {
 					id: undefined as any,
 					profile_id: newProfile.id,
 					app_id: game.steam_id,
-					data: profileInfo.mods.map((pr: any, pri: number) => {
-						return {
-							mod_id: pr.identifier,
-							title: pr.title,
-							mod_file_path: pr.mod_file_path,
-							order: pri + 1,
-						};
-					}),
+					data: updatedModOrder,
 				});
 				await newModOrder.save();
+
+				if (updatedSeparators.length > 0) {
+					const newModSeparators = new ModSeparatorModel({
+						id: undefined as any,
+						profile_id: newProfile.id,
+						app_id: game.steam_id,
+						data: updatedSeparators,
+					});
+					await newModSeparators.save();
+				}
 			}
 
 			toast.success('Import successful!');
