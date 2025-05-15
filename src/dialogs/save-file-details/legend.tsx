@@ -11,7 +11,25 @@ import {
 import { Button } from '@/components/button';
 import { Separator } from '@/components/separator';
 
-const LegendItem = ({
+const LegendIconItem = ({
+	icon,
+	label,
+	description,
+}: {
+	icon: JSX.Element;
+	label: string;
+	description: string;
+}) => (
+	<div className="flex items-center gap-4">
+		<div className="flex w-[30px] shrink-0 justify-center">{icon}</div>
+		<div>
+			<span className="font-medium">{label}</span>
+			<span className="ml-2 text-muted-foreground">{description}</span>
+		</div>
+	</div>
+);
+
+const LegendColorItem = ({
 	color,
 	label,
 	description,
@@ -20,96 +38,127 @@ const LegendItem = ({
 	label: string;
 	description: string;
 }) => (
-	<div className="flex gap-4">
-		<div className={`${color} w-[50px] shrink-0`}>{label}</div>
-		<div>{description}</div>
-	</div>
-);
-
-const LegendIconItem = ({
-	icon,
-	label,
-}: {
-	icon: JSX.Element;
-	label: string;
-}) => (
-	<div className="flex items-center gap-4 text-foreground">
-		{icon}
-		<div>{label}</div>
+	<div className="flex items-center gap-4">
+		<div className={`h-[20px] w-[30px] rounded ${color}`}></div>
+		<div>
+			<span className="font-medium">{label}</span>
+			<span className="ml-2 text-muted-foreground">{description}</span>
+		</div>
 	</div>
 );
 
 export const LegendDialog = () => (
 	<Dialog>
 		<DialogTrigger asChild>
-			<Button variant="outline">How it works ?</Button>
+			<Button variant="outline">Legend</Button>
 		</DialogTrigger>
-		<DialogContent>
+		<DialogContent className="max-w-[500px]">
 			<DialogHeader>
-				<DialogTitle>How it works</DialogTitle>
+				<DialogTitle className="mb-3">Mod Status Legend</DialogTitle>
 				<DialogDescription asChild>
-					<div className="!text-base">
-						<div className="flex flex-col gap-1">
-							<LegendItem
-								color="text-green-500"
-								label="Green"
-								description="Present and required in save file."
-							/>
-							<LegendItem
-								color="text-blue-500"
-								label="Blue"
-								description="What order should be."
-							/>
-							<LegendItem
-								color="text-orange-500"
-								label="Orange"
-								description="Different than save file but not affecting gameplay."
-							/>
-							<LegendItem
-								color="text-red-500"
-								label="Red"
-								description="Missing file or mismatched order."
-							/>
-							<LegendItem
-								color="text-purple-500"
-								label="Purple"
-								description="Did not exist in save file or was not active before."
-							/>
-							<Separator className="my-2" />
-							<LegendIconItem
-								icon={<CheckIcon className="size-4" />}
-								label="Mod is active"
-							/>
-							<LegendIconItem
-								icon={<XIcon className="size-4" />}
-								label="Mod is passive"
-							/>
-							<LegendIconItem
-								icon={<FileWarningIcon className="size-4" />}
-								label="File is missing."
-							/>
-							<LegendIconItem
-								icon={<MinusIcon className="size-4" />}
-								label="Separator (ignored for gameplay)"
-							/>
-
-							<Separator className="my-2" />
-
-							<div className="mt-1 text-muted-foreground">
-								<span className="me-1 text-foreground">
-									Play
-								</span>
-								It will load the save with required mods and its
-								order. If there are new active mods they will be
-								pushed to bottom and also be loaded.
+					<div className="space-y-3">
+						<div>
+							<div className="space-y-2">
+								<LegendIconItem
+									icon={
+										<CheckIcon className="size-4 text-green-500" />
+									}
+									label="Active"
+									description="Mod is currently active and was active in save file"
+								/>
+								<LegendIconItem
+									icon={
+										<CheckIcon className="size-4 text-purple-500" />
+									}
+									label="Newly Active"
+									description="Mod is active now but wasn't in save file"
+								/>
+								<LegendIconItem
+									icon={
+										<XIcon className="size-4 text-orange-500" />
+									}
+									label="Newly Inactive"
+									description="Mod was active in save file but is now inactive"
+								/>
+								<LegendIconItem
+									icon={
+										<XIcon className="size-4 text-muted-foreground" />
+									}
+									label="Inactive"
+									description="Mod is inactive and was inactive in save file"
+								/>
+								<LegendIconItem
+									icon={<MinusIcon className="size-4" />}
+									label="Separator"
+									description="Ignored for gameplay"
+								/>
+								<LegendIconItem
+									icon={
+										<FileWarningIcon className="size-4 text-red-500" />
+									}
+									label="Missing"
+									description="Required mod is missing from your system"
+								/>
 							</div>
 						</div>
-						<div className="mt-2 text-muted-foreground">
-							<span className="me-1 text-foreground">
-								Load Exactly
-							</span>
-							This action will load the save with required mods
-							and its order, ignoring any new active mods.
+
+						<Separator />
+
+						{/* Order Colors Section */}
+						<div>
+							<h3 className="mb-2 font-semibold">
+								Load Order Colors
+							</h3>
+							<div className="space-y-2">
+								<LegendColorItem
+									color="bg-green-500"
+									label="Matching"
+									description="Order matches the save file"
+								/>
+								<LegendColorItem
+									color="bg-blue-500"
+									label="Original"
+									description="The order in the save file"
+								/>
+								<LegendColorItem
+									color="bg-orange-500"
+									label="Harmless Change"
+									description="Order changed but won't affect gameplay"
+								/>
+								<LegendColorItem
+									color="bg-red-500"
+									label="Gameplay Impact"
+									description="Order changed and will affect gameplay"
+								/>
+								<LegendColorItem
+									color="bg-purple-500"
+									label="New Mod"
+									description="Mod didn't exist in save file"
+								/>
+							</div>
+						</div>
+
+						<Separator />
+
+						<div className="space-y-2">
+							<h3 className="font-semibold">Play Options</h3>
+							<div className="text-sm text-muted-foreground">
+								<p className="mb-2">
+									<span className="font-medium text-foreground">
+										Play:
+									</span>{' '}
+									Load the save with required mods in their
+									order. New active mods will be added at the
+									bottom.
+								</p>
+								<p>
+									<span className="font-medium text-foreground">
+										Load Exactly:
+									</span>{' '}
+									Load the save with only the mods and order
+									that existed in the save file.
+								</p>
+							</div>
 						</div>
 					</div>
 				</DialogDescription>

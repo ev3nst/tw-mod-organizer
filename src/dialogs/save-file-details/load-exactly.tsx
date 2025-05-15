@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/tooltip';
@@ -34,6 +34,9 @@ export const LoadExactly = () => {
 		);
 
 	const mods = modsStore(state => state.mods);
+
+	const [unavailableMods, setUnavailableMods] = useState<string[]>([]);
+
 	const missingMods = useMemo(
 		() =>
 			selectedSaveFile
@@ -41,7 +44,7 @@ export const LoadExactly = () => {
 						lr =>
 							!mods.some(m => m.identifier === lr.identifier) &&
 							lr.is_active === true &&
-							lr.mod_file !== null, // Ignore separators
+							lr.mod_file !== null,
 					)
 				: [],
 		[selectedSaveFile, mods],
@@ -49,26 +52,50 @@ export const LoadExactly = () => {
 
 	const modsFromSave = useMemo(() => {
 		if (!selectedSaveFile?.load_order_data) return [];
-		return selectedSaveFile.load_order_data
+
+		setUnavailableMods([]);
+
+		const result: ModItemSeparatorUnion[] = [];
+
+		selectedSaveFile.load_order_data
 			.filter(lrf => lrf.is_active && lrf.mod_file !== null)
 			.sort((a, b) => a.order_index - b.order_index)
-			.map(lr => {
+			.forEach(lr => {
 				const findMod = mods.find(
 					m => (m as ModItem).mod_file === lr.mod_file,
 				) as ModItem;
+
 				if (!findMod) {
-					console.error(lr);
-					console.error(mods);
-					throw new Error(
-						'There was an error while setting up required mod list for this save.',
-					);
+					setUnavailableMods(prev => [
+						...prev,
+						lr.title || lr.mod_file || 'Unknown mod',
+					]);
+				} else {
+					result.push(findMod);
 				}
-				return findMod;
-			}) as ModItemSeparatorUnion[];
+			});
+
+		return result;
 	}, [selectedSaveFile?.load_order_data, mods]);
+
+	const hasLoadIssues = missingMods.length > 0 || unavailableMods.length > 0;
+
+	const getTooltipMessage = () => {
+		if (hasLoadIssues) {
+			if (missingMods.length > 0 && unavailableMods.length > 0) {
+				return 'Some required mods are missing and some previously used mods are no longer available.';
+			} else if (missingMods.length > 0) {
+				return 'Some required mods are missing from your system.';
+			} else if (unavailableMods.length > 0) {
+				return `Some previously used mods are no longer available: ${unavailableMods.join(', ')}`;
+			}
+		}
+		return 'This action will load the save with required mods and its order, ignoring any new active mods.';
+	};
 
 	const handleLoadExactly = async () => {
 		if (!selectedSaveFile || !selectedSaveFile.load_order_data) return;
+		if (hasLoadIssues) return;
 
 		try {
 			setIsGameLoading(true);
@@ -152,18 +179,15 @@ export const LoadExactly = () => {
 			<TooltipTrigger asChild>
 				<Button
 					variant="secondary"
-					disabled={missingMods?.length > 0}
-					className={missingMods?.length > 0 ? 'disabled' : ''}
+					disabled={hasLoadIssues}
+					className={hasLoadIssues ? 'disabled' : ''}
 					onClick={handleLoadExactly}
 				>
 					Load Exactly
 				</Button>
 			</TooltipTrigger>
 			<TooltipContent>
-				<p>
-					This action will load the save with required mods and its
-					order, ignoring any new active mods.
-				</p>
+				<p>{getTooltipMessage()}</p>
 			</TooltipContent>
 		</Tooltip>
 	);

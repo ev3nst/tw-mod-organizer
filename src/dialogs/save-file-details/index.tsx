@@ -108,13 +108,11 @@ function SaveFileDetailsDialog() {
 						</div>
 					</div>
 					{missingMods?.length > 0 && (
-						<div className="flex items-center gap-1">
-							<div>
-								This save cannot be opened because there are
-								missing
-							</div>
-							<FileWarningIcon className="size-4 text-red-500" />
-							<div>mods.</div>
+						<div className="text-sm text-muted-foreground">
+							This save cannot be opened using continue button
+							because there are missing{' '}
+							<FileWarningIcon className="me-1 inline size-4 align-text-bottom text-red-500" />
+							<span>mods.</span>
 						</div>
 					)}
 				</div>
