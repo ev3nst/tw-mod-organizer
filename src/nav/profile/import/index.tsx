@@ -28,6 +28,7 @@ import { Legend } from './legend';
 import { Separators } from './separators';
 import { Mods } from './mods';
 import { Meta } from './meta';
+import { SubscriptionErrorDialog } from './subscribe-error';
 
 export const ImportProfile = () => {
 	const [importProfileName, setImportProfileName] = useState('');
@@ -41,12 +42,24 @@ export const ImportProfile = () => {
 	const [profileExportData, setProfileExportData] =
 		useState<ProfileExportData>();
 
+	const [subscriptionErrors, setSubscriptionErrors] = useState<
+		Array<{
+			title: string;
+			id: string;
+			error: string;
+		}>
+	>([]);
+	const [showSubscriptionErrorDialog, setShowSubscriptionErrorDialog] =
+		useState(false);
+	const [pendingImportData, setPendingImportData] = useState<any>(null);
+
 	const mods = modsStore(state => state.mods);
 	const modMetaData = modMetaStore(state => state.data);
 	const modsOnly = mods.filter(mod => !isSeparator(mod)) as ModItem[];
 
 	const { games, setLockScreen } = settingStore(
 		useShallow(state => ({
+			setIsGameLoading: state.setIsGameLoading,
 			games: state.games,
 			setLockScreen: state.setLockScreen,
 		})),
@@ -118,7 +131,7 @@ export const ImportProfile = () => {
 		}
 	};
 
-	const handleImportProcess = async () => {
+	const subscribeToMods = async () => {
 		if (typeof profileExportData === 'undefined') return;
 
 		const importGame = games.find(
@@ -140,47 +153,153 @@ export const ImportProfile = () => {
 
 		setImportProcessLoading(true);
 		setDidInstallNewMods(false);
-		try {
-			for (let mi = 0; mi < profileExportData.mods.length; mi++) {
-				const mod = profileExportData.mods[mi];
-				if (
-					mod.item_type === 'steam_mod' &&
-					!modsOnly.some(mo => mo.identifier === mod.identifier)
-				) {
-					try {
-						await api.subscribe(
-							profileExportData.app_id,
-							Number(mod.identifier),
-						);
-					} catch (error) {
-						console.log('Error subscribing to mod:', mod);
-						toastError(error);
-					}
+		setSubscriptionErrors([]);
+
+		const errors: Array<{
+			title: string;
+			id: string;
+			error: string;
+		}> = [];
+
+		for (let mi = 0; mi < profileExportData.mods.length; mi++) {
+			const mod = profileExportData.mods[mi];
+			if (
+				mod.item_type === 'steam_mod' &&
+				!modsOnly.some(mo => mo.identifier === mod.identifier)
+			) {
+				try {
+					await api.subscribe(
+						profileExportData.app_id,
+						Number(mod.identifier),
+					);
 					setDidInstallNewMods(true);
+				} catch (error) {
+					console.log('Error subscribing to mod:', mod);
+					console.error(error);
+					let errorMessage = 'Unknown error occurred';
+					if (error instanceof Error) {
+						errorMessage = error.message;
+					} else if (typeof error === 'string') {
+						errorMessage = error;
+					} else if (typeof error === 'object' && error !== null) {
+						errorMessage = JSON.stringify(error);
+					}
+
+					errors.push({
+						title: mod.title || `Mod ID: ${mod.identifier}`,
+						id: mod.identifier,
+						error: errorMessage,
+					});
 				}
 			}
+		}
 
-			const newProfileName =
-				importProfileName !== ''
-					? importProfileName
-					: profileExportData.name.trim();
-			const profiles = await ProfileModel.all(profileExportData.app_id);
-			const existing = profiles.find(
-				p => p.name.toLowerCase() === newProfileName.toLowerCase(),
+		if (errors.length > 0) {
+			setSubscriptionErrors(errors);
+			setShowSubscriptionErrorDialog(true);
+
+			const importData = await prepareImportData();
+			setPendingImportData(importData);
+		} else {
+			const importData = await prepareImportData();
+			await finalizeImport(importData);
+		}
+
+		if (errors.length === 0) {
+			setImportProcessLoading(false);
+		}
+	};
+
+	const prepareImportData = async () => {
+		if (!profileExportData) return null;
+
+		const newProfileName =
+			importProfileName !== ''
+				? importProfileName
+				: profileExportData.name.trim();
+		const profiles = await ProfileModel.all(profileExportData.app_id);
+		const existing = profiles.find(
+			p => p.name.toLowerCase() === newProfileName.toLowerCase(),
+		);
+
+		const importedModFiles = new Set(
+			profileExportData.mods.map(m => m.mod_file),
+		);
+		const unrelatedMods = modsOnly.filter(
+			mod => !importedModFiles.has(mod.mod_file),
+		);
+
+		const resolvedModOrder = profileExportData.mod_order.map(mr => {
+			const mo_mods_mapping = profileExportData.mods.find(
+				pdmo => pdmo.identifier === mr.mod_id,
 			);
-			if (existing) {
-				await existing.delete();
+			if (!mo_mods_mapping) return mr;
+
+			const existingLocalMod = modsOnly.find(
+				mo => mo.mod_file === mo_mods_mapping!.mod_file,
+			);
+			if (!existingLocalMod) return mr;
+
+			return {
+				...mr,
+				mod_id: existingLocalMod.identifier,
+				mod_file_path: existingLocalMod.mod_file_path,
+			};
+		});
+
+		const maxOrder =
+			resolvedModOrder.length > 0
+				? Math.max(...resolvedModOrder.map(mo => mo.order))
+				: 0;
+
+		let othersSeparatorTitle = 'Others';
+
+		const existingSeparators = profileExportData.mod_separators || [];
+		const existingOtherSeparators = existingSeparators
+			.filter(sep => sep.title.startsWith('Others'))
+			.map(sep => sep.title);
+
+		if (existingOtherSeparators.includes('Others')) {
+			let counter = 2;
+			while (existingOtherSeparators.includes(`Others - ${counter}`)) {
+				counter++;
 			}
+			othersSeparatorTitle = `Others - ${counter}`;
+		}
 
-			const newProfile = new ProfileModel({
-				id: undefined as any,
-				name: newProfileName,
-				app_id: profileExportData.app_id,
-				is_active: false,
+		let updatedModOrder = [...resolvedModOrder];
+		let updatedSeparators = [...profileExportData.mod_separators];
+
+		if (unrelatedMods.length > 0) {
+			const othersSeparator = {
+				identifier: `separator_${Date.now()}`,
+				title: othersSeparatorTitle,
+				background_color: '#3a3a3c',
+				text_color: '#ffffff',
+				type: 'separator',
+				order: maxOrder + 1,
+				collapsed: true,
+			};
+
+			updatedSeparators.push(othersSeparator);
+
+			updatedModOrder.push({
+				mod_id: othersSeparator.identifier,
+				title: othersSeparator.title,
+				order: maxOrder + 1,
 			});
-			await newProfile.save();
 
-			const resolvedModOrder = profileExportData.mod_order.map(mr => {
+			unrelatedMods.forEach((mod, index) => {
+				updatedModOrder.push({
+					mod_id: mod.identifier,
+					title: mod.title,
+					order: maxOrder + 2 + index,
+				});
+			});
+		}
+
+		const resolvedModActivation = profileExportData.mod_activation.map(
+			mr => {
 				const mo_mods_mapping = profileExportData.mods.find(
 					pdmo => pdmo.identifier === mr.mod_id,
 				);
@@ -196,39 +315,66 @@ export const ImportProfile = () => {
 					mod_id: existingLocalMod.identifier,
 					mod_file_path: existingLocalMod.mod_file_path,
 				};
+			},
+		);
+
+		const updatedModActivation = [...resolvedModActivation];
+		if (unrelatedMods.length > 0) {
+			unrelatedMods.forEach(mod => {
+				updatedModActivation.push({
+					mod_id: mod.identifier,
+					is_active: false,
+					title: mod.title,
+				});
 			});
+		}
+
+		return {
+			existing,
+			newProfileName,
+			updatedModOrder,
+			updatedSeparators,
+			updatedModActivation,
+		};
+	};
+
+	const finalizeImport = async (importData: any) => {
+		if (!importData || !profileExportData) return;
+
+		try {
+			const {
+				existing,
+				newProfileName,
+				updatedModOrder,
+				updatedSeparators,
+				updatedModActivation,
+			} = importData;
+
+			if (existing) {
+				await existing.delete();
+			}
+
+			const newProfile = new ProfileModel({
+				id: undefined as any,
+				name: newProfileName,
+				app_id: profileExportData.app_id,
+				is_active: false,
+			});
+			await newProfile.save();
+
 			const newModOrder = new ModOrderModel({
 				id: undefined as any,
 				app_id: profileExportData.app_id,
 				profile_id: newProfile.id,
-				data: resolvedModOrder,
+				data: updatedModOrder,
 			});
 			await newModOrder.save();
 
-			const resolvedModActivation = profileExportData.mod_activation.map(
-				mr => {
-					const mo_mods_mapping = profileExportData.mods.find(
-						pdmo => pdmo.identifier === mr.mod_id,
-					);
-					if (!mo_mods_mapping) return mr;
-
-					const existingLocalMod = modsOnly.find(
-						mo => mo.mod_file === mo_mods_mapping!.mod_file,
-					);
-					if (!existingLocalMod) return mr;
-
-					return {
-						...mr,
-						mod_id: existingLocalMod.identifier,
-						mod_file_path: existingLocalMod.mod_file_path,
-					};
-				},
-			);
 			const newModActivation = new ModActivationModel({
 				id: undefined as any,
 				app_id: profileExportData.app_id,
 				profile_id: newProfile.id,
-				data: resolvedModActivation,
+				data: updatedModActivation,
 			});
 			await newModActivation.save();
 
@@ -236,7 +382,7 @@ export const ImportProfile = () => {
 				id: undefined as any,
 				app_id: profileExportData.app_id,
 				profile_id: newProfile.id,
-				data: profileExportData.mod_separators,
+				data: updatedSeparators,
 			});
 			await newSeparators.save();
 
@@ -248,6 +394,22 @@ export const ImportProfile = () => {
 		} finally {
 			setImportProcessLoading(false);
 		}
+	};
+
+	const handleContinueWithErrors = async () => {
+		setShowSubscriptionErrorDialog(false);
+
+		if (pendingImportData) {
+			await finalizeImport(pendingImportData);
+			setPendingImportData(null);
+		}
+	};
+
+	const handleAbortImport = () => {
+		setShowSubscriptionErrorDialog(false);
+		setImportProcessLoading(false);
+		setPendingImportData(null);
+		toast.error('Import aborted due to subscription errors.');
 	};
 
 	useEffect(() => {
@@ -428,12 +590,20 @@ export const ImportProfile = () => {
 					importProcessLoading ||
 					nexusModsDontExists.length > 0
 				}
-				onClick={handleImportProcess}
+				onClick={subscribeToMods}
 			>
 				<DownloadIcon />
 				Import
 				{importProcessLoading && <Loading />}
 			</Button>
+
+			<SubscriptionErrorDialog
+				open={showSubscriptionErrorDialog}
+				onOpenChange={setShowSubscriptionErrorDialog}
+				erroredMods={subscriptionErrors}
+				onContinue={handleContinueWithErrors}
+				onAbort={handleAbortImport}
+			/>
 		</div>
 	);
 };
