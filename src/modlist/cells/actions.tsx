@@ -7,6 +7,8 @@ import {
 	EyeIcon,
 	InfoIcon,
 	LinkIcon,
+	MinusIcon,
+	PlusIcon,
 	StarIcon,
 	TrashIcon,
 	UngroupIcon,
@@ -129,6 +131,28 @@ const SeparatorActions = ({
 		toggleEditSeparator();
 	}, [mod.identifier]);
 
+	const handleCollapseAll = useCallback(() => {
+		const updatedSeparators = separators.map(s => ({
+			...s,
+			collapsed: true,
+		}));
+		setSeparators(updatedSeparators);
+		setTimeout(() => {
+			setInitReload(!init_reload);
+		}, 200);
+	}, [separators, init_reload]);
+
+	const handleExpandAll = useCallback(() => {
+		const updatedSeparators = separators.map(s => ({
+			...s,
+			collapsed: false,
+		}));
+		setSeparators(updatedSeparators);
+		setTimeout(() => {
+			setInitReload(!init_reload);
+		}, 200);
+	}, [separators, init_reload]);
+
 	return (
 		<ModActionRenderer
 			isModSeparator={true}
@@ -136,6 +160,8 @@ const SeparatorActions = ({
 			handleEdit={handleEdit}
 			handleSetPriority={handleSetPriority}
 			handleDelete={handleDelete}
+			handleCollapseAll={handleCollapseAll}
+			handleExpandAll={handleExpandAll}
 		/>
 	);
 };
@@ -256,6 +282,8 @@ export const ModActionDropdownRenderer = ({
 	cellStyle,
 	handleEdit,
 	handleDelete,
+	handleCollapseAll,
+	handleExpandAll,
 }: {
 	isModSeparator: boolean;
 	mod: ModItemSeparatorUnion;
@@ -274,6 +302,8 @@ export const ModActionDropdownRenderer = ({
 	};
 	handleEdit?: () => void;
 	handleDelete?: () => void;
+	handleCollapseAll?: () => void;
+	handleExpandAll?: () => void;
 }) => {
 	if (isModSeparator) {
 		return (
@@ -299,6 +329,20 @@ export const ModActionDropdownRenderer = ({
 							>
 								<ArrowRightIcon className="size-3" />
 								Set Priority
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								className="my-0 py-2 text-xs"
+								onClick={handleCollapseAll}
+							>
+								<PlusIcon className="size-3" />
+								Collapse All Separators
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								className="my-0 py-2 text-xs"
+								onClick={handleExpandAll}
+							>
+								<MinusIcon className="size-3" />
+								Expand All Separators
 							</DropdownMenuItem>
 							<DropdownMenuItem
 								className="my-0 py-2 text-xs"
@@ -489,6 +533,8 @@ export const ModActionContextMenuRenderer = ({
 	deleteText,
 	handleEdit,
 	handleDelete,
+	handleCollapseAll,
+	handleExpandAll,
 }: {
 	isModSeparator: boolean;
 	mod: ModItemSeparatorUnion;
@@ -502,6 +548,8 @@ export const ModActionContextMenuRenderer = ({
 	showExternalLink?: boolean;
 	handleEdit?: () => void;
 	handleDelete?: () => void;
+	handleCollapseAll?: () => void;
+	handleExpandAll?: () => void;
 }) => {
 	// Handle mod separator case
 	if (isModSeparator) {
@@ -518,6 +566,14 @@ export const ModActionContextMenuRenderer = ({
 				<ContextMenuItem onSelect={handleSetPriority}>
 					<ArrowRightIcon className="mr-2 size-3" />
 					Set Priority
+				</ContextMenuItem>
+				<ContextMenuItem onSelect={handleCollapseAll}>
+					<PlusIcon className="mr-2 size-3" />
+					Collapse All Separators
+				</ContextMenuItem>
+				<ContextMenuItem onSelect={handleExpandAll}>
+					<MinusIcon className="mr-2 size-3" />
+					Expand All Separators
 				</ContextMenuItem>
 				<ContextMenuItem onSelect={handleDelete}>
 					<TrashIcon className="mr-2 size-3 text-red-500" />
