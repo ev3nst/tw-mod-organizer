@@ -12,6 +12,7 @@ import { profileStore } from '@/lib/store/profile';
 
 import { ProfileDialog } from './profile-dialog';
 import { DeleteProfile } from './delete-profile';
+import { ManageProfiles } from './manage-profiles';
 
 export const ProfileSwitcher = () => {
 	const { profile, profiles } = profileStore(
@@ -56,6 +57,7 @@ export const ProfileSwitcher = () => {
 			</Select>
 			<div className="flex items-center gap-1">
 				<ProfileDialog />
+				<ManageProfiles />
 				<DeleteProfile />
 			</div>
 		</div>
