@@ -101,7 +101,7 @@ export const Conflict = memo(
 				onClick={handleClick}
 				className="flex items-center justify-center"
 			>
-				<div className="flex items-center justify-center gap-1 text-center hover:cursor-pointer hover:opacity-80">
+				<div className="flex select-none items-center justify-center gap-1 text-center hover:cursor-pointer hover:opacity-80">
 					{win.total > 0 && (
 						<span className="text-xs text-green-500">
 							{win.total}

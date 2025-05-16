@@ -37,7 +37,9 @@ export const ModTable: React.FC<ModTableProps> = memo(
 		const goTopRef = useRef<GoTopHandle>(null);
 		const hasRestoredScroll = useRef(false);
 		const saveTimeout = useRef<NodeJS.Timeout | null>(null);
-		const virtuosoRef = useRef<VirtuosoHandle>(null);
+		const virtuosoRef = useRef<VirtuosoHandle>(
+			null,
+		) as React.RefObject<VirtuosoHandle>;
 		useEffect(() => {
 			(async () => {
 				if (hasRestoredScroll.current) return;
@@ -86,6 +88,7 @@ export const ModTable: React.FC<ModTableProps> = memo(
 							className="overflow-x-hidden overflow-y-scroll"
 							style={{ height: 'calc(100% - 80px)' }}
 							totalCount={modsResolved.length}
+							overscan={20}
 							onScroll={handleScroll}
 							itemContent={index => {
 								const mod = modsResolved[index];
