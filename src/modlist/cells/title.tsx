@@ -151,6 +151,7 @@ export const Title = memo(
 										: ''
 								} select-none`}
 								src={imgSrc}
+								loading="lazy"
 							/>
 						)}
 						<div className="flex-1 whitespace-pre-wrap break-words">

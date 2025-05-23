@@ -433,6 +433,7 @@ export const ImportCollection = () => {
 										<img
 											src={mod.preview_url}
 											className="size-5 rounded-md"
+											loading="lazy"
 										/>
 										{mod.title}
 										<ExternalLinkIcon className="size-3" />

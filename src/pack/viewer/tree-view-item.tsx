@@ -131,6 +131,7 @@ export function TreeViewItem({
 								<img
 									className={`ms-1 size-6 select-none rounded-full object-cover`}
 									src={imgSrc}
+									loading="lazy"
 								/>
 							)}
 
