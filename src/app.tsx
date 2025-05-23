@@ -80,7 +80,7 @@ function App() {
 			<TooltipProvider>
 				<SidebarProvider className="flex flex-col" defaultOpen>
 					<AppHeader />
-					<div className="flex flex-1">
+					<div className="flex flex-1 overflow-hidden">
 						<SidebarInset>
 							<AppData>
 								<div className="h-full overflow-hidden">
