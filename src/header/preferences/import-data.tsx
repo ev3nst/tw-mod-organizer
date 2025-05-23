@@ -21,6 +21,11 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/card';
+import {
+	Collapsible,
+	CollapsibleTrigger,
+	CollapsibleContent,
+} from '@/components/collapsible';
 
 import { settingStore } from '@/lib/store/setting';
 import { profileStore } from '@/lib/store/profile';
@@ -471,23 +476,31 @@ export function ImportData() {
 	};
 
 	return (
-		<div className="flex flex-col gap-3">
-			<div className="mb-1 flex flex-col text-sm font-bold">
-				Import Data From: WH3-Mod-Manager
+		<div className="flex flex-col gap-3 overflow-y-auto">
+			<div className="flex items-center justify-between text-sm font-bold">
+				<p>Import Data From: WH3-Mod-Manager</p>{' '}
+				<p className="text-sm text-orange-500">Highly Experimental</p>
 			</div>
-			<p className="text-sm text-orange-500">Highly Experimental</p>
-			<p className="text-sm text-muted-foreground">
-				This process will import profiles and load order setup in
-				WH3-Mod-Manager by parsing config.json file.
-			</p>
-			<p className="text-sm text-muted-foreground">
-				If you have any local mods installed they will be also processed
-				to be compatible with this app's structure. While doing so
-				process will copy the mod files into the defined mods path in
-				the settings so make sure you have enough space in the disk,
-				depending on how much local mods you have this might take some
-				time.
-			</p>
+
+			<Collapsible>
+				<CollapsibleTrigger className="text-sm text-blue-500 underline">
+					Show information about import process
+				</CollapsibleTrigger>
+				<CollapsibleContent>
+					<p className="pt-2 text-sm text-muted-foreground">
+						This process will import profiles and load order setup
+						in WH3-Mod-Manager by parsing config.json file.
+					</p>
+					<p className="pt-2 text-sm text-muted-foreground">
+						If you have any local mods installed they will be also
+						processed to be compatible with this app's structure.
+						While doing so process will copy the mod files into the
+						defined mods path in the settings so make sure you have
+						enough space in the disk, depending on how much local
+						mods you have this might take some time.
+					</p>
+				</CollapsibleContent>
+			</Collapsible>
 
 			{!showPreviewData ? (
 				<>
@@ -520,82 +533,94 @@ export function ImportData() {
 				</>
 			) : (
 				<>
-					<Card className="mt-2">
-						<CardHeader className="p-4 pb-2">
-							<CardTitle className="text-base">
-								Available Profiles
-							</CardTitle>
-							<CardDescription>
-								Select the profiles you want to import:
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<ScrollArea className="h-[200px] pr-4">
-								<div className="space-y-4">
-									{Object.keys(configData.mod_profiles).map(
-										gameKey => {
-											const game = games.find(
-												g => g.slug_opt === gameKey,
-											);
-											if (!game) return null;
+					<Collapsible defaultOpen>
+						<Card className="mt-2">
+							<CardHeader className="p-4 pb-2">
+								<CollapsibleTrigger asChild>
+									<CardTitle className="cursor-pointer text-base underline hover:text-muted-foreground">
+										Available Profiles{' '}
+										<span className="text-sm">
+											- click to expand
+										</span>
+									</CardTitle>
+								</CollapsibleTrigger>
+								<CardDescription>
+									Select the profiles you want to import:
+								</CardDescription>
+							</CardHeader>
+							<CollapsibleContent>
+								<CardContent>
+									<ScrollArea className="h-[140px] pr-4">
+										<div className="space-y-4">
+											{Object.keys(
+												configData.mod_profiles,
+											).map(gameKey => {
+												const game = games.find(
+													g => g.slug_opt === gameKey,
+												);
+												if (!game) return null;
 
-											return (
-												<div
-													key={gameKey}
-													className="space-y-2"
-												>
-													<h3 className="text-sm font-semibold">
-														{game.name}
-													</h3>
-													{configData.mod_profiles[
-														gameKey
-													].map((profile: any) => {
-														const profileKey = `${gameKey}:${profile.profile_name}`;
-														return (
-															<div
-																key={profileKey}
-																className="ml-4 flex items-center space-x-2"
-															>
-																<Checkbox
-																	id={`profile-${profileKey}`}
-																	checked={selectedProfiles.includes(
-																		profileKey,
-																	)}
-																	onCheckedChange={() =>
-																		toggleProfileSelection(
-																			profileKey,
-																		)
-																	}
-																/>
-																<label
-																	htmlFor={`profile-${profileKey}`}
-																	className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-																>
-																	{
-																		profile.profile_name
-																	}
-																	<span className="ml-2 text-xs text-muted-foreground">
-																		(
-																		{
-																			profile
-																				.mods
-																				.length
-																		}{' '}
-																		mods)
-																	</span>
-																</label>
-															</div>
-														);
-													})}
-												</div>
-											);
-										},
-									)}
-								</div>
-							</ScrollArea>
-						</CardContent>
-					</Card>
-
+												return (
+													<div
+														key={gameKey}
+														className="space-y-2"
+													>
+														<h3 className="text-sm font-semibold">
+															{game.name}
+														</h3>
+														{configData.mod_profiles[
+															gameKey
+														].map(
+															(profile: any) => {
+																const profileKey = `${gameKey}:${profile.profile_name}`;
+																return (
+																	<div
+																		key={
+																			profileKey
+																		}
+																		className="ml-4 flex items-center space-x-2"
+																	>
+																		<Checkbox
+																			id={`profile-${profileKey}`}
+																			checked={selectedProfiles.includes(
+																				profileKey,
+																			)}
+																			onCheckedChange={() =>
+																				toggleProfileSelection(
+																					profileKey,
+																				)
+																			}
+																		/>
+																		<label
+																			htmlFor={`profile-${profileKey}`}
+																			className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+																		>
+																			{
+																				profile.profile_name
+																			}
+																			<span className="ml-2 text-xs text-muted-foreground">
+																				(
+																				{
+																					profile
+																						.mods
+																						.length
+																				}{' '}
+																				mods)
+																			</span>
+																		</label>
+																	</div>
+																);
+															},
+														)}
+													</div>
+												);
+											})}
+										</div>
+									</ScrollArea>
+								</CardContent>
+							</CollapsibleContent>
+						</Card>
+					</Collapsible>
 					{modsToSubscribe.length > 0 && (
 						<div className="mt-2 flex items-start space-x-2">
 							<Checkbox
