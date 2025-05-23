@@ -1,5 +1,6 @@
 use bincode::{Decode, Encode};
 use std::fs;
+use std::time::Instant;
 use tauri::Manager;
 use tauri::path::BaseDirectory;
 
@@ -24,6 +25,7 @@ pub async fn get_workshop_items(
     app_id: u32,
     item_ids: Vec<u64>,
 ) -> Result<Vec<WorkshopItem>, String> {
+    let start = Instant::now();
     let app_cache_dir = handle
         .path()
         .resolve("cache".to_string(), BaseDirectory::AppConfig)
@@ -32,10 +34,17 @@ pub async fn get_workshop_items(
     let cache_path = app_cache_dir.join(format!("workshop_cache_{}.bin", app_id));
     let bincode_config = bincode::config::standard();
     if cache_path.exists() {
+        let cache_read_start = Instant::now();
         if let Ok(cache_content) = fs::read(&cache_path) {
+            let cache_decode_start = Instant::now();
             if let Ok(cache_entry) =
                 bincode::decode_from_slice::<WorkshopCache, _>(&cache_content, bincode_config)
             {
+                println!(
+                    "Cache read: {}ms, decode: {}ms",
+                    cache_decode_start.elapsed().as_millis(),
+                    cache_read_start.elapsed().as_millis()
+                );
                 let cache = cache_entry.0;
                 let mut cached_ids = cache.item_ids.clone();
                 let mut current_ids = item_ids.clone();
@@ -129,6 +138,9 @@ pub async fn get_workshop_items(
 
     fs::write(&cache_path, serialized_cache)
         .map_err(|e| format!("Failed to write cache file: {}", e))?;
-
+    println!(
+        "Total get_workshop_items time: {}ms",
+        start.elapsed().as_millis()
+    );
     Ok(new_cache.items)
 }
