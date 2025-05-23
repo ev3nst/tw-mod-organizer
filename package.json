@@ -13,7 +13,7 @@
 		"build": "tsc && vite build",
 		"preview": "vite preview",
 		"tauri": "tauri",
-		"lint": "eslint \"src/**/*.{ts,tsx,js,jsx}\"",
+		"lint": "tsc --noEmit; eslint \"src/**/*.{ts,tsx,js,jsx}\"",
 		"format": "bunx prettier --write '**/*.{js,jsx,ts,tsx,json,css}' --ignore-path .prettierignore"
 	},
 	"dependencies": {
