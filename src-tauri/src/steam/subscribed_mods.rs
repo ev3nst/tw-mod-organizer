@@ -4,7 +4,6 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
-use std::time::Instant;
 use steamworks::SteamId;
 use tauri::Manager;
 use tauri::path::BaseDirectory;
@@ -35,46 +34,33 @@ pub async fn subscribed_mods(
     app_state: tauri::State<'_, AppState>,
     app_id: u32,
 ) -> Result<Vec<ModItem>, String> {
-    let total_start = Instant::now();
     let game = SUPPORTED_GAMES
         .iter()
         .find(|game| game.steam_id == app_id)
         .ok_or_else(|| format!("Given app_id {} is not supported", app_id))?;
 
-    let t0 = Instant::now();
     let steam_client = initialize_client(&app_state, app_id).await?;
-    println!("initialize_client: {}ms", t0.elapsed().as_millis());
 
-    let t1 = Instant::now();
     let app_cache_dir = handle
         .path()
         .resolve("cache".to_string(), BaseDirectory::AppConfig)
         .map_err(|e| format!("Failed to resolve App Config directory: {}", e))?;
-    println!("cache dir check/create: {}ms", t1.elapsed().as_millis());
+
     if !app_cache_dir.exists() {
         fs::create_dir_all(&app_cache_dir)
             .map_err(|e| format!("Failed to create cache directory: {}", e))?;
     }
-    let t2 = Instant::now();
     let subscribed_items: Vec<steamworks::PublishedFileId> = spawn_blocking({
         let steam_client = steam_client.clone();
         move || steam_client.ugc().subscribed_items()
     })
     .await
     .map_err(|e| format!("Failed to fetch subscribed items: {}", e))?;
-    println!("fetch subscribed_items: {}ms", t2.elapsed().as_millis());
 
-    let t3 = Instant::now();
     let item_ids: Vec<u64> = subscribed_items.iter().map(|id| id.0).collect();
     if item_ids.is_empty() {
-        println!(
-            "No subscribed items, total: {}ms",
-            total_start.elapsed().as_millis()
-        );
         return Ok(Vec::new());
     }
-    println!("item_ids collect: {}ms", t3.elapsed().as_millis());
-    let t4 = Instant::now();
     let items_future = get_workshop_items(handle.clone(), app_state.clone(), app_id, item_ids);
 
     let workshop_base_path = match workshop_path_for_app(app_id) {
@@ -87,14 +73,11 @@ pub async fn subscribed_mods(
         Ok(items) => items,
         Err(e) => return Err(e),
     };
-    println!("get_workshop_items: {}ms", t4.elapsed().as_millis());
 
     if items.is_empty() {
-        println!("No items, total: {}ms", total_start.elapsed().as_millis());
         return Ok(Vec::new());
     }
 
-    let t5 = Instant::now();
     let items = Arc::new(items);
     let game = Arc::new(game.clone());
     let workshop_base_path = Arc::new(workshop_base_path);
@@ -151,9 +134,7 @@ pub async fn subscribed_mods(
         .await
         .unwrap_or_else(|_| (Vec::new(), FxHashMap::default()))
     };
-    println!("process items (par_iter): {}ms", t5.elapsed().as_millis());
 
-    let t6 = Instant::now();
     let creator_ids: Vec<_> = mod_items
         .iter()
         .filter_map(|(_, item, _, _, _, _, _)| Some(item.owner.to_steamid()))
@@ -161,9 +142,7 @@ pub async fn subscribed_mods(
 
     let creator_names =
         fetch_creator_names(steam_client, creator_ids, app_state, app_id, handle).await?;
-    println!("fetch_creator_names: {}ms", t6.elapsed().as_millis());
 
-    let t7 = Instant::now();
     let final_mods = if game.r#type == "bannerlord" {
         process_bannerlord_dependencies(mod_items, &mod_contents_map, creator_names)
     } else {
@@ -209,12 +188,7 @@ pub async fn subscribed_mods(
             )
             .collect()
     };
-    println!("final_mods build: {}ms", t7.elapsed().as_millis());
 
-    println!(
-        "subscribed_mods TOTAL: {}ms",
-        total_start.elapsed().as_millis()
-    );
     Ok(final_mods)
 }
 
